@@ -1,0 +1,32 @@
+<project>
+    <bannerLeft>
+        <name>CRUNCH Parent</name>
+        <src>http://maven.apache.org/images/apache-maven-project-2.png</src>
+        <href>http://maven.apache.org/</href>
+    </bannerLeft>
+
+    <custom>
+        <reflowSkin>
+            <brand>
+                <!-- Brand text in top-left part of the site -->
+                <name>
+                    <![CDATA[<span class="color-highlight">CRUNCH</span>Core]]>
+                </name>
+                <href>http://andriusvelykis.github.io/reflow-maven-skin</href>
+            </brand>
+            <slogan>Responsive Apache Maven skin to reflow the standard Maven site with a modern feel</slogan>
+        </reflowSkin>
+    </custom>
+
+    <body>
+        <menu ref="modules"/>
+        <menu ref="reports"/>
+    </body>
+
+    <!--Skin: http://andriusvelykis.github.io/reflow-maven-skin/-->
+    <skin>
+        <groupId>lt.velykis.maven.skins</groupId>
+        <artifactId>reflow-maven-skin</artifactId>
+        <version>1.1.1</version>
+    </skin>
+</project>

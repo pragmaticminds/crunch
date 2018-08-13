@@ -1,0 +1,62 @@
+<project>
+    <bannerLeft>
+        <name>CRUNCH Core</name>
+        <src>http://maven.apache.org/images/apache-maven-project-2.png</src>
+        <href>http://maven.apache.org/</href>
+    </bannerLeft>
+
+    <!--<bannerLeft>-->
+    <!--&lt;!&ndash; Reflow Maven Skin, but with "Reflow" highlighted &ndash;&gt;-->
+    <!--<name><![CDATA[-->
+    <!--<span class="color-highlight">Reflow</span> Maven Skin-->
+    <!--]]>-->
+    <!--</name>-->
+    <!--<href>http://andriusvelykis.github.io/reflow-maven-skin</href>-->
+    <!--</bannerLeft>-->
+
+    <!--<publishDate position="bottom" format="yyyy-MM-dd" />-->
+    <!--<version position="bottom" />-->
+
+    <!--<bannerRight>-->
+    <!--<src>http://maven.apache.org/images/maven-logo-2.gif</src>-->
+    <!--</bannerRight>-->
+
+    <custom>
+        <reflowSkin>
+            <brand>
+                <!-- Brand text in top-left part of the site -->
+                <name>
+                    <![CDATA[<span class="color-highlight">CRUNCH</span>Core]]>
+                </name>
+                <href>http://andriusvelykis.github.io/reflow-maven-skin</href>
+            </brand>
+            <slogan>Responsive Apache Maven skin to reflow the standard Maven site with a modern feel</slogan>
+        </reflowSkin>
+    </custom>
+
+    <body>
+        <breadcrumbs>
+            <item name="CRUNCH Core" href="/"/>
+        </breadcrumbs>
+
+        <menu ref="parent"/>
+        <!--<menu ref="modules" />-->
+        <menu ref="reports"/>
+
+        <menu name="Developer Documentation">
+            <item name="welcome" href="developer-docu/example.html"/>
+        </menu>
+
+        <menu name="Documentation">
+            <item name="welcome" href="docu/example.html"/>
+        </menu>
+
+    </body>
+
+    <!--Skin: http://andriusvelykis.github.io/reflow-maven-skin/-->
+    <skin>
+        <groupId>lt.velykis.maven.skins</groupId>
+        <artifactId>reflow-maven-skin</artifactId>
+        <version>1.1.1</version>
+    </skin>
+</project>
