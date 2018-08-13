@@ -7,6 +7,8 @@ This ensures that all project relying on this are kept stable.
 
 A release is done using the mvn release plugin (https://maven.apache.org/maven-release/maven-release-plugin/index.html).
 
+https://pragmaticminds.atlassian.net/wiki/spaces/OR/pages/44204050/Release-Prozess
+
 ### Versioning
 
 The Versions are build with the scheme `major.minor.bugfix` and the working version has always the appendix `-SNAPSHOT`.
@@ -44,7 +46,7 @@ Now, do the release by using
 mvn release:perform
 ```
 
-After this do a push to ensure that all Tags are pushed.
+**After this do a push**
 
 ### Minor Release
 
@@ -64,6 +66,8 @@ Keep the SNAPSHOT.
 
 The `rc` branch is created automatically and contains the "old" release number.
 A release there is done as stated above with a bugfix release.
+
+**After this do a push**
 
 **Important: From the branch no Release artifact is generated and deployed to NEXUS. THUS a "bugfix" release has to be done "by hand" in the new BRANCH to ensure that a RELEASE Version is deployed to NEXUS**
 
