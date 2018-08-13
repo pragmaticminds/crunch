@@ -1,6 +1,10 @@
 #!/usr/bin/env groovy
 import groovy.json.JsonOutput
 
+/**
+ * Jenkinsfile
+ */
+
 // For slack see: http://vgarcia.me/tech/2016/01/22/Slack-notifications-in-jenkins-workflow.html
 def slackChannel = "#crunch-build"
 
