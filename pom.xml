@@ -29,7 +29,7 @@
         <connection>scm:git:ssh://git@bitbucket.org/pragmaticminds/crunch.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/pragmaticminds/crunch.git</developerConnection>
         <url>https://bitbucket.org/pragmaticminds/crunch.git</url>
-      <tag>HEAD</tag>
+      <tag>rc-0.0</tag>
   </scm>
 
     <properties>
