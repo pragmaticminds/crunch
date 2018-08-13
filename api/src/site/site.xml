@@ -1,6 +1,6 @@
 <project>
     <bannerLeft>
-        <name>CRUNCH Core</name>
+        <name>CRUNCH API</name>
         <src>http://maven.apache.org/images/apache-maven-project-2.png</src>
         <href>http://maven.apache.org/</href>
     </bannerLeft>
@@ -43,14 +43,13 @@
         <!--<menu ref="modules" />-->
         <menu ref="reports"/>
 
-        <menu name="Developer Documentation">
-            <item name="Example" href="developer-docu/example.html"/>
-        </menu>
+        <!--<menu name="Developer Documentation">-->
+        <!--<item name="Example" href="developer-docu/example.html"/>-->
+        <!--</menu>-->
 
-        <menu name="Documentation">
-            <item name="Welcome" href="docu/welcome.html"/>
-        </menu>
-
+        <!--<menu name="Documentation">-->
+        <!--<item name="Welcome" href="docu/welcome.html"/>-->
+        <!--</menu>-->
     </body>
 
     <!--Skin: http://andriusvelykis.github.io/reflow-maven-skin/-->

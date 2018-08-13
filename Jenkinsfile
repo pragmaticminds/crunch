@@ -2,7 +2,7 @@
 import groovy.json.JsonOutput
 
 /**
- * Jenkinsfile
+ * Jenkinsfile for building and deployment of snapshots from master.
  */
 
 // For slack see: http://vgarcia.me/tech/2016/01/22/Slack-notifications-in-jenkins-workflow.html
@@ -78,24 +78,20 @@ node('linux') {
                 finally {
                     junit '**/surefire-reports/*.xml'
                 }
-//                if ("UNSTABLE".equals(currentBuild.result) && env.BRANCH_NAME == 'master') {
-//                    echo "Failed"
-//                    notifyFailed(env, "Tests on Linux failed", slackChannel)
-//                    error "tests failed"
+            }
+            // TODO Enable
+//            stage('integration tests') {
+//                // Run Integration tests with failsafe plugin
+//                try {
+//                    sh "mvn verify -DskipUTs"
+//                } catch (Exception err) {
+//                    echo err
+//                    currentBuild.result = "FAILURE"
 //                }
-            }
-            stage('integration tests') {
-                // Run Integration tests with failsafe plugin
-                try {
-                    sh "mvn verify -DskipUTs"
-                } catch (Exception err) {
-                    echo err
-                    currentBuild.result = "FAILURE"
-                }
-                finally {
-                    junit '**/failsafe-reports/*.xml'
-                }
-            }
+//                finally {
+//                    junit '**/failsafe-reports/*.xml'
+//                }
+//            }
         }
     } catch (Exception e) {
     //modify #build-channel to the build channel you want
@@ -122,19 +118,6 @@ node('linux') {
                 sh "mvn sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.branch=${env.BRANCH_NAME}"
             }
             // withMaven will discover the generated Maven artifacts, JUnit Surefire & FailSafe reports and FindBugs reports
-        }
-        // No need to occupy a node
-        // See https://blog.sonarsource.com/breaking-the-sonarqube-analysis-with-jenkins-pipelines/
-        // IMPORTANT: the http(s) in front of the url is important for the Webhook
-        stage("Quality Gate") {
-            sh 'sleep 30'
-            timeout(time: 1, unit: 'HOURS') {
-                // Just in case something goes wrong, pipeline will be killed after a timeout
-                def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
-                if (qg.status != 'OK') {
-                    error "Pipeline aborted due to quality gate failure, status is ${qg.status}"
-                }
-            }
         }
         if (env.BRANCH_NAME == 'master') {
             // Deploy Snapshot to Nexus
