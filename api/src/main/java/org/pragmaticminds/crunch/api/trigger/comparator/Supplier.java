@@ -12,13 +12,12 @@ import java.io.Serializable;
  * Created by Erwin Wagasow on 27.07.2018
  */
 @FunctionalInterface
-public interface ValueSupplier<T> extends Serializable {
-
+public interface Supplier<T> extends Serializable {
+    
     /**
      * Compares the incoming values with internal criteria and returns a result of T
-     *
      * @param values incoming values to be compared to internal criteria
      * @return a result of T
      */
-    T check(TypedValues values);
+    T extract(TypedValues values);
 }
