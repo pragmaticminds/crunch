@@ -1,6 +1,7 @@
 package org.pragmaticminds.crunch.events;
 
 
+import com.google.common.base.Preconditions;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.util.Date;
@@ -127,6 +128,9 @@ public final class EventBuilder {
 
 
     public Event build() {
+        Preconditions.checkNotNull(timestamp, "Specify timestamp");
+        Preconditions.checkNotNull(event, "Specify event type");
+        Preconditions.checkNotNull(source, "Specify source");
         return new Event(timestamp, event, source, parameters);
     }
 }

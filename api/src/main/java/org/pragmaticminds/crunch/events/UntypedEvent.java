@@ -47,13 +47,6 @@ public class UntypedEvent implements Serializable {
         });
     }
 
-    public UntypedEvent(String eventName, String source, long timestamp, HashMap<String, Object> parameters) {
-        this.eventName = eventName;
-        this.eventSource = source;
-        this.timestamp = timestamp;
-        this.parameters = parameters;
-    }
-
     /**
      * conversion from {@link Event} to {@link UntypedEvent}
      *

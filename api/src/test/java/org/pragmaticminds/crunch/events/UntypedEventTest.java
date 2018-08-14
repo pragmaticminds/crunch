@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
  * Created by Erwin Wagasow on 17.11.2017
  */
 public class UntypedEventTest {
+
     private final Value testString = Value.of("testString");
     private final Value testDouble = Value.of((Double) 0.1);
     private final Value testLong = Value.of(1L);
@@ -50,6 +51,14 @@ public class UntypedEventTest {
 
     @Test
     public void getParameter() {
+        UntypedEvent untypedEvent = UntypedEvent.fromEvent(event);
+
+        assertNotNull(untypedEvent.getParameter("string"));
+        assertNotNull(untypedEvent.getParameter("double"));
+        assertNotNull(untypedEvent.getParameter("long"));
+        assertNotNull(untypedEvent.getParameter("date"));
+        assertNotNull(untypedEvent.getParameter("boolean"));
+
         assertNotNull(event.getParameter("string"));
         assertNotNull(event.getParameter("double"));
         assertNotNull(event.getParameter("long"));
@@ -61,4 +70,11 @@ public class UntypedEventTest {
     public void getParameterNotInParameters() {
         event.getParameter("notPresent");
     }
+
+    @Test(expected = InvalidKeyException.class)
+    public void getParameterFromUntypedNotInParameters() {
+        UntypedEvent untypedEvent = UntypedEvent.fromEvent(event);
+        untypedEvent.getParameter("notPresent");
+    }
+
 }

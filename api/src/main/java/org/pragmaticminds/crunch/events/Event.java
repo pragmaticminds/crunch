@@ -18,17 +18,17 @@ import java.util.Map;
  * They cannot be absolutely immutable due to JPA.
  * <p>
  * Events should only be created using a Builder {@link EventBuilder}.
- * <p>
+ *
  * An Event consists of
- * - timestamp (of the events beginning)
- * - eventName (Category of the Event like "machine.cycle", "mixer.cycle", ...).
- * - parameters (additional parameters to the value).
- * <p>
+ *  - timestamp (of the events beginning)
+ *  - eventName (Category of the Event like "machine.cycle", "mixer.cycle", ...).
+ *  - parameters (additional parameters to the value).
+ *
  * Nested Parameter Values are given as "flattened" json like schema, if you have eg, a submap
  * <code>
- * "code" -> 1
- * "parameters.param1" -> 3.1
- * "parameters.param2" -> 44123123
+ *     "code" -> 1
+ *     "parameters.param1" -> 3.1
+ *     "parameters.param2" -> 44123123
  * </code>
  *
  * @author julian
@@ -50,14 +50,14 @@ public class Event implements ValueEvent {
      */
     private String eventSource;
 
-    private Map<String, Value> parameters;
+    private HashMap<String, Value> parameters;
 
 
     public Event(long timestamp, String eventName, String source, Map<String, Value> parameters) {
         this.timestamp = timestamp;
         this.eventName = eventName;
         this.eventSource = source;
-        this.parameters = parameters;
+        this.parameters = parameters == null ? new HashMap<>() : new HashMap<>(parameters);
     }
 
     public Event(long timestamp, String eventName, String source) {
@@ -70,7 +70,7 @@ public class Event implements ValueEvent {
     public Event(Event other) {
         this.timestamp = other.timestamp;
         this.eventName = other.eventName;
-        this.eventSource = other.getSource();
+        this.eventSource = other.eventSource;
         this.parameters = other.parameters;
     }
 
@@ -79,7 +79,7 @@ public class Event implements ValueEvent {
         this.eventSource = other.getEventSource();
         this.timestamp = other.getTimestamp();
         this.parameters = new HashMap<>();
-        other.getParameters().forEach((key, value) ->
+        other.getParameters().forEach((key, value)->
                 this.parameters.put(key, Value.of(value))
         );
     }
@@ -123,7 +123,7 @@ public class Event implements ValueEvent {
     }
 
     public void setParameters(Map<String, Value> parameters) {
-        this.parameters = parameters;
+        this.parameters = parameters == null ? new HashMap<>() : new HashMap<>(parameters);
     }
 
 }
