@@ -39,6 +39,8 @@ public class AnnotationUtils {
     /**
      * Finds all methods in the given class that are annotated with the given annotation.
      *
+     * @param annotation Annotation to find
+     * @param classs Class to search through
      * @return null safe set
      */
     public static List<Field> findFields(Class<?> classs, Class<? extends Annotation> annotation) {

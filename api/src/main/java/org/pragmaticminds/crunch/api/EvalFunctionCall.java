@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * This call knows the context and has thus e.g. the literal parameters given in the call.
  * And it contains a mapping of the channel names, the mapping is organized the following way:
  * name of the channel (in the @{@link ChannelValue}-annotation
- * -> name of the channel in "reality"
+ * - name of the channel in "reality"
  * <p>
  * Furthermore it contains a direct reference to the evaluation function that has been called.
  *

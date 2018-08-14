@@ -31,7 +31,7 @@ public class AnnotatedEvalFunctionTestTool {
      * @param annotatedEvalFunctionClass {@link Class} of a {@link AnnotatedEvalFunction}, that should be tested
      * @throws IllegalAccessException should not happen, if happened, than some classes are not reachable from current
      *                                context
-     * @throws InstantiationException
+     * @throws InstantiationException can be thrown
      */
     public AnnotatedEvalFunctionTestTool(Class<? extends AnnotatedEvalFunction> annotatedEvalFunctionClass) throws IllegalAccessException,
             InstantiationException {
