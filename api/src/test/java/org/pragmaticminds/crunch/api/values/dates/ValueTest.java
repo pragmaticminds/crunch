@@ -1,9 +1,8 @@
 package org.pragmaticminds.crunch.api.values.dates;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.Date;
 
@@ -11,12 +10,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
+ *
  * @author kerstin
  * Created by kerstin on 06.11.17.
  */
 public class ValueTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(ValueTest.class);
 
     @Test
     public void ofObject_boolean() {
@@ -53,7 +51,7 @@ public class ValueTest {
         assertEquals(new Long(42L), of.getAsLong());
     }
 
-    @Test(expected = ClassCastException.class)
+    @Test(expected = InvalidParameterException.class)
     public void ofObject_fails() {
         Object o = Instant.now();
         Value.of(o);

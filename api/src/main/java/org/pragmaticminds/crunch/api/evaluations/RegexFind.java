@@ -3,7 +3,7 @@ package org.pragmaticminds.crunch.api.evaluations;
 import org.pragmaticminds.crunch.api.EvalFunction;
 import org.pragmaticminds.crunch.api.events.EventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.time.Instant;

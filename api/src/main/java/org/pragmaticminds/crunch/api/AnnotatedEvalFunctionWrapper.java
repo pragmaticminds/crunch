@@ -4,7 +4,7 @@ import org.pragmaticminds.crunch.api.annotations.*;
 import org.pragmaticminds.crunch.api.events.EventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
 import org.pragmaticminds.crunch.api.holder.Holder;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +45,12 @@ public class AnnotatedEvalFunctionWrapper<T> extends EvalFunction<T> {
         }
 
 
-        // get queryable name of the function class
+        // getValue queryable name of the function class
         EvaluationFunction evalAnnotation = annotatedEvalFunctionClass.getAnnotation(EvaluationFunction.class);
         assert evalAnnotation != null;
         name = evalAnnotation.evaluationName();
 
-        // get the output data type of the function class
+        // getValue the output data type of the function class
         outputDataType = evalAnnotation.dataType();
 
         /*
@@ -67,7 +67,7 @@ public class AnnotatedEvalFunctionWrapper<T> extends EvalFunction<T> {
             ParameterValue channelValue = (ParameterValue) Arrays.stream(literalField.getAnnotations()).filter(a -> a instanceof ParameterValue).findFirst().get();
             parameters.add(new FunctionParameter(channelValue.name(), FunctionParameterType.LITERAL, channelValue.dataType()));
         });
-        // get parameter fields
+        // getValue parameter fields
         List<Field> fields = AnnotationUtils.findFields(annotatedEvalFunctionInstance.getClass(), ParameterValue.class);
         for (int i = 0; i < Math.min(fields.size(), literalFields.size()); i++) {
             Field field = fields.get(i);

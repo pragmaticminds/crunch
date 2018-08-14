@@ -13,6 +13,7 @@ import java.util.Map;
  * <p>
  * Created by Erwin Wagasow on 22.06.2017.
  */
+@SuppressWarnings("squid:S1612") // Use Lambdas for Handler, no method references
 public class EvalFunctionTestTool {
 
     private EventHandler eventHandler;

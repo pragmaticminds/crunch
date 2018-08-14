@@ -1,5 +1,6 @@
 package org.pragmaticminds.crunch.api.trigger.strategy;
 
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 
@@ -36,7 +37,7 @@ public abstract class MemoryTriggerStrategy<T> implements TriggerStrategy {
      * @return true if triggered, otherwise false
      */
     @Override
-    public boolean isToBeTriggered(TypedValues values) {
+    public boolean isToBeTriggered(MRecord values) {
         T decisionBase = supplier.extract(values);
         boolean result = isToBeTriggered(decisionBase);
         lastDecisionBases.add(decisionBase);

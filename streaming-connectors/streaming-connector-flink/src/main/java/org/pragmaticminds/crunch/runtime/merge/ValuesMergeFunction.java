@@ -5,16 +5,22 @@ import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.configuration.Configuration;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
+
+import java.security.InvalidParameterException;
 
 /**
  * Merges all incoming {@link TypedValues} to one "common" Typed Values Object, the "State".
  * This state is then pushed downstream.
  *
+ * TODO Implement a more efficient {@link ValuesMergeFunction#map(MRecord)} version (as this always casts to typed!!!)
+ *
  * @author julian
  * Created by julian on 03.11.17
  */
-public class ValuesMergeFunction extends RichMapFunction<TypedValues, TypedValues> {
+public class ValuesMergeFunction extends RichMapFunction<MRecord, MRecord> {
 
     private transient ValueState<TypedValues> valueState;
 
@@ -31,11 +37,21 @@ public class ValuesMergeFunction extends RichMapFunction<TypedValues, TypedValue
     }
 
     @Override
-    public TypedValues map(TypedValues typedValues) throws Exception {
+    public MRecord map(MRecord value) throws Exception {
+        // Merge the Records
+        TypedValues currentValue;
+        if (TypedValues.class.isInstance(value)) {
+            currentValue = (TypedValues) value;
+        } else if (UntypedValues.class.isInstance(value)) {
+            currentValue = ((UntypedValues) value).toTypedValues();
+        } else {
+            throw new InvalidParameterException("ValuesMergeFunction currently only supports TypedValues and " +
+                    "UntypedValues and not " + value.getClass().getName());
+        }
         // Fetch Flink State Object
         TypedValues values = valueState.value();
         // Do the mapping
-        values = mapWithoutState(values, typedValues);
+        values = mapWithoutState(values, currentValue);
         // Return Flink State Object
         valueState.update(values);
         return values;

@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import javax.management.openmbean.InvalidKeyException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +39,7 @@ import java.util.Map;
 @NoArgsConstructor
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class Event implements ValueEvent {
+public class Event implements Serializable {
 
     private Long timestamp;
 
@@ -100,12 +100,10 @@ public class Event implements ValueEvent {
         this.eventSource = eventSource;
     }
 
-    @Override
     public String getSource() {
         return this.eventSource;
     }
 
-    @Override
     public long getTimestamp() {
         return this.timestamp;
     }

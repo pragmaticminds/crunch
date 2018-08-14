@@ -2,11 +2,9 @@ package org.pragmaticminds.crunch.api.pipe;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
 import org.pragmaticminds.crunch.events.Event;
-import org.pragmaticminds.crunch.runtime.cast.CastFunction;
 import org.pragmaticminds.crunch.runtime.merge.ValuesMergeFunction;
 import org.pragmaticminds.crunch.runtime.sort.SortFunction;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
@@ -31,31 +29,20 @@ public class CrunchFlinkPipelineFactory implements Serializable {
      * @param pipeline this describes the pipelines in a {@link EvaluationPipeline} way
      * @return outgoing {@link DataStream} of {@link Event}s as output of the created Flink pipeline
      */
-    public DataStream<Event> create(DataStream<UntypedValues> in, EvaluationPipeline pipeline) {
+    public DataStream<Event> create(DataStream<MRecord> in, EvaluationPipeline pipeline) {
         List<DataStream<Event>> results = new ArrayList<>();
         for (SubStream subStream:  pipeline.getSubStreams()) {
             results.add(in
                 // filter with SubStream.Predicate
                 .filter(createFilter(subStream.getPredicate()::validate))
                 
-                .map(untypedValues -> (ValueEvent) untypedValues)
-                
                 // set sort window
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(subStream.getSortWindowMs()))
-    
-                .map(valueEvent -> (UntypedValues) valueEvent)
-    
-                // cast from UntypedValues to TypedValues
-                .map(new CastFunction())
-                
-                .map(untypedValues -> (ValueEvent) untypedValues)
                 
                 .keyBy(x -> 0)
                 
                 // sort the messages
                 .process(new SortFunction())
-                
-                .map(valueEvent -> (TypedValues) valueEvent)
                 
                 // must be handled with keying
                 .keyBy(x -> 0)
@@ -77,7 +64,7 @@ public class CrunchFlinkPipelineFactory implements Serializable {
         return results.stream()
             // combine all results DataStreams
             .reduce(DataStream::union)
-            // get or default
+            // getValue or default
             .orElse(null);
     }
     
@@ -87,7 +74,7 @@ public class CrunchFlinkPipelineFactory implements Serializable {
      * @param predicate to be put in a filter
      * @return a {@link FilterFunction} which contains the predicate
      */
-    private FilterFunction<UntypedValues> createFilter(SubStreamPredicate predicate) {
+    private FilterFunction<MRecord> createFilter(SubStreamPredicate predicate) {
         return predicate::validate;
     }
 }

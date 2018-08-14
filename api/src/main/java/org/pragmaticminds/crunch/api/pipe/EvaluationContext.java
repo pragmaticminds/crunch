@@ -1,7 +1,7 @@
 package org.pragmaticminds.crunch.api.pipe;
 
 import org.pragmaticminds.crunch.api.pipe.timer.Timer;
-import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.events.EventBuilder;
 
@@ -17,10 +17,10 @@ import java.io.Serializable;
 @SuppressWarnings("squid:S1610") // not converting into an interface
 public abstract class EvaluationContext implements Serializable {
     /**
-     * delivers the next {@link TypedValues} data to be processed
+     * delivers the next {@link MRecord} data to be processed
      * @return the next record to be processed
      */
-    public abstract TypedValues get();
+    public abstract MRecord get();
 
     /**
      * collects the resulting {@link Event}s of processing

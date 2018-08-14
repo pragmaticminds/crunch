@@ -1,8 +1,10 @@
 package org.pragmaticminds.crunch.api.values;
 
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.LongValue;
 
+import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,7 +23,7 @@ public class UntypedValuesTest {
 
     @Test
     public void getTimestamp_fromInterface_worksAsExpected() {
-        ValueEvent event = UntypedValues.builder().timestamp(13L).build();
+        MRecord event = UntypedValues.builder().timestamp(13L).build();
 
         assertEquals(13L, event.getTimestamp());
     }
@@ -43,7 +45,7 @@ public class UntypedValuesTest {
         assertEquals(42L, untypedValues.getValues().get("key"));
     }
 
-    @Test(expected = ClassCastException.class)
+    @Test(expected = InvalidParameterException.class)
     public void toTypeValues_fails() {
         UntypedValues untypedValues = UntypedValues.builder()
                 .timestamp(13L)

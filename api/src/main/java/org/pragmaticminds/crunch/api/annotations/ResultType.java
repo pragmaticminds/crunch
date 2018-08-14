@@ -1,7 +1,7 @@
 package org.pragmaticminds.crunch.api.annotations;
 
 import org.pragmaticminds.crunch.api.EvalFunction;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

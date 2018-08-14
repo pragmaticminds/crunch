@@ -8,8 +8,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
 import org.slf4j.LoggerFactory;
@@ -115,7 +115,7 @@ public class ValuesMergeFunctionIT {
         ValuesMergeFunctionIT.CollectSink.values.clear();
 
         // create a stream of custom elements and apply transformations
-        ArrayList<TypedValues> input = new ArrayList<>();
+        ArrayList<MRecord> input = new ArrayList<>();
 
         for (long i = 0; i < 10; i++) {
             input.add(TypedValues.builder()
@@ -125,19 +125,17 @@ public class ValuesMergeFunctionIT {
                     .build());
         }
 
-        SingleOutputStreamOperator<TypedValues> stream = env.addSource(new SlowSource(input))
-                .map(untypedValues -> (ValueEvent) untypedValues)
+        SingleOutputStreamOperator<MRecord> stream = env.addSource(new SlowSource(input))
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(15))
-                .map(untypedValues -> (TypedValues) untypedValues)
                 .map(new ErrorThrower())
                 .keyBy(untypedValues -> 1L)
                 .map(new ValuesMergeFunction());
 
         // Add sinks
         stream.addSink(new ValuesMergeFunctionIT.CollectSink());
-        stream.addSink(new SinkFunction<TypedValues>() {
+        stream.addSink(new SinkFunction<MRecord>() {
             @Override
-            public void invoke(TypedValues value) {
+            public void invoke(MRecord value, Context ctx) {
                 System.out.println("Current timestamp: " + value.getTimestamp());
             }
         });
@@ -146,21 +144,21 @@ public class ValuesMergeFunctionIT {
         env.execute();
 
         // verify your results
-        TypedValues lastEvent = CollectSink.values.get(CollectSink.values.size() - 1);
+        MRecord lastEvent = CollectSink.values.get(CollectSink.values.size() - 1);
 
         // If the last Event contains 10 keys than all state is merged of all 10 events.
-        assertEquals(10, lastEvent.getValues().size());
+        assertEquals(10, lastEvent.getChannels().size());
     }
 
     /**
      * A map function that does nothing except throwing an exception on the 50th element.
      */
-    public static class ErrorThrower implements MapFunction<TypedValues, TypedValues> {
+    public static class ErrorThrower implements MapFunction<MRecord, MRecord> {
 
         private int counter = 0;
 
         @Override
-        public TypedValues map(TypedValues value) {
+        public MRecord map(MRecord value) {
             if (counter++ == 50) {
                 throw new RuntimeException("Here is an exception!");
             }
@@ -169,13 +167,13 @@ public class ValuesMergeFunctionIT {
     }
 
     // create a testing sink
-    private static class CollectSink implements SinkFunction<TypedValues> {
+    private static class CollectSink implements SinkFunction<MRecord> {
 
         // must be static
-        public static final List<TypedValues> values = new ArrayList<>();
+        public static final List<MRecord> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(TypedValues value) {
+        public synchronized void invoke(MRecord value) {
             values.add(value);
         }
     }
@@ -183,20 +181,20 @@ public class ValuesMergeFunctionIT {
     /**
      * A slow source that emits one value of the given input list each 10 ms.
      */
-    public static class SlowSource implements SourceFunction<TypedValues>, ListCheckpointed<Integer> {
+    public static class SlowSource implements SourceFunction<MRecord>, ListCheckpointed<Integer> {
 
-        private List<TypedValues> input;
+        private List<MRecord> input;
         private int counter;
 
-        public SlowSource(List<TypedValues> input) {
+        public SlowSource(List<MRecord> input) {
             this.input = input;
             this.counter = 0;
         }
 
         @Override
-        public void run(SourceContext<TypedValues> sourceContext) {
+        public void run(SourceContext<MRecord> sourceContext) {
             while (counter < input.size()) {
-                TypedValues values = input.get(counter);
+                MRecord values = input.get(counter);
                 sleep(10);
                 sourceContext.collect(values);
                 counter++;

@@ -18,7 +18,7 @@ import java.util.List;
  *   4. process the messages through the evaluationFunctions
  *   5. collect the resulting Events to pass them to a sink
  *
- * With the "predicate" incoming values are filtered, to get only the relevant values for processing in the
+ * With the "predicate" incoming values are filtered, to getValue only the relevant values for processing in the
  * evaluationFunctions. On creation of this class all evaluationFunctions are cloned, so the originals can be used
  * more often, without caring for cross access to their members from different pipelines.
  *

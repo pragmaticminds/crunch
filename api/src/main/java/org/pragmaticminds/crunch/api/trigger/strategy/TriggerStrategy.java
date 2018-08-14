@@ -1,6 +1,6 @@
 package org.pragmaticminds.crunch.api.trigger.strategy;
 
-import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.records.MRecord;
 
 import java.io.Serializable;
 
@@ -18,5 +18,5 @@ public interface TriggerStrategy extends Serializable {
      * @param values contains the indicator if processing is to be triggered
      * @return true if triggering was positive
      */
-    boolean isToBeTriggered(TypedValues values);
+    boolean isToBeTriggered(MRecord values);
 }

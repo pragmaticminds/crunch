@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.events.UntypedEvent;
 
 import javax.persistence.Entity;
@@ -14,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.io.Serializable;
+import java.security.InvalidParameterException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -116,7 +117,7 @@ public abstract class Value implements Serializable {
             );
         }
 
-        throw new ClassCastException("Not able to cast " + o + " with Type " + o.getClass());
+        throw new InvalidParameterException("Not able to cast " + o + " with Type " + o.getClass());
     }
 
     @JsonIgnore
@@ -133,7 +134,7 @@ public abstract class Value implements Serializable {
 
     @JsonIgnore
     public Long getAsLong() {
-        throw new UnsupportedOperationException("Cannot get Long Value");
+        throw new UnsupportedOperationException("Cannot getValue Long Value");
     }
 
     public void setAsLong(Long value) {
@@ -162,7 +163,7 @@ public abstract class Value implements Serializable {
 
     @JsonIgnore
     public Date getAsDate() {
-        throw new UnsupportedOperationException("Cannot get Date Value");
+        throw new UnsupportedOperationException("Cannot getValue Date Value");
     }
 
     public void setAsDate(Date value) {
@@ -171,7 +172,7 @@ public abstract class Value implements Serializable {
 
     @JsonIgnore
     public boolean getAsBoolean() {
-        throw new UnsupportedOperationException("Cannot get Boolean Value");
+        throw new UnsupportedOperationException("Cannot getValue Boolean Value");
     }
 
     public void setAsBoolean(boolean value) {

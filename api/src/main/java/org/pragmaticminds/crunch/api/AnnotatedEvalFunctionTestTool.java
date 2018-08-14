@@ -5,7 +5,7 @@ import org.pragmaticminds.crunch.api.annotations.ChannelValue;
 import org.pragmaticminds.crunch.api.annotations.ParameterValue;
 import org.pragmaticminds.crunch.api.events.EventHandler;
 import org.pragmaticminds.crunch.api.holder.Holder;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

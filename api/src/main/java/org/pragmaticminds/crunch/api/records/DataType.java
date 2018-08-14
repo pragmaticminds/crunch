@@ -1,4 +1,4 @@
-package org.pragmaticminds.crunch.api.mql;
+package org.pragmaticminds.crunch.api.records;
 
 import java.security.InvalidParameterException;
 import java.time.Instant;

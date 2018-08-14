@@ -3,7 +3,7 @@ package org.pragmaticminds.crunch.api;
 import org.pragmaticminds.crunch.api.annotations.ChannelValue;
 import org.pragmaticminds.crunch.api.function.def.FunctionParameter;
 import org.pragmaticminds.crunch.api.function.def.Signature;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  * @author julian
  * Created by julian on 05.11.17
  */
+@SuppressWarnings("squid:S1319") // Use HashMap instead of map to be serializable
 public class EvalFunctionCall implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(EvalFunctionCall.class);
