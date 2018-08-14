@@ -15,7 +15,7 @@
 
     <groupId>org.pragmaticminds.crunch</groupId>
     <artifactId>crunch-parent</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -31,7 +31,7 @@
         <connection>scm:git:ssh://git@bitbucket.org/pragmaticminds/crunch.git</connection>
         <developerConnection>scm:git:ssh://git@bitbucket.org/pragmaticminds/crunch.git</developerConnection>
         <url>https://bitbucket.org/pragmaticminds/crunch.git</url>
-        <tag>crunch-parent-0.0.4</tag>
+        <tag>rc-0.0</tag>
     </scm>
 
     <properties>
