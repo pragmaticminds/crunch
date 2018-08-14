@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>crunch-parent</artifactId>
+        <groupId>org.pragmaticminds.crunch</groupId>
+        <version>0.0.4-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>streaming-connectors</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>streaming-connector-flink</module>
+        <module>streaming-connector-base</module>
+    </modules>
+    <properties>
+        <kafka.version>0.11.0.1</kafka.version>
+    </properties>
+
+
+</project>

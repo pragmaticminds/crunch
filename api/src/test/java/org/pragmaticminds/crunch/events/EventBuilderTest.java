@@ -17,18 +17,14 @@ import static org.junit.Assert.assertNotNull;
  * Created by Erwin Wagasow on 21.11.2017
  */
 public class EventBuilderTest {
-    @Test
-    public void anEvent() {
-        EventBuilder.anEvent();
-    }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void withTimestamp() {
         Event event = EventBuilder.anEvent().withTimestamp(1L).build();
         assertNotNull(event);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void withEvent() {
         Event event = EventBuilder.anEvent().withTimestamp(1L).withEvent("test0815").build();
         assertNotNull(event);
@@ -41,6 +37,7 @@ public class EventBuilderTest {
         Event event = EventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
+                .withSource("")
                 .withParameters(parameters)
                 .build();
         assertNotNull(event);
@@ -51,6 +48,7 @@ public class EventBuilderTest {
         Event event = EventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
+                .withSource("")
                 .withParameter("string", "string")
                 .build();
         assertNotNull(event);
@@ -61,6 +59,7 @@ public class EventBuilderTest {
         Event event = EventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
+                .withSource("")
                 .withParameter("double", 0.1D)
                 .build();
         assertNotNull(event);
@@ -71,6 +70,7 @@ public class EventBuilderTest {
         Event event = EventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
+                .withSource("")
                 .withParameter("long", 1L)
                 .build();
         assertNotNull(event);
@@ -81,6 +81,7 @@ public class EventBuilderTest {
         Event event = EventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
+                .withSource("")
                 .withParameter("date", Date.from(Instant.ofEpochMilli(0L)))
                 .build();
         assertNotNull(event);
@@ -91,6 +92,7 @@ public class EventBuilderTest {
         Event event = EventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
+                .withSource("")
                 .withParameter("boolean", false)
                 .build();
         assertNotNull(event);
@@ -101,6 +103,7 @@ public class EventBuilderTest {
         Event event = EventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
+                .withSource("")
                 .withParameter("value", Value.of("value"))
                 .build();
         assertNotNull(event);

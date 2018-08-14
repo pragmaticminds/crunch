@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>streaming-connectors</artifactId>
+        <groupId>org.pragmaticminds.crunch</groupId>
+        <version>0.0.4-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>streaming-connector-flink</artifactId>
+    <properties>
+        <flink.version>1.4.0</flink.version>
+        <flink-scala.version>2.11</flink-scala.version>
+    </properties>
+
+    <dependencies>
+        <!--Internal-->
+        <dependency>
+            <groupId>org.pragmaticminds.crunch</groupId>
+            <artifactId>crunch-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.pragmaticminds.crunch</groupId>
+            <artifactId>streaming-connector-base</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--Guava-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--Flink-->
+        <!--Core-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-core</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <!--Flink Streaming-->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java_${flink-scala.version}</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <!--Testing Framework-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+    </dependencies>
+
+
+</project>

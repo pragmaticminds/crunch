@@ -4,6 +4,7 @@
     <modules>
         <module>core</module>
         <module>api</module>
+        <module>streaming-connectors</module>
     </modules>
 
     <parent>
@@ -51,6 +52,7 @@
         <junit.version>4.12</junit.version>
         <lombok.version>1.16.18</lombok.version>
         <guava.version>15.0</guava.version>
+        <mockito-core.version>2.13.0</mockito-core.version>
     </properties>
 
     <distributionManagement>
