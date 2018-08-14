@@ -53,6 +53,8 @@
         <lombok.version>1.16.18</lombok.version>
         <guava.version>15.0</guava.version>
         <mockito-core.version>2.13.0</mockito-core.version>
+        <maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
+        <javadoc.opts>-Xdoclint:none</javadoc.opts>
     </properties>
 
     <distributionManagement>
@@ -185,6 +187,24 @@
                 </configuration>
             </plugin>
 
+            <!--Javadoc Plugin (for Jar)-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <additionalparam>${javadoc.opts}</additionalparam>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!--Jacoco for test coverage-->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -263,9 +283,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <additionalparam>${javadoc.opts}</additionalparam>
                 </configuration>
             </plugin>
         </plugins>
