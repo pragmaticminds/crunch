@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.api.pipe;
 
 import org.pragmaticminds.crunch.api.pipe.timer.ReferenceTimer;
 import org.pragmaticminds.crunch.api.pipe.timer.Timer;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
 
@@ -30,7 +31,7 @@ public class SimpleEvaluationContext extends EvaluationContext {
 
     /** @inheritDoc */
     @Override
-    public TypedValues get() {
+    public MRecord get() {
         return values;
     }
     

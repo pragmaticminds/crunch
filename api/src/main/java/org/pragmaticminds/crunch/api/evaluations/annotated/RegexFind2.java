@@ -4,7 +4,7 @@ import org.pragmaticminds.crunch.api.AnnotatedEvalFunction;
 import org.pragmaticminds.crunch.api.annotations.*;
 import org.pragmaticminds.crunch.api.events.EventHandler;
 import org.pragmaticminds.crunch.api.holder.Holder;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

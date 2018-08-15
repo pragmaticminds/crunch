@@ -5,7 +5,7 @@ import org.apache.flink.util.Collector;
 import org.pragmaticminds.crunch.api.exceptions.TimerFactoryNotSetException;
 import org.pragmaticminds.crunch.api.pipe.timer.Timer;
 import org.pragmaticminds.crunch.api.pipe.timer.TimerFactory;
-import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 
 /**
@@ -17,7 +17,7 @@ import org.pragmaticminds.crunch.events.Event;
  * Created by Erwin Wagasow on 03.08.2018
  */
 public class CollectorEvaluationContext extends EvaluationContext {
-    private final TypedValues value;
+    private final MRecord value;
     private final transient Collector<Event> out;
     private final TimerFactory timerFactory;
     
@@ -28,7 +28,7 @@ public class CollectorEvaluationContext extends EvaluationContext {
      * @param timerFactory creates a timer in a {@link Timer} fashion
      */
     private CollectorEvaluationContext(
-        TypedValues value, Collector<Event> out, TimerFactory timerFactory
+        MRecord value, Collector<Event> out, TimerFactory timerFactory
     ) {
         this.value = value;
         this.out = out;
@@ -36,12 +36,12 @@ public class CollectorEvaluationContext extends EvaluationContext {
     }
     
     /**
-     * delivers the next {@link TypedValues} data to be processed
+     * delivers the next {@link MRecord} data to be processed
      *
      * @return the next record to be processed
      */
     @Override
-    public TypedValues get() {
+    public MRecord get() {
         return this.value;
     }
     
@@ -80,13 +80,13 @@ public class CollectorEvaluationContext extends EvaluationContext {
      * Creates instances of the type {@link CollectorEvaluationContext}
      */
     public static final class Builder {
-        private TypedValues      value;
+        private MRecord value;
         private Collector<Event> out;
         private TimerFactory timerFactory;
         
         private Builder() {}
         
-        public Builder withValue(TypedValues value) {
+        public Builder withValue(MRecord value) {
             this.value = value;
             return this;
         }

@@ -1,6 +1,7 @@
 package org.pragmaticminds.crunch.runtime.eval;
 
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -13,9 +14,9 @@ import org.pragmaticminds.crunch.api.annotations.ChannelValue;
 import org.pragmaticminds.crunch.api.events.EventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
 import org.pragmaticminds.crunch.api.holder.Holder;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
@@ -37,8 +38,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class EvalFunctionWrapperOnKeyedIT {
 
-    public static final String SOURCE = "testMachine";
-
     // Complete Test, in the flink framework
     @Test
     public void testEvaluationOnKeyedStream() throws Exception {
@@ -56,7 +55,7 @@ public class EvalFunctionWrapperOnKeyedIT {
         EvalFunctionWrapperOnKeyedIT.CollectSink.values.clear();
 
         // create a stream of custom elements and apply transformations
-        ArrayList<TypedValues> input = new ArrayList<>();
+        List<MRecord> input = new ArrayList<>();
 
         for (long i = 0; i < 100; i++) {
             input.add(TypedValues.builder()
@@ -66,17 +65,12 @@ public class EvalFunctionWrapperOnKeyedIT {
                     .build());
         }
 
-        // Mock the EvalFunction and the EvalFunction call
-        EvalFunction evalFunction = new COUNT_WITH_STATE();
+        EvalFunctionCall evalFunctionCall = new EvalFunctionCall(new CountWithState.factory(), Collections.emptyMap(), Collections.singletonMap("channel1", "DB_channel"));
 
-        EvalFunctionCall evalFunctionCall = new EvalFunctionCall(new COUNT_WITH_STATE.factory(), Collections.emptyMap(), Collections.singletonMap("channel1", "DB_channel"));
-
-        KeyedStream<TypedValues, String> stream1 = env.fromCollection(input)
-                .map(untypedValues -> (ValueEvent) untypedValues)
+        // Foce it to use MRecord (seems to infer it from the first element otherwise).
+        KeyedStream<MRecord, String> stream1 = env.fromCollection(input, TypeInformation.of(MRecord.class))
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(15))
-                .map(untypedValues -> (TypedValues) untypedValues)
-                .keyBy(TypedValues::getSource);
-        //stream1.print();
+                .keyBy(MRecord::getSource);
 
         // Eval Function 1
         stream1
@@ -100,17 +94,16 @@ public class EvalFunctionWrapperOnKeyedIT {
     private static class CollectSink implements SinkFunction<Event> {
 
         // must be static
-        public static final List<Event> values = new ArrayList<>();
+        protected static final List<Event> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(Event value) {
+        public synchronized void invoke(Event value, Context ctx) {
             values.add(value);
         }
     }
 
 
-    //    @ResultTypes(resultTypes = @ResultType(name = "count", dataType = DataType.LONG))
-    static class COUNT_WITH_STATE extends EvalFunction<Void> {
+    static class CountWithState extends EvalFunction<Void> {
 
         @ChannelValue(name = "channel1", dataType = DataType.STRING)
         Holder<String> channel1;
@@ -152,7 +145,7 @@ public class EvalFunctionWrapperOnKeyedIT {
             @Override
             public EvalFunction create() {
                 System.out.println("Creating one instance...");
-                return new COUNT_WITH_STATE();
+                return new CountWithState();
             }
         }
     }

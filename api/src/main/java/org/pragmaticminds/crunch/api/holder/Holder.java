@@ -1,6 +1,6 @@
 package org.pragmaticminds.crunch.api.holder;
 
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 
 import java.io.Serializable;
 

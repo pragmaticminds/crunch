@@ -8,7 +8,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +22,12 @@ import java.util.PriorityQueue;
  * @author julian
  * Created by julian on 03.11.17
  */
-public class SortFunction extends ProcessFunction<ValueEvent, ValueEvent> {
+public class SortFunction extends ProcessFunction<MRecord, MRecord> {
 
     private static final Logger logger = LoggerFactory.getLogger(SortFunction.class);
 
     private int capacity = 100;
-    private transient ValueState<PriorityQueue<ValueEvent>> queueState = null;
+    private transient ValueState<PriorityQueue<MRecord>> queueState = null;
 
     public SortFunction() {
         /*
@@ -46,11 +46,11 @@ public class SortFunction extends ProcessFunction<ValueEvent, ValueEvent> {
      */
     @Override
     public void open(Configuration config) {
-        ValueStateDescriptor<PriorityQueue<ValueEvent>> descriptor = new ValueStateDescriptor<>(
+        ValueStateDescriptor<PriorityQueue<MRecord>> descriptor = new ValueStateDescriptor<>(
                 // state name
                 "sorted-events",
                 // type information of state
-                TypeInformation.of(new TypeHint<PriorityQueue<ValueEvent>>() {
+                TypeInformation.of(new TypeHint<PriorityQueue<MRecord>>() {
                 }));
         queueState = getRuntimeContext().getState(descriptor);
     }
@@ -65,11 +65,11 @@ public class SortFunction extends ProcessFunction<ValueEvent, ValueEvent> {
      * @throws Exception
      */
     @Override
-    public void processElement(ValueEvent event, Context context, Collector<ValueEvent> out) throws Exception {
+    public void processElement(MRecord event, Context context, Collector<MRecord> out) throws Exception {
         TimerService timerService = context.timerService();
 
         if (context.timestamp() == null || context.timestamp() > timerService.currentWatermark()) {
-            PriorityQueue<ValueEvent> queue = queueState.value();
+            PriorityQueue<MRecord> queue = queueState.value();
             if (queue == null) {
                 queue = new PriorityQueue<>(capacity, new ValueEventComparator());
             }
@@ -90,10 +90,10 @@ public class SortFunction extends ProcessFunction<ValueEvent, ValueEvent> {
      * @throws Exception
      */
     @Override
-    public void onTimer(long timestamp, OnTimerContext context, Collector<ValueEvent> out) throws Exception {
-        PriorityQueue<ValueEvent> queue = queueState.value();
+    public void onTimer(long timestamp, OnTimerContext context, Collector<MRecord> out) throws Exception {
+        PriorityQueue<MRecord> queue = queueState.value();
         Long watermark = context.timerService().currentWatermark();
-        ValueEvent head = queue.peek();
+        MRecord head = queue.peek();
         while (head != null && head.getTimestamp() <= watermark) {
             out.collect(head);
             queue.remove(head);
@@ -104,7 +104,7 @@ public class SortFunction extends ProcessFunction<ValueEvent, ValueEvent> {
     /**
      * Comparator that compares the Long values of the two Timestamps.
      */
-    public static class ValueEventComparator implements Comparator<ValueEvent> {
+    public static class ValueEventComparator implements Comparator<MRecord> {
 
         /**
          * Use Long comapre on the timestamps of both events.
@@ -114,7 +114,7 @@ public class SortFunction extends ProcessFunction<ValueEvent, ValueEvent> {
          * @return
          */
         @Override
-        public int compare(ValueEvent o1, ValueEvent o2) {
+        public int compare(MRecord o1, MRecord o2) {
             return Long.compare(o1.getTimestamp(), o2.getTimestamp());
         }
     }

@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.timer.Timer;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
 
@@ -48,7 +49,7 @@ public class StateEvaluationContextTest {
     
     @Test
     public void get() {
-        TypedValues typedValues = stateEvaluationContext.get();
+        MRecord typedValues = stateEvaluationContext.get();
         Assert.assertEquals(mockValues, typedValues);
     }
     

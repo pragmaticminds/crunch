@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
-import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.util.List;
@@ -15,7 +15,8 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 03.08.2018
  */
-public class EvaluationProcessFunction extends ProcessFunction<TypedValues, Event> {
+public class EvaluationProcessFunction extends ProcessFunction<MRecord, Event> {
+
     private List<EvaluationFunction> evaluationFunctions;
     
     /**
@@ -50,7 +51,7 @@ public class EvaluationProcessFunction extends ProcessFunction<TypedValues, Even
      *                   to fail and may trigger recovery.
      */
     @Override
-    public void processElement(TypedValues value, Context ctx, Collector<Event> out) throws Exception {
+    public void processElement(MRecord value, Context ctx, Collector<Event> out) throws Exception {
         // create evaluation context
         EvaluationContext evaluationContext = CollectorEvaluationContext.builder().withValue(value).withOut(out).build();
         

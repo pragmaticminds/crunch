@@ -5,8 +5,8 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class SortFunctionIT {
         UntypedValues event3 = UntypedValues.builder().timestamp(20).build();
 
         env.fromElements(event3, event1, event2)
-                .map(untypedValues -> (ValueEvent) untypedValues)
+                .map(untypedValues -> (MRecord) untypedValues)
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(15))
                 .keyBy(untypedValues -> 1L)
                 .process(new SortFunction(50))
@@ -84,7 +84,7 @@ public class SortFunctionIT {
         UntypedValues event3 = UntypedValues.builder().timestamp(10).build();
 
         env.fromElements(event1, event2, event3)
-                .map(untypedValues -> (ValueEvent) untypedValues)
+                .map(untypedValues -> (MRecord) untypedValues)
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(15))
                 .keyBy(untypedValues -> 1L)
                 .process(new SortFunction(50))
@@ -98,13 +98,13 @@ public class SortFunctionIT {
     }
 
     // create a testing sink
-    private static class CollectSink implements SinkFunction<ValueEvent> {
+    private static class CollectSink implements SinkFunction<MRecord> {
 
         // must be static
-        public static final List<ValueEvent> values = new ArrayList<>();
+        public static final List<MRecord> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(ValueEvent value) {
+        public synchronized void invoke(MRecord value) {
             values.add(value);
         }
     }

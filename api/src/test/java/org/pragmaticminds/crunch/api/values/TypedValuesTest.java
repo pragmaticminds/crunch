@@ -2,7 +2,6 @@ package org.pragmaticminds.crunch.api.values;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.pragmaticminds.crunch.api.mql.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.util.Collections;
@@ -104,14 +103,11 @@ public class TypedValuesTest {
         assertEquals(111, merge.getLong("long"));
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void get_shouldReturnRightValue() {
         TypedValues values = createValues();
         fillTypedValues(values);
 
-        assertEquals(3.141, values.get("double", DataType.DOUBLE));
-        assertEquals(100L, values.get("long", DataType.LONG));
-        assertEquals("hallo", values.get("String", DataType.STRING));
-        assertEquals(false, values.get("boolean", DataType.BOOL));
+        Object aDouble = values.get("double");
     }
 }

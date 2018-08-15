@@ -1,5 +1,6 @@
 package org.pragmaticminds.crunch.api.trigger.comparator;
 
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 
 import java.io.Serializable;
@@ -19,5 +20,5 @@ public interface Supplier<T> extends Serializable {
      * @param values incoming values to be compared to internal criteria
      * @return a result of T
      */
-    T extract(TypedValues values);
+    T extract(MRecord values);
 }

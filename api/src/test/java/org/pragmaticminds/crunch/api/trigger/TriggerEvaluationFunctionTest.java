@@ -1,19 +1,6 @@
 package org.pragmaticminds.crunch.api.trigger;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
-import org.pragmaticminds.crunch.api.trigger.extractor.EventExtractor;
-import org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategy;
-import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * FIXME Implement this without Dependency on Flink

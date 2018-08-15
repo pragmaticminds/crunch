@@ -1,6 +1,6 @@
 package org.pragmaticminds.crunch.api.annotations;
 
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * This Annotation can be used on Fields of specific Type in an {@code EvaluationFunction}.
- * It indicates that the field will get the channel value injected.
+ * It indicates that the field will getValue the channel value injected.
  * Created by julian on 13.02.17.
  */
 @Retention(RetentionPolicy.RUNTIME)

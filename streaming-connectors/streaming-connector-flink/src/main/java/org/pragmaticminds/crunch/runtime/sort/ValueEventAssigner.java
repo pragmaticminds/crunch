@@ -2,7 +2,7 @@ package org.pragmaticminds.crunch.runtime.sort;
 
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.watermark.Watermark;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
+import org.pragmaticminds.crunch.api.records.MRecord;
 
 /**
  * An assigner for Watermarks that allows a fixed time of "out of sync" time.
@@ -18,7 +18,7 @@ import org.pragmaticminds.crunch.api.values.ValueEvent;
  * @author julian
  * Created by julian on 03.11.17
  */
-public class ValueEventAssigner implements AssignerWithPunctuatedWatermarks<ValueEvent> {
+public class ValueEventAssigner implements AssignerWithPunctuatedWatermarks<MRecord> {
 
     // Delay in ms
     private final long delayMs;
@@ -37,7 +37,7 @@ public class ValueEventAssigner implements AssignerWithPunctuatedWatermarks<Valu
     }
 
     @Override
-    public long extractTimestamp(ValueEvent event, long previousElementTimestamp) {
+    public long extractTimestamp(MRecord event, long previousElementTimestamp) {
         long timestamp = event.getTimestamp();
         currentMaxTimestamp = Math.max(timestamp, currentMaxTimestamp);
         return timestamp;
@@ -51,7 +51,7 @@ public class ValueEventAssigner implements AssignerWithPunctuatedWatermarks<Valu
      * @return
      */
     @Override
-    public Watermark checkAndGetNextWatermark(ValueEvent event, long extractedTimestamp) {
+    public Watermark checkAndGetNextWatermark(MRecord event, long extractedTimestamp) {
         // simply emit a watermark with every event
         return new Watermark(currentMaxTimestamp - delayMs);
     }

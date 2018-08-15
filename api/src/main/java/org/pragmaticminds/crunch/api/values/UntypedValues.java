@@ -1,15 +1,23 @@
 package org.pragmaticminds.crunch.api.values;
 
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import org.pragmaticminds.crunch.api.records.MRecord;
+import org.pragmaticminds.crunch.api.records.RecordItemConversionException;
+import org.pragmaticminds.crunch.api.records.UnknownRecordItemException;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.security.InvalidParameterException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Class for Transporting "UntypedValues" e.g. over Kafka.
+ * If one has {@link MRecord}s with many values and only a small subset is frequently used it is way more efficint
+ * to use this class than {@link TypedValues}.
+ *
+ * @see TypedValues
  *
  * @author julian
  * Created by julian on 23.10.17
@@ -17,7 +25,7 @@ import java.util.stream.Collectors;
 @Data
 @EqualsAndHashCode
 @NoArgsConstructor
-public class UntypedValues implements ValueEvent {
+public class UntypedValues implements MRecord {
 
     private String source;
     private long timestamp;
@@ -32,7 +40,60 @@ public class UntypedValues implements ValueEvent {
         this.prefix = prefix;
         this.values = values == null ? null : new HashMap<>(values);
     }
-    
+
+    @Override
+    public double getDouble(String channel) {
+        Value v = getValue(channel);
+        return v.getAsDouble();
+    }
+
+    @Override
+    public long getLong(String channel) {
+        Value v = getValue(channel);
+        return v.getAsLong();
+    }
+
+    @Override
+    public boolean getBoolean(String channel) {
+        Value v = getValue(channel);
+        return v.getAsBoolean();
+    }
+
+    @Override
+    public Date getDate(String channel) {
+        Value v = getValue(channel);
+        return v.getAsDate();
+    }
+
+    @Override
+    public String getString(String channel) {
+        Value v = getValue(channel);
+        return v.getAsString();
+    }
+
+    @Override
+    public Value getValue(String channel) {
+        try {
+            return Value.of(get(channel));
+        } catch (InvalidParameterException e) {
+            throw new RecordItemConversionException("Cannot provide typed version of item " + channel +
+                    " with value " + get(channel) + ".", e);
+        }
+    }
+
+    @Override
+    public Object get(String channel) {
+        if (!values.containsKey(channel)) {
+            throw new UnknownRecordItemException("Item " + channel + " not present!");
+        }
+        return values.get(channel);
+    }
+
+    @Override
+    public Collection<String> getChannels() {
+        return this.values.keySet();
+    }
+
     /**
      * converts UnTyped-Values to typed values
      * to differ between different sources (PLC-devices such as S71500, S7300, ...) a prefix is added to each Channel-Name for indication that those channels are not from main SPS

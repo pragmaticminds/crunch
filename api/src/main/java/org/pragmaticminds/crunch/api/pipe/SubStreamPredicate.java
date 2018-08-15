@@ -1,5 +1,6 @@
 package org.pragmaticminds.crunch.api.pipe;
 
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 
 import java.io.Serializable;
@@ -14,9 +15,9 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface SubStreamPredicate extends Serializable {
     /**
-     * Validates incoming {@link UntypedValues} if to be processed in that {@link SubStream}
+     * Validates incoming {@link MRecord} if to be processed in that {@link SubStream}
      * @param values to be validated
-     * @return true if the {@link UntypedValues} is to be processed
+     * @return true if the {@link MRecord} is to be processed
      */
-    Boolean validate(UntypedValues values);
+    Boolean validate(MRecord values);
 }

@@ -9,8 +9,8 @@ import org.apache.flink.util.Collector;
 import org.pragmaticminds.crunch.api.EvalFunction;
 import org.pragmaticminds.crunch.api.EvalFunctionCall;
 import org.pragmaticminds.crunch.api.events.EventHandler;
-import org.pragmaticminds.crunch.api.mql.DataType;
-import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.records.DataType;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * @author julian
  * Created by julian on 05.11.17
  */
-public class EvalFunctionWrapper extends ProcessFunction<TypedValues, Event> implements EventHandler, Serializable {
+public class EvalFunctionWrapper extends ProcessFunction<MRecord, Event> implements EventHandler, Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(EvalFunctionWrapper.class);
 
@@ -67,7 +67,7 @@ public class EvalFunctionWrapper extends ProcessFunction<TypedValues, Event> imp
     }
 
     @Override
-    public void processElement(TypedValues value, Context ctx, Collector<Event> out) throws Exception {
+    public void processElement(MRecord value, Context ctx, Collector<Event> out) throws Exception {
         // Do the eval
 
         // Assemble the right "parameter array"
@@ -115,10 +115,10 @@ public class EvalFunctionWrapper extends ProcessFunction<TypedValues, Event> imp
      * @param value TypedValues to use
      * @return Casted map
      */
-    Map<String, Value> createTypedChannelMap(TypedValues value) {
+    Map<String, Value> createTypedChannelMap(MRecord value) {
         // Check if all keys are in the values
         List<String> notFoundKeys = channelsAndTypes.entrySet().stream()
-                .filter(entry -> !value.getValues().containsKey(entry.getKey()))
+                .filter(entry -> !value.getChannels().contains(entry.getKey()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
@@ -130,10 +130,8 @@ public class EvalFunctionWrapper extends ProcessFunction<TypedValues, Event> imp
         }
 
         return channelsAndTypes.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> value.get(entry.getKey())));
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> value.getValue(entry.getKey())));
     }
-
-    // TODO Inherit close where we close the finish method
 
     @Override
     public void fire(Event event) {

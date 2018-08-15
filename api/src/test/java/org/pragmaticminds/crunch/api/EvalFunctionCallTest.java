@@ -2,7 +2,7 @@ package org.pragmaticminds.crunch.api;
 
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.evaluations.annotated.RegexFind2;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.util.Collections;

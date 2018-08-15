@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * This Annotation can be used on Fields of long in an {@code EvaluationFunction}.
- * It indicates that the field will get the time value injected.
+ * It indicates that the field will getValue the time value injected.
  *
  * @author kerstin
  * Created by kerstin on 15.11.17.

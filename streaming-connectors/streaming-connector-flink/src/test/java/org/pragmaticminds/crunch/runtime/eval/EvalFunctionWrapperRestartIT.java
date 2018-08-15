@@ -11,8 +11,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.EvalFunction;
 import org.pragmaticminds.crunch.api.EvalFunctionCall;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.runtime.merge.ValuesMergeFunctionIT;
@@ -46,13 +46,12 @@ public class EvalFunctionWrapperRestartIT {
         // Event Time Processing
         environment.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         environment.enableCheckpointing(10);
-        // env.setRestartStrategy(new RestartStrategies.RestartStrategyConfiguration());
 
         // results are collected in a static variable
         EvalFunctionWrapperRestartIT.CollectSink.values.clear();
 
         // create a stream of custom elements and apply transformations
-        ArrayList<TypedValues> input = new ArrayList<>();
+        ArrayList<MRecord> input = new ArrayList<>();
 
         for (long i = 0; i < 10; i++) {
             input.add(TypedValues.builder()
@@ -66,10 +65,8 @@ public class EvalFunctionWrapperRestartIT {
         EvalFunction evalFunction1 = new EvalFunctionWrapperIT.COUNT();
         EvalFunctionCall evalFunctionCall = new EvalFunctionCall(evalFunction1, Collections.emptyMap(), Collections.singletonMap("channel1", "DB_channel"));
 
-        KeyedStream<TypedValues, Long> stream = environment.addSource(new ExperimentalSlowSource(input)).uid("restart_source")
-                .map(untypedValues -> (ValueEvent) untypedValues)
+        KeyedStream<MRecord, Long> stream = environment.addSource(new ExperimentalSlowSource(input)).uid("restart_source")
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(15))
-                .map(untypedValues -> (TypedValues) untypedValues)
                 .map(new ValuesMergeFunctionIT.ErrorThrower())
                 .uid("restart_merge")
                 .keyBy(untypedValues -> 1L);
@@ -99,22 +96,22 @@ public class EvalFunctionWrapperRestartIT {
      * Is a duplicate of the {@link ValuesMergeFunctionIT.SlowSource}
      * due to concurrency problems.
      */
-    public static class ExperimentalSlowSource implements SourceFunction<TypedValues>, ListCheckpointed<Integer> {
+    public static class ExperimentalSlowSource implements SourceFunction<MRecord>, ListCheckpointed<Integer> {
 
         private static final Logger logger = LoggerFactory.getLogger(ExperimentalSlowSource.class);
 
-        private List<TypedValues> input;
+        private List<MRecord> input;
         private AtomicInteger counter;
 
-        public ExperimentalSlowSource(List<TypedValues> input) {
+        public ExperimentalSlowSource(List<MRecord> input) {
             this.input = input;
             this.counter = new AtomicInteger(0);
         }
 
         @Override
-        public void run(SourceContext<TypedValues> sourceContext) throws Exception {
+        public void run(SourceContext<MRecord> sourceContext) throws Exception {
             while (counter.get() < input.size()) {
-                TypedValues values = input.get(counter.getAndIncrement());
+                MRecord values = input.get(counter.getAndIncrement());
                 Thread.sleep(10);
                 sourceContext.collect(values);
             }

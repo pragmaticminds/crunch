@@ -2,7 +2,7 @@ package org.pragmaticminds.crunch.api.state;
 
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
-import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.util.HashMap;
@@ -17,13 +17,13 @@ import java.util.Map;
  */
 public abstract class StateEvaluationContext extends EvaluationContext {
     private final HashMap<String, Event>  events;
-    private       TypedValues values;
+    private MRecord values;
     
     /**
-     * private constructor on base of a {@link TypedValues} object
+     * private constructor on base of a {@link MRecord} object
      * @param values
      */
-    public StateEvaluationContext(TypedValues values){
+    public StateEvaluationContext(MRecord values){
         this.values = values;
         this.events = new HashMap<>();
     }
@@ -34,20 +34,20 @@ public abstract class StateEvaluationContext extends EvaluationContext {
     }
     
     /**
-     * delivers the next {@link TypedValues} data to be processed
+     * delivers the next {@link MRecord} data to be processed
      *
      * @return the next record to be processed
      */
     @Override
-    public TypedValues get() {
+    public MRecord get() {
         return values;
     }
     
     /**
-     * sets the current {@link TypedValues} data to be processed
+     * sets the current {@link MRecord} data to be processed
      * @param values the record to be processed next
      */
-    public void set(TypedValues values) {
+    public void set(MRecord values) {
         this.values = values;
     }
     

@@ -7,7 +7,7 @@ import org.pragmaticminds.crunch.api.EvalFunctionTestTool;
 import org.pragmaticminds.crunch.api.evaluations.RegexFindTest;
 import org.pragmaticminds.crunch.api.function.def.FunctionParameter;
 import org.pragmaticminds.crunch.api.function.def.FunctionParameterType;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,12 +1,12 @@
 package org.pragmaticminds.crunch.api.pipe;
 
-import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.junit.Assert;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.events.Event;
 
@@ -26,42 +26,13 @@ public class CrunchFlinkPipelineFactoryTest {
      * Tests if two mostly identical SubStreams are processing 100 {@link UntypedValues} correctly and produce
      * 200 {@link Event}s
      *
-     * @throws Exception
+     * @throws Exception some exception
      */
     @Test
     public void create() throws Exception {
         // implement this
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-
-        List<UntypedValues> valuess = new ArrayList<>();
-
-        // create 100 values
-        for (int i = 0; i < 100; i++) {
-            UntypedValues values = new UntypedValues();
-            // set some values
-            values.setPrefix("test" + i);
-            values.setSource("testSource");
-            values.setTimestamp(System.currentTimeMillis() + i);
-            Map<String, Object> vals = new HashMap<>();
-            vals.put("test", "testString" + i);
-            values.setValues(vals);
-            valuess.add(values);
-        }
-
-
-        UntypedValues lastValues = new UntypedValues();
-        // set some values
-        lastValues.setPrefix("test" + 100);
-        lastValues.setSource("testSource");
-        lastValues.setTimestamp(System.currentTimeMillis() + 2000);
-        Map<String, Object> vals = new HashMap<>();
-        vals.put("test", "testString" + 100);
-        lastValues.setValues(vals);
-        valuess.add(lastValues);
-
-        DataStreamSource<UntypedValues> inSource = env.fromCollection(valuess);
-        DataStream<UntypedValues> in = inSource.broadcast();
 
         List<SubStream> subStreams = new ArrayList<>();
 
@@ -92,29 +63,63 @@ public class CrunchFlinkPipelineFactoryTest {
                         .build()
         );
 
+        // Create a Pipeline
         EvaluationPipeline pipeline = EvaluationPipeline.builder()
                 .withIdentifier("testPipe")
                 .withSubStreams(subStreams)
                 .build();
 
+        // Convert to Flink Pipeline
+        DataStream<MRecord> in = createDataStream(env);
+
+        in.print();
 
         DataStream<Event> outEventDataStream = new CrunchFlinkPipelineFactory().create(in, pipeline);
-
         CollectSink collectSink = new CollectSink();
         outEventDataStream.addSink(collectSink);
 
-        JobExecutionResult testJob = env.execute("testJob");
+        // Has a side effect (CollectSink)
+        env.execute("testJob");
 
         Assert.assertEquals(200, CollectSink.values.size());
+    }
+
+    private DataStream<MRecord> createDataStream(StreamExecutionEnvironment env) {
+        List<MRecord> valuesList = new ArrayList<>();
+
+        // create 100 values
+        for (int i = 0; i < 100; i++) {
+            UntypedValues values = getValueAtTimestamp(i, System.currentTimeMillis() + i);
+            valuesList.add(values);
+        }
+
+        // Add one last value to trigger High Watermark
+        UntypedValues lastValues = getValueAtTimestamp(100, System.currentTimeMillis() + 2000);
+        valuesList.add(lastValues);
+
+        DataStreamSource<MRecord> inSource = env.fromCollection(valuesList);
+        return inSource.broadcast();
+    }
+
+    private UntypedValues getValueAtTimestamp(int i2, long l) {
+        UntypedValues lastValues = new UntypedValues();
+        // set some values
+        lastValues.setPrefix("test" + i2);
+        lastValues.setSource("testSource");
+        lastValues.setTimestamp(l);
+        Map<String, Object> vals = new HashMap<>();
+        vals.put("test", "testString" + i2);
+        lastValues.setValues(vals);
+        return lastValues;
     }
 
     // create a testing sink
     private static class CollectSink implements SinkFunction<Event> {
         // must be static
-        public static final List<Event> values = new ArrayList<>();
+        protected static final List<Event> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(Event event) throws Exception {
+        public synchronized void invoke(Event event, Context ctx) {
             values.add(event);
         }
     }

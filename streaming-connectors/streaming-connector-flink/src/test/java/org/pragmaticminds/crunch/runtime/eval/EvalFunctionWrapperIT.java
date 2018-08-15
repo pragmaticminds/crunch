@@ -16,9 +16,9 @@ import org.pragmaticminds.crunch.api.evaluations.annotated.RegexFind2;
 import org.pragmaticminds.crunch.api.events.EventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
 import org.pragmaticminds.crunch.api.holder.Holder;
-import org.pragmaticminds.crunch.api.mql.DataType;
+import org.pragmaticminds.crunch.api.records.DataType;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.api.values.ValueEvent;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.runtime.merge.ValuesMergeFunctionIT;
@@ -60,7 +60,7 @@ public class EvalFunctionWrapperIT {
         EvalFunctionWrapperIT.CollectSink.values.clear();
 
         // create a stream of custom elements and apply transformations
-        ArrayList<TypedValues> input = new ArrayList<>();
+        ArrayList<MRecord> input = new ArrayList<>();
 
         for (long i = 0; i < 10; i++) {
             input.add(TypedValues.builder()
@@ -79,11 +79,9 @@ public class EvalFunctionWrapperIT {
 
         EvalFunctionCall evalFunctionCall1 = new EvalFunctionCall(evalFunction1, Collections.emptyMap(), Collections.singletonMap("channel1", "DB_channel"));
 
-        KeyedStream<TypedValues, Long> stream1 = env.fromCollection(input)
-                .map(untypedValues -> (ValueEvent) untypedValues)
+        KeyedStream<MRecord, Long> stream1 = env.fromCollection(input)
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(15))
-                .map(untypedValues -> (TypedValues) untypedValues)
-                .keyBy(untypedValues -> 1L);
+                .keyBy(unMRecord -> 1L);
         stream1.print();
 
         // Eval Function 1
@@ -118,13 +116,12 @@ public class EvalFunctionWrapperIT {
         // Event Time Processing
         environment.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         environment.enableCheckpointing(10);
-        // env.setRestartStrategy(new RestartStrategies.RestartStrategyConfiguration());
 
         // results are collected in a static variable
         EvalFunctionWrapperIT.CollectSink.values.clear();
 
         // create a stream of custom elements and apply transformations
-        ArrayList<TypedValues> input = new ArrayList<>();
+        ArrayList<MRecord> input = new ArrayList<>();
 
         for (long i = 0; i < 10; i++) {
             input.add(TypedValues.builder()
@@ -138,18 +135,16 @@ public class EvalFunctionWrapperIT {
         EvalFunction evalFunction1 = new COUNT();
         EvalFunctionCall evalFunctionCall = new EvalFunctionCall(evalFunction1, Collections.emptyMap(), Collections.singletonMap("channel1", "DB_channel"));
 
-        KeyedStream<TypedValues, Long> stream = environment.addSource(new ValuesMergeFunctionIT.SlowSource(input))
-                .map(untypedValues -> (ValueEvent) untypedValues)
+        KeyedStream<MRecord, Long> stream = environment.addSource(new ValuesMergeFunctionIT.SlowSource(input))
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(15))
-                .map(untypedValues -> (TypedValues) untypedValues)
                 .map(new ValuesMergeFunctionIT.ErrorThrower())
-                .keyBy(untypedValues -> 1L);
+                .keyBy(unMRecord -> 1L);
 
         stream.print();
 
         // Eval Function 1
         SingleOutputStreamOperator<Event> stream1 = stream
-                .keyBy(untypedValues -> 1L)
+                .keyBy(unMRecord -> 1L)
                 .process(new EvalFunctionWrapper(evalFunctionCall));
 
         stream1.print();
