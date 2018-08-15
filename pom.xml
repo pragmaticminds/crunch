@@ -52,9 +52,12 @@
         <junit.version>4.12</junit.version>
         <lombok.version>1.16.18</lombok.version>
         <guava.version>15.0</guava.version>
-        <mockito-core.version>2.13.0</mockito-core.version>
         <maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
         <javadoc.opts>-Xdoclint:none</javadoc.opts>
+        <!--Akka-->
+        <akka-scala.version>2.12</akka-scala.version>
+        <akka.version>2.5.14</akka.version>
+        <mockito.version>2.13.0</mockito.version>
     </properties>
 
     <distributionManagement>
