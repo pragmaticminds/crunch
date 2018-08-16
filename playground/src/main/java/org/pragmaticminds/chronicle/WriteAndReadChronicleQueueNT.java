@@ -13,7 +13,7 @@ import net.openhft.chronicle.wire.ValueIn;
  * @author julian
  * Created by julian on 16.08.18
  */
-public class WriteAndReadChronicleQueue {
+public class WriteAndReadChronicleQueueNT {
 
     public static final int NUMBER_OF_RECORDS = 10000;
 
