@@ -5,6 +5,7 @@
         <module>core</module>
         <module>api</module>
         <module>streaming-connectors</module>
+        <module>playground</module>
     </modules>
 
     <parent>
@@ -58,6 +59,8 @@
         <akka-scala.version>2.12</akka-scala.version>
         <akka.version>2.5.14</akka.version>
         <mockito.version>2.13.0</mockito.version>
+        <chronicle-queue.version>5.16.11</chronicle-queue.version>
+        <maven-deploy-plugin.version>2.7</maven-deploy-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -216,6 +219,9 @@
                 <configuration>
                     <destFile>${sonar.jacoco.reportPath}</destFile>
                     <append>true</append>
+                    <excludes>// Exclude playground module
+                        <exclude>playground/**/*</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

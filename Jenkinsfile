@@ -94,9 +94,9 @@ node('linux') {
 //            }
         }
     } catch (Exception e) {
-    //modify #build-channel to the build channel you want
-    //for public channels don't forget the # (hash)
-    throw e
+        //modify #build-channel to the build channel you want
+        //for public channels don't forget the # (hash)
+        throw e
     }
 
     withMaven(
@@ -119,7 +119,25 @@ node('linux') {
             }
             // withMaven will discover the generated Maven artifacts, JUnit Surefire & FailSafe reports and FindBugs reports
         }
-        if (env.BRANCH_NAME == 'master') {
+    }
+    // No need to occupy a node
+    stage("Quality Gate"){
+        timeout(time: 1, unit: 'HOURS') { // Just in case something goes wrong, pipeline will be killed after a timeout
+            def qg = waitForQualityGate() // Reuse taskId previously collected by withSonarQubeEnv
+            if (qg.status != 'OK') {
+                error "Pipeline aborted due to quality gate failure: ${qg.status}"
+            }
+        }
+    }
+
+    if (env.BRANCH_NAME == 'master') {
+        withMaven(
+                // Maven installation declared in the Jenkins "Global Tool Configuration"
+                maven: 'M3',
+                // Maven settings.xml file defined with the Jenkins Config File Provider Plugin
+                // Maven settings and global settings can also be defined in Jenkins Global Tools Configuration
+                mavenSettingsConfig: 'nexus-sonar',
+                mavenLocalRepo: '.repository') {
             // Deploy Snapshot to Nexus
             stage('Deploy Snapshot') {
                 sh "mvn site:site site:deploy"

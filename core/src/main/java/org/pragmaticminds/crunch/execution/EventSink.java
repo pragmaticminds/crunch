@@ -2,6 +2,8 @@ package org.pragmaticminds.crunch.execution;
 
 import org.pragmaticminds.crunch.events.Event;
 
+import java.io.Serializable;
+
 /**
  * Callback Interface to be used in conjunction with {@link CrunchExecutor}.
  *
@@ -9,7 +11,7 @@ import org.pragmaticminds.crunch.events.Event;
  * Created by julian on 15.08.18
  */
 @FunctionalInterface
-public interface EventSink {
+public interface EventSink extends Serializable {
 
     /**
      * Is called by the pipeline whenever a new Event is received.
