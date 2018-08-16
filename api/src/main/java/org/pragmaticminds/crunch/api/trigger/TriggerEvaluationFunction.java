@@ -4,9 +4,13 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.trigger.extractor.EventExtractor;
+import org.pragmaticminds.crunch.api.trigger.filter.EventFilter;
 import org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategy;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Simplifies the way to implement {@link EvaluationFunction} for typical tasks.
@@ -20,6 +24,7 @@ import org.pragmaticminds.crunch.events.Event;
 public class TriggerEvaluationFunction implements EvaluationFunction {
     private final TriggerStrategy triggerStrategy;
     private final EventExtractor  eventExtractor;
+    private final EventFilter     filter;
     
     /**
      * Main constructor of this class
@@ -31,10 +36,12 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
      */
     private TriggerEvaluationFunction(
         TriggerStrategy triggerStrategy,
-        EventExtractor eventExtractor
+        EventExtractor eventExtractor,
+        EventFilter filter
     ) {
         this.triggerStrategy = triggerStrategy;
         this.eventExtractor = eventExtractor;
+        this.filter = filter;
     }
     
     /**
@@ -46,14 +53,23 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
     @Override
     public void eval(EvaluationContext ctx) {
         if(triggerStrategy.isToBeTriggered(ctx.get())){
-            eventExtractor.process(ctx);
+            Collection<Event> results = eventExtractor.process(ctx);
+            if(results != null) {
+                if (filter != null) {
+                    results = results.stream()
+                        .filter(event -> filter.apply(event, ctx.get()))
+                        .collect(Collectors.toList());
+                }
+                results.forEach(ctx::collect);
+            }
         }
     }
     
     public static class Builder {
         private TriggerStrategy triggerStrategy;
-        private EventExtractor     eventExtractor;
-    
+        private EventExtractor  eventExtractor;
+        private EventFilter     filter;
+        
         public Builder withTriggerStrategy(TriggerStrategy triggerStrategy){
             this.triggerStrategy = triggerStrategy;
             return this;
@@ -62,11 +78,15 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
             this.eventExtractor = eventExtractor;
             return this;
         }
+        public Builder withFilter(EventFilter filter){
+            this.filter = filter;
+            return this;
+        }
         public TriggerEvaluationFunction build(){
             assert triggerStrategy != null;
             assert eventExtractor != null;
-
-            return new TriggerEvaluationFunction(triggerStrategy, eventExtractor);
+            
+            return new TriggerEvaluationFunction(triggerStrategy, eventExtractor, filter);
         }
     }
 }

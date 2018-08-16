@@ -5,6 +5,7 @@ import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * Processes triggered {@link TypedValues} and eventually extracts resulting {@link Event}s
@@ -14,11 +15,11 @@ import java.io.Serializable;
  */
 @FunctionalInterface
 public interface EventExtractor extends Serializable {
-
+    
     /**
      * Extract the resulting {@link Event}s after Trigger was activated
-     *
-     * @param ctx contains the incoming {@link TypedValues} and a collect method to pass resulting {@link Event}s over
+     * @param ctx contains the incoming {@link TypedValues}
+     * @return ArrayList of resulting {@link Event}s
      */
-    void process(EvaluationContext ctx);
+    Collection<Event> process(EvaluationContext ctx);
 }
