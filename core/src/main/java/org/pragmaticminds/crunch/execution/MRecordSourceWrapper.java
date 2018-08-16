@@ -42,7 +42,7 @@ class MRecordSourceWrapper extends GraphStage<SourceShape<MRecord>> {
     }
 
     @Override
-    @SuppressWarnings("squid:S1171")
+    @SuppressWarnings({"squid:S1171", "squid:S1188"}) // Use Init Block and keep it inline ( to stick to Akka Standards)
     public GraphStageLogic createLogic(Attributes inheritedAttributes) {
         return new GraphStageLogic(shape()) {
             // All state MUST be inside the GraphStageLogic,

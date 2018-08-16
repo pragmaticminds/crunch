@@ -235,7 +235,6 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
     /**
      * For those {@link EvaluationFunction} that have a timeout
      */
-    @Override
     public void onTimeout() {
         if(innerContext == null || innerContext.get() == null){
             return;

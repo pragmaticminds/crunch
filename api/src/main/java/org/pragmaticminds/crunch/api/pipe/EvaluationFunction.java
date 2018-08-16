@@ -10,20 +10,31 @@ import java.io.Serializable;
  * It has a eval function for processing an {@link EvaluationContext}, which has an incoming value and handles outgoing
  * results for the {@link EvaluationFunction}.
  *
+ * {@link #init()} and {@link #close()} methods added, thus usage of default.
+ *
+ * @author julian
  * @author Erwin Wagasow
  * created by Erwin Wagasow on 03.08.2018
  */
 @FunctionalInterface
 public interface EvaluationFunction extends Serializable {
+
+    /**
+     * Is called befor start of evaluation.
+     */
+    default void init() { /* Does nothing by default. */ }
+
     /**
      * evaluates the incoming {@link TypedValues} from the {@link EvaluationContext} and passes the results
      * back to the collect method of the context
      * @param ctx contains incoming data and a collector for the outgoing data
      */
     void eval(EvaluationContext ctx) throws InterruptedException;
-    
+
     /**
-     * For those {@link EvaluationFunction} that have a timeout
+     * Is called after last value is evaluated (if ever).
      */
-    default void onTimeout(){ /* not implemented by default */ }
+    default void close() { /* Does nothing by default. */ }
+
+
 }

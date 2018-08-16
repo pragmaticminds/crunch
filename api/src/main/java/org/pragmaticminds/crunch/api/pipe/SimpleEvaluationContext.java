@@ -44,7 +44,7 @@ public class SimpleEvaluationContext extends EvaluationContext {
     public void collect(Event event) {
         events.add(event);
     }
-    
+
     /**
      * Creates a Timer that is boxed in {@link Timer} class object
      *
@@ -56,7 +56,7 @@ public class SimpleEvaluationContext extends EvaluationContext {
         return new ReferenceTimer() {
             @Override
             public void onTimeout() {
-                evaluationFunction.onTimeout();
+                throw new UnsupportedOperationException();
             }
         };
     }

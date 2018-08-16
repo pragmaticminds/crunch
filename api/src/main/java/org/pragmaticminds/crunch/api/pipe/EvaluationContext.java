@@ -35,7 +35,7 @@ public abstract class EvaluationContext implements Serializable {
     public EventBuilder getEventBuilder(){
         return EventBuilder.anEvent();
     }
-    
+
     /**
      * Creates a Timer that is boxed in {@link Timer} class object
      * @param evaluationFunction
