@@ -28,7 +28,6 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
     
     /**
      * Main constructor of this class
-     * //@param supplier simplifies the incoming data for the {@link TriggerStrategy}
      * @param triggerStrategy decides on the base of the simplified {@link Supplier} result, whether to
      *                        pass the incoming data to the {@link EventExtractor} or not
      * @param eventExtractor When the {@link TriggerStrategy} triggered further processing this class processes and

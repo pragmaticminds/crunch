@@ -20,7 +20,7 @@ import java.io.Serializable;
 public interface EvaluationFunction extends Serializable {
 
     /**
-     * Is called befor start of evaluation.
+     * Is called before start of evaluation.
      */
     default void init() { /* Does nothing by default. */ }
 
@@ -29,8 +29,8 @@ public interface EvaluationFunction extends Serializable {
      * back to the collect method of the context
      * @param ctx contains incoming data and a collector for the outgoing data
      */
-    void eval(EvaluationContext ctx) throws InterruptedException;
-
+    void eval(EvaluationContext ctx);
+    
     /**
      * Is called after last value is evaluated (if ever).
      */

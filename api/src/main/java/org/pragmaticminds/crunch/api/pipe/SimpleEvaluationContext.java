@@ -3,7 +3,6 @@ package org.pragmaticminds.crunch.api.pipe;
 import org.pragmaticminds.crunch.api.pipe.timer.ReferenceTimer;
 import org.pragmaticminds.crunch.api.pipe.timer.Timer;
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.util.ArrayList;
@@ -16,15 +15,15 @@ import java.util.List;
  * created by Erwin Wagasow on 03.08.2018
  */
 public class SimpleEvaluationContext extends EvaluationContext {
-
-    private final TypedValues      values;
+    
+    private final MRecord          values;
     private       ArrayList<Event> events;
-
+    
     /**
      * Simple constructor, getting the values to be processed by a {@link EvaluationFunction}
      * @param values to be processed
      */
-    public SimpleEvaluationContext(TypedValues values) {
+    public SimpleEvaluationContext(MRecord values) {
         this.values = values;
         this.events = new ArrayList<>();
     }
@@ -48,7 +47,7 @@ public class SimpleEvaluationContext extends EvaluationContext {
     /**
      * Creates a Timer that is boxed in {@link Timer} class object
      *
-     * @param evaluationFunction
+     * @param evaluationFunction that holds the onTimeout method to be called, when timeout is raised
      * @return a Timer boxed in {@link Timer} class object
      */
     @Override

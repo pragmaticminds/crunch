@@ -60,7 +60,7 @@ public class InfluxDBSink implements EvaluationFunction {
 
 
     @Override
-    public void eval(EvaluationContext ctx) throws InterruptedException {
+    public void eval(EvaluationContext ctx) {
         MRecord record = ctx.get();
         TypedValues values;
         if (record.getClass().isAssignableFrom(UntypedValues.class)) {

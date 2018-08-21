@@ -30,6 +30,7 @@ public class TriggerEvaluationFunctionTest {
         Map<String, Value> values = new HashMap<>();
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
         List<Event> resultEventList;
+        
         try {
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
             resultEventList = context.getEvents();

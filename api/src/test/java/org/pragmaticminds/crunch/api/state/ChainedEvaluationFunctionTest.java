@@ -120,7 +120,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
         // always successful processing EvaluationFunction
         prototypeFunction = new EvaluationFunction() {
             @Override
-            public void eval(EvaluationContext ctx) throws InterruptedException {
+            public void eval(EvaluationContext ctx) {
                 ctx.collect(event);
             }
         };
@@ -128,7 +128,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
         // no resulting Event
         prototypeFunctionNoResult = new EvaluationFunction() {
             @Override
-            public void eval(EvaluationContext ctx) throws InterruptedException {
+            public void eval(EvaluationContext ctx) {
                 /* do nothing */
             }
         };

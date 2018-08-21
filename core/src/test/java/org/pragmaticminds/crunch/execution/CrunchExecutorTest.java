@@ -54,7 +54,7 @@ public class CrunchExecutorTest {
 
     private static class MyEvaluationFunction implements EvaluationFunction {
         @Override
-        public void eval(EvaluationContext ctx) throws InterruptedException {
+        public void eval(EvaluationContext ctx) {
             ctx.collect(EventBuilder.anEvent()
                     .withEvent("success")
                     .withTimestamp(0L)

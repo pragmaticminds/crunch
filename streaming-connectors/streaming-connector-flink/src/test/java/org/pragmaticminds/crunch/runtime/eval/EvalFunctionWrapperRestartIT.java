@@ -23,13 +23,12 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * TODO write comment
- *
  * @author julian
  * Created by julian on 17.11.17
  */
@@ -112,7 +111,7 @@ public class EvalFunctionWrapperRestartIT {
         public void run(SourceContext<MRecord> sourceContext) throws Exception {
             while (counter.get() < input.size()) {
                 MRecord values = input.get(counter.getAndIncrement());
-                Thread.sleep(10);
+                TimeUnit.MILLISECONDS.sleep(10);
                 sourceContext.collect(values);
             }
             sourceContext.close();
