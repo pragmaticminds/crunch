@@ -1,7 +1,7 @@
 # Readme
 Please read this before asking questions!!!
 
-## Dokumentation
+## Documentation
 
 Doku is made in markdown and is automatically deployt to:
 http://crunch.pragmaticindustries.de/
@@ -11,6 +11,11 @@ New files are placed in
 src/site/markdwon/...
 ```
 If new sections are defined please add them in the `site.xml` and refer to the files as `.html` as they will be compiled automatically.
+
+## Other documents
+### Modules
+
+[Crunch API](api/README.MD)
 
 ## Release
 As this is a "lib" project which is used by other projects frequently it is important to do releases on a regular basis (and also to increment the version numbers then).

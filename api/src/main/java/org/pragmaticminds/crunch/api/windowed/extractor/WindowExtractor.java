@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * Extracts resulting {@link Collection} of {@link Event} from a {@link Collection} of {@link MRecord} for
+ * Extracts resulting {@link Event}s from {@link MRecord}s for
  * {@link EvaluationFunction}s which are using this interface.
  *
  * @author Erwin Wagasow

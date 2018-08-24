@@ -38,7 +38,7 @@ public class WindowedEvaluationFunctionTest implements Serializable {
             // set extractor
             .extractor(new MaxWindowExtractor())
             // set filter
-            .filter((event, records) -> true)
+            .filter((event, record) -> true)
             .build();
     
         // create test processing data
