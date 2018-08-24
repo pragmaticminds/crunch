@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api;
 import org.pragmaticminds.crunch.api.events.EventHandler;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.EventBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,20 @@ public class EvalFunctionTestTool {
      */
     public EvalFunctionTestTool(Class<? extends EvalFunction> evalFunctionClass) throws IllegalAccessException,
             InstantiationException {
-        this.eventHandler = event -> events.addEvent(event);
+        this.eventHandler = new EventHandler() {
+
+            @Override
+            public EventBuilder getBuilder() {
+                return EventBuilder.anEvent()
+                        .withSource("");
+            }
+
+            @Override
+            public void fire(Event event) {
+                events.addEvent(event);
+            }
+
+        };
 
         // create instance of the evaluation class
         evalFunction = evalFunctionClass.newInstance();
