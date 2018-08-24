@@ -25,6 +25,7 @@ condition is met. There for that implementation has the following members as a t
 #### Instantiation:
 
 ```
+
 TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
             // set the trigger strategy
             .withTriggerStrategy(TriggerStrategies.onBecomeTrue())
@@ -33,7 +34,9 @@ TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
             // set the filter (optional)
             .withFilter(EventFilters.onValueChanged(Suppliers.doubleChannel("T")))
             .build();
+            
 ```
+
 In this case the [TriggerStrategy](TRIGGER_STRATEGY.html) \"onBecomeTrue" is used. This strategy triggers when a value that 
 was false in the last message is now true.
 
