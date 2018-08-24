@@ -12,7 +12,6 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 27.07.2018
  */
-@FunctionalInterface
 public interface Supplier<T> extends Serializable {
     
     /**
@@ -21,4 +20,10 @@ public interface Supplier<T> extends Serializable {
      * @return a result of T
      */
     T extract(MRecord values);
+    
+    /**
+     * All suppliers have to be identifiable
+     * @return String identifier of the {@link Supplier} implementation
+     */
+    String getIdentifier();
 }

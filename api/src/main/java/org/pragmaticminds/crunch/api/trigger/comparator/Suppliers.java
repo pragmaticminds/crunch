@@ -24,7 +24,7 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Boolean> booleanChannel(String name) {
-            return values -> values.getBoolean(name);
+            return new NamedSupplier<>(name, values -> values.getBoolean(name));
         }
         
         /**
@@ -34,7 +34,7 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Double> doubleChannel(String name) {
-            return values -> values.getDouble(name);
+            return new NamedSupplier<>(name, values -> values.getDouble(name));
         }
         
         /**
@@ -44,7 +44,7 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Long> longChannel(String name) {
-            return values -> values.getLong(name);
+            return new NamedSupplier<>(name, values -> values.getLong(name));
         }
         
         /**
@@ -54,7 +54,7 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Date> dateChannel(String name) {
-            return values -> values.getDate(name);
+            return new NamedSupplier<>(name, values -> values.getDate(name));
         }
         
         /**
@@ -64,7 +64,7 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<String> stringChannel(String name) {
-            return values -> values.getString(name);
+            return new NamedSupplier<>(name, values -> values.getString(name));
         }
     }
     
@@ -81,7 +81,8 @@ public class Suppliers {
          * @return a {@link Supplier} that combines both supplier values
          */
         public static Supplier<Boolean> and(Supplier<Boolean> s1, Supplier<Boolean> s2){
-            return values -> s1.extract(values) && s2.extract(values);
+            String identifier = String.format("and(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> s1.extract(values) && s2.extract(values));
         }
     
         /**
@@ -91,7 +92,8 @@ public class Suppliers {
          * @return a {@link Supplier} that combines both supplier values
          */
         public static Supplier<Boolean> or(Supplier<Boolean> s1, Supplier<Boolean> s2){
-            return values -> s1.extract(values) || s2.extract(values);
+            String identifier = String.format("or(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> s1.extract(values) || s2.extract(values));
         }
     
         /**
@@ -100,7 +102,8 @@ public class Suppliers {
          * @return the inverted result of the inner {@link Supplier}
          */
         public static Supplier<Boolean> not(Supplier<Boolean> supplier){
-            return values -> !supplier.extract(values);
+            String identifier = String.format("not(%s)", supplier.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> !supplier.extract(values));
         }
     }
     
@@ -118,7 +121,8 @@ public class Suppliers {
          */
         @SuppressWarnings("squid:S1221") // using of the name equal
         public static Supplier<Boolean> equal(String expected, Supplier<String> supplier){
-            return values -> expected.equals(supplier.extract(values));
+            String identifier = String.format("equal(\"%s\",%s)", expected, supplier.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> expected.equals(supplier.extract(values)));
         }
     
         /**
@@ -129,7 +133,8 @@ public class Suppliers {
          */
         @SuppressWarnings("squid:S1221") // using of the name equal
         public static Supplier<Boolean> equal(Supplier<String> s1, Supplier<String> s2){
-            return values -> s1.extract(values).equals(s2.extract(values));
+            String identifier = String.format("equal(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> s1.extract(values).equals(s2.extract(values)));
         }
     
         /**
@@ -139,7 +144,8 @@ public class Suppliers {
          * @return A {@link Supplier} that is matching values
          */
         public static Supplier<Boolean> match(String regex, Supplier<String> supplier){
-            return values -> supplier.extract(values).matches(regex);
+            String identifier = String.format("match(\"%s\",%s)", regex, supplier.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> supplier.extract(values).matches(regex));
         }
     
         /**
@@ -149,7 +155,8 @@ public class Suppliers {
          * @return A {@link Supplier} that is checked for matching on its values
          */
         public static Supplier<Boolean> contains(String string, Supplier<String> supplier){
-            return values -> supplier.extract(values).contains(string);
+            String identifier = String.format("contains(\"%s\",%s)", string, supplier.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> supplier.extract(values).contains(string));
         }
     
         /**
@@ -158,7 +165,8 @@ public class Suppliers {
          * @return A {@link Supplier} that is extracting the length of the {@link String}s
          */
         public static Supplier<Long> length(Supplier<String> supplier){
-            return values -> (long) supplier.extract(values).length();
+            String identifier = String.format("length(%s)", supplier.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> (long) supplier.extract(values).length());
         }
     }
     

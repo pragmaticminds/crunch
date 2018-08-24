@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.trigger.strategy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.trigger.comparator.NamedSupplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.BooleanValue;
 import org.pragmaticminds.crunch.api.values.dates.Value;
@@ -41,28 +42,28 @@ public class TriggerStrategiesTest {
     
     @Test
     public void isToBeTriggeredOnTruePositive() {
-        TriggerStrategy strategy = onTrue(values -> true);
+        TriggerStrategy strategy = onTrue(new NamedSupplier<>("true", values -> true));
         boolean result = strategy.isToBeTriggered(null);
         Assert.assertTrue(result);
     }
  
     @Test
     public void isToBeTriggeredOnTrueNegative() {
-        TriggerStrategy strategy = onTrue(values -> false);
+        TriggerStrategy strategy = onTrue(new NamedSupplier<>("false", values -> false));
         boolean result = strategy.isToBeTriggered(null);
         Assert.assertFalse(result);
     }
  
     @Test
     public void isToBeTriggeredOnFalsePositive() {
-        TriggerStrategy strategy = onFalse(values -> false);
+        TriggerStrategy strategy = onFalse(new NamedSupplier<>("false", values -> false));
         boolean result = strategy.isToBeTriggered(null);
         Assert.assertTrue(result);
     }
  
     @Test
     public void isToBeTriggeredOnFalseNegative() {
-        TriggerStrategy strategy = onFalse(values -> true);
+        TriggerStrategy strategy = onFalse(new NamedSupplier<>("true", values -> true));
         boolean result = strategy.isToBeTriggered(null);
         Assert.assertFalse(result);
     }

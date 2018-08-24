@@ -294,7 +294,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
 
     <!--Reporting for Maven Site Plugin-->
@@ -315,5 +314,4 @@
             </plugin>
         </plugins>
     </reporting>
-
 </project>

@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.windowed;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.trigger.comparator.NamedSupplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
@@ -37,7 +38,7 @@ public class WindowsTest {
     
     @Test
     public void testBitActive() {
-        RecordWindow recordWindow = Windows.bitActive(values -> values.getBoolean("flag"));
+        RecordWindow recordWindow = Windows.bitActive(new NamedSupplier<>("flag", values -> values.getBoolean("flag")));
         
         boolean result = recordWindow.inWindow(valuesTrue);
         Assert.assertTrue(result);
