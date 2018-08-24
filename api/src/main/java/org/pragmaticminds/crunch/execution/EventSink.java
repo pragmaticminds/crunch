@@ -5,7 +5,7 @@ import org.pragmaticminds.crunch.events.Event;
 import java.io.Serializable;
 
 /**
- * Callback Interface to be used in conjunction with {@link CrunchExecutor}.
+ * Callback Interface to be used in conjunction with crunch-core.
  *
  * @author julian
  * Created by julian on 15.08.18

@@ -7,7 +7,9 @@ import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.wire.DocumentContext;
 import net.openhft.chronicle.wire.Wire;
 import org.pragmaticminds.crunch.chronicle.consumers.ConsumerManager;
+import org.pragmaticminds.crunch.chronicle.consumers.JdbcConsumerManager;
 
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
@@ -45,7 +47,7 @@ public class ChronicleConsumer<T> implements AutoCloseable {
      * @param manager ConsumerManager to manage Consumers
      * @param deserializer Deserializer to use
      */
-    public ChronicleConsumer(Properties properties, ConsumerManager manager, Deserializer<T> deserializer) {
+    ChronicleConsumer(Properties properties, ConsumerManager manager, Deserializer<T> deserializer) {
         Preconditions.checkArgument(properties.containsKey(CHRONICLE_PATH_KEY),
                 "No chronicle path given.");
         Preconditions.checkArgument(properties.containsKey(CHRONICLE_CONSUMER_KEY),
@@ -75,6 +77,26 @@ public class ChronicleConsumer<T> implements AutoCloseable {
             tailer.moveToIndex(offset);
         }
         currentOffset = tailer.index();
+    }
+
+    /**
+     * Builder for a Chronicle Consumer.
+     *
+     * @return New builders
+     */
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+
+    /**
+     * Package private getters for testing
+     */
+    ConsumerManager getManager() {
+        return manager;
+    }
+
+    Deserializer<T> getDeserializer() {
+        return deserializer;
     }
 
     /**
@@ -109,5 +131,58 @@ public class ChronicleConsumer<T> implements AutoCloseable {
     @Override
     public void close() throws Exception {
         chronicleQueue.close();
+    }
+
+
+    /**
+     * Internal Builder for the Chronicle Consumer
+     */
+    public static final class Builder<T> {
+
+        private String path;
+        private String name;
+        private ConsumerManager manager;
+        private Deserializer<T> deserializer;
+
+        private Builder() {
+            // Nothing needed here
+        }
+
+        public Builder<T> withPath(String path) {
+            this.path = path;
+            return this;
+        }
+
+        public Builder<T> withConsumerName(String consumerName) {
+            this.name = consumerName;
+            return this;
+        }
+
+        /**
+         * Optional. Otherwise a {@link JdbcConsumerManager} will be used as default.
+         *
+         * @param manager manager to use
+         * @return this instance
+         */
+        public Builder<T> withManager(ConsumerManager manager) {
+            this.manager = manager;
+            return this;
+        }
+
+        public Builder<T> withDeserializer(Deserializer<T> deserializer) {
+            this.deserializer = deserializer;
+            return this;
+        }
+
+        public ChronicleConsumer<T> build() {
+            Properties properties = new Properties();
+            properties.put(CHRONICLE_PATH_KEY, path);
+            properties.put(CHRONICLE_CONSUMER_KEY, name);
+            if (manager == null) {
+                return new ChronicleConsumer<>(properties, new JdbcConsumerManager(Paths.get(path)), deserializer);
+            } else {
+                return new ChronicleConsumer<>(properties, manager, deserializer);
+            }
+        }
     }
 }

@@ -14,9 +14,19 @@
         <module>streaming-connector-base</module>
         <module>streaming-chronicle</module>
     </modules>
+
     <properties>
         <kafka.version>0.11.0.1</kafka.version>
     </properties>
+
+    <dependencies>
+        <!--Internal Dependency-->
+        <dependency>
+            <groupId>org.pragmaticminds.crunch</groupId>
+            <artifactId>crunch-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
 
 </project>

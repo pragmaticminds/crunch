@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author julian
  * Created by julian on 15.08.18
  */
-interface MRecordSource extends Serializable {
+public interface MRecordSource extends Serializable {
 
     /**
      * Request the next record
