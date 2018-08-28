@@ -9,6 +9,7 @@ import net.openhft.chronicle.wire.Wire;
 import org.pragmaticminds.crunch.chronicle.consumers.ConsumerManager;
 import org.pragmaticminds.crunch.chronicle.consumers.JdbcConsumerManager;
 
+import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -18,13 +19,13 @@ import java.util.Properties;
  * @author julian
  * Created by julian on 16.08.18
  */
-public class ChronicleConsumer<T> implements AutoCloseable {
+public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
     public static final String CHRONICLE_PATH_KEY = "chronicle.path";
     public static final String CHRONICLE_CONSUMER_KEY = "chronicle.consumer";
 
-    private final ChronicleQueue chronicleQueue;
-    private final ExcerptTailer tailer;
+    private final transient ChronicleQueue chronicleQueue;
+    private final transient ExcerptTailer tailer;
     private final ConsumerManager manager;
     private final String consumer;
     private final Deserializer<T> deserializer;

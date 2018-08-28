@@ -1,12 +1,14 @@
 package org.pragmaticminds.crunch.chronicle.consumers;
 
+import java.io.Serializable;
+
 /**
  * Stores Offsets and returns them on request
  *
  * @author julian
  * Created by julian on 16.08.18
  */
-public interface ConsumerManager extends AutoCloseable {
+public interface ConsumerManager extends AutoCloseable, Serializable {
 
     /**
      * Returns the offset associated with the given consumer

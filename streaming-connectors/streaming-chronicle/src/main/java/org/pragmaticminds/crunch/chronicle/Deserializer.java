@@ -1,12 +1,14 @@
 package org.pragmaticminds.crunch.chronicle;
 
+import java.io.Serializable;
+
 /**
  * An interface for converting bytes into object.
  *
  * @param <T> Type to be deserialized to
  * @author julian
  */
-public interface Deserializer<T> extends AutoCloseable {
+public interface Deserializer<T> extends AutoCloseable, Serializable {
 
     /**
      * Convert {@code data} into a byte array.

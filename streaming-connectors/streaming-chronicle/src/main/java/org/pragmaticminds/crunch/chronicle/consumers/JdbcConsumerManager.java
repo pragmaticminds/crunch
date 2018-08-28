@@ -24,11 +24,11 @@ public class JdbcConsumerManager implements ConsumerManager {
     private static final String GET_OFFSET =
             "SELECT LAST_OFFSET FROM CONSUMER WHERE CONSUMER = ?;";
 
-    final Connection connection;
+    final transient Connection connection;
 
     // Prepared Statements
-    private PreparedStatement upsertStatement;
-    private PreparedStatement getOffsetStatement;
+    private transient PreparedStatement upsertStatement;
+    private transient PreparedStatement getOffsetStatement;
 
     /**
      * Creates a new manager.

@@ -6,6 +6,8 @@ import org.pragmaticminds.crunch.execution.MRecordSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+
 /**
  * Wrapper around the {@link ChronicleConsumer} exposing a {@link MRecordSource} interface for usage in Pipelines.
  * <p>
@@ -74,7 +76,7 @@ public class ChronicleSource implements MRecordSource {
     /**
      * Factory for testing.
      */
-    interface ChronicleConsumerFactory {
+    interface ChronicleConsumerFactory extends Serializable {
 
         ChronicleConsumer<MRecord> create();
 
