@@ -13,6 +13,13 @@
     <description>Contains the Connections to a Chronicle Queue</description>
 
     <dependencies>
+        <!--Internal-->
+        <dependency>
+            <groupId>org.pragmaticminds.crunch</groupId>
+            <artifactId>crunch-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
         <!--Chronicle-->
         <dependency>
             <groupId>net.openhft</groupId>
