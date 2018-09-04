@@ -7,7 +7,10 @@ import java.io.Serializable;
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 19.10.2017
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public interface AnnotatedEvalFunction<T> extends Serializable {
     /**
      * is called before the processing of records begins, to initialize the inner structure of the {@link EvalFunction}

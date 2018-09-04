@@ -12,7 +12,10 @@ import java.lang.annotation.Target;
  * Futhermore all classes have to implement the EvalFunctions interface.
  * <p>
  * Created by julian on 13.02.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface EvaluationFunction {

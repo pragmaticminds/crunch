@@ -6,7 +6,10 @@ import java.io.Serializable;
 
 /**
  * Represents an FunctionParameter of the Signature
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class FunctionParameter implements Serializable {
 
     private static final long serialVersionUID = 1L;

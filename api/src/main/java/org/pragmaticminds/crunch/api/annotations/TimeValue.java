@@ -11,7 +11,10 @@ import java.lang.annotation.Target;
  *
  * @author kerstin
  * Created by kerstin on 15.11.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface TimeValue {

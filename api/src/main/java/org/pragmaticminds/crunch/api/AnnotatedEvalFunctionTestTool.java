@@ -16,7 +16,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * This class is used to test {@link EvalFunction} classes for their functionality
  * <p>
  * Created by Erwin Wagasow on 22.06.2017.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class AnnotatedEvalFunctionTestTool {
 
     private List<Object> parameterValueHolder = new ArrayList<>();

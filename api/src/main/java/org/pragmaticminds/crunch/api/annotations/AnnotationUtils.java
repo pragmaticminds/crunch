@@ -15,7 +15,10 @@ import java.util.List;
  *
  * @author julian
  * Created by julian on 04.04.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class AnnotationUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationUtils.class);

@@ -18,7 +18,10 @@ import java.util.regex.Pattern;
  * @author kerstin
  * @author Erwin Wagasow
  * Created by kerstin on 20.06.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @EvaluationFunction(evaluationName = "REGEX_FIND2", dataType = DataType.STRING, description = "Uses regex <b>find</b> on a string channel.")
 public class RegexFind2 implements AnnotatedEvalFunction<String>, Serializable {
 

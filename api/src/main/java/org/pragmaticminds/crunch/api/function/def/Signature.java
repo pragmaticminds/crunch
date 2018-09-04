@@ -11,7 +11,10 @@ import java.util.List;
  * and their order.
  * <p>
  * Created by julian on 14.02.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class Signature implements Serializable {
 
     private static final long serialVersionUID = 1L;

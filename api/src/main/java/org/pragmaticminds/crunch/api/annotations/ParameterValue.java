@@ -12,7 +12,10 @@ import java.lang.annotation.Target;
  * This FunctionParameter is injected one (before the Setup Method is called).
  * <p>
  * Created by julian on 13.02.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ParameterValue {

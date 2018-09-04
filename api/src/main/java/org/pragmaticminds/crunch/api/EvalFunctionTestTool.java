@@ -12,7 +12,10 @@ import java.util.Map;
  * This class is used to test {@link EvalFunction} classes for their functionality
  * <p>
  * Created by Erwin Wagasow on 22.06.2017.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @SuppressWarnings("squid:S1612") // Use Lambdas for Handler, no method references
 public class EvalFunctionTestTool {
 
@@ -121,7 +124,7 @@ public class EvalFunctionTestTool {
 
             stringBuilder.append("function outputs: \n");
             for (Object o : this.getOutputs()) {
-                stringBuilder.append(o).append("").append("\n");
+                stringBuilder.append(o).append("\n");
             }
             stringBuilder.append("function events: \n");
             for (Event event : this.getEvents()) {

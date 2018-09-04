@@ -10,7 +10,10 @@ import java.io.Serializable;
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 10.08.2018
+ *
+ * TODO remove this as it is too complex
  */
+@Deprecated
 @FunctionalInterface
 public interface TimerFactory extends Serializable {
     

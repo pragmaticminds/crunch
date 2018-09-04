@@ -12,7 +12,10 @@ import java.util.Map;
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 19.10.2017
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public abstract class EvalFunction<T> implements Serializable {
 
     private transient EventHandler eventHandler;

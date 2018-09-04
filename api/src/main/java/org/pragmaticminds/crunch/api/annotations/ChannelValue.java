@@ -11,7 +11,10 @@ import java.lang.annotation.Target;
  * This Annotation can be used on Fields of specific Type in an {@code EvaluationFunction}.
  * It indicates that the field will getValue the channel value injected.
  * Created by julian on 13.02.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ChannelValue {

@@ -26,7 +26,10 @@ import java.util.stream.Collectors;
  *
  * @author julian
  * Created by julian on 05.11.17
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @SuppressWarnings("squid:S1319") // Use HashMap instead of map to be serializable
 public class EvalFunctionCall implements Serializable {
 

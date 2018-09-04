@@ -9,7 +9,10 @@ import java.lang.annotation.Target;
  * Collection wrapper for ResultType of EventType object annotations
  * <p>
  * Created by k3r5t1n on 4/7/17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ResultTypes {

@@ -19,7 +19,10 @@ import java.util.stream.Collectors;
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 20.10.2017
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class AnnotatedEvalFunctionWrapper<T> extends EvalFunction<T> {
     private static final transient Logger logger = LoggerFactory.getLogger(AnnotatedEvalFunctionWrapper.class);
     private final String name;

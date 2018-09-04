@@ -17,7 +17,10 @@ import java.util.regex.Pattern;
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 18.10.2017
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class RegexFind extends EvalFunction<String> {
 
     private Pattern pattern;

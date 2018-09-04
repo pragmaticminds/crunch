@@ -9,7 +9,10 @@ import java.io.Serializable;
  * It consists of a name of the function and a signature and a return type.
  * <p>
  * Created by julian on 14.02.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class FunctionDef implements Serializable {
 
     private DataType outputDataType;

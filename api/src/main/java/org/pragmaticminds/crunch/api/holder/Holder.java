@@ -13,7 +13,10 @@ import java.io.Serializable;
  *
  * @author julian
  * Created by julian on 17.02.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class Holder<T> implements Serializable {
 
     private transient T value;

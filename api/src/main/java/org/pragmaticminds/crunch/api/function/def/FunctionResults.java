@@ -13,7 +13,10 @@ import java.util.List;
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 23.05.2017.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class FunctionResults implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -9,7 +9,10 @@ import java.io.Serializable;
  * This means all names of columns and their datatypes.
  * <p>
  * Created by julian on 07.04.17.
+ *
+ * @deprecated Part of the old API
  */
+@Deprecated
 public class FunctionResult implements Serializable {
 
     private static final long serialVersionUID = 1L;
