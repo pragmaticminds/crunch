@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Configuring Object for one State in the {@link ChainedEvaluationFunction}.
+ * Configuring Object for one State in the {@link MultiStepEvaluationFunction}.
  * Contains all necessary information as DTO.
  *
  * @author julian

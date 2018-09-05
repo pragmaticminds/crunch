@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
-import org.pragmaticminds.crunch.api.pipe.timer.ReferenceTimer;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 
@@ -55,12 +54,6 @@ public class EvaluationProcessFunction extends ProcessFunction<MRecord, Event> {
     public void processElement(MRecord value, Context ctx, Collector<Event> out) throws Exception {
         // create evaluation context
         EvaluationContext evaluationContext = CollectorEvaluationContext.builder()
-            .withTimerFactory(evaluationFunction -> new ReferenceTimer() {
-                @Override
-                public void onTimeout() {
-                    throw new UnsupportedOperationException();
-                }
-            })
             .withValue(value)
             .withOut(out)
             .build();

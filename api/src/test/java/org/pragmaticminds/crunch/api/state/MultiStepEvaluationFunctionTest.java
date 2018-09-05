@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * This test covers 4 cases of processing {@link TypedValues} by a {@link ChainedEvaluationFunction}.
+ * This test covers 4 cases of processing {@link TypedValues} by a {@link MultiStepEvaluationFunction}.
  * Case 1: no timeouts are set
  * Case 2: timeouts are set but should not be raised while processing
  * Case 3: timeouts are set and a state timeout should be raised
@@ -26,13 +26,13 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 09.08.2018
  */
-public class ChainedEvaluationFunctionTest implements Serializable {
+public class MultiStepEvaluationFunctionTest implements Serializable {
 
     private List<StateConfig> stateFactories;
     private List<StateConfig> stateFactoriesWithStateTimeoutsRaised;
     private List<StateConfig> stateFactoriesWithOverallTimeoutsRaised;
-    private StateErrorExtractor                                        errorExtractor;
-    private ChainProcessingCompleteExtractor                           stateCompleteExtractor;
+    private ErrorExtractor errorExtractor;
+    private EvaluationCompleteExtractor stateCompleteExtractor;
     private EvaluationFunction                                         prototypeFunction;
     private Long                                                       overallTimeout;
     private Event                                                      errorStateEvent;
@@ -94,8 +94,8 @@ public class ChainedEvaluationFunctionTest implements Serializable {
                 .build();
 
         // for successful processing
-        long stateTimeout = 100L;
-        overallTimeout = 10000L;
+        long stateTimeout = 10_000L;
+        overallTimeout = 10_000L;
         // for timeouts raised
         long stateTimeout10ms = 10L;
 
@@ -120,12 +120,12 @@ public class ChainedEvaluationFunctionTest implements Serializable {
         CloneStateEvaluationFunctionFactory cloneFactory = CloneStateEvaluationFunctionFactory.builder()
                 .withPrototype(prototypeFunction)
                 .build();
-        StateConfig tuple = new StateConfig("alias", cloneFactory, 0L);
+        StateConfig statConfig = new StateConfig("alias", cloneFactory, 10_000L);
         // add 4 times the same EvaluationFunction
-        stateFactories.add(tuple);
-        stateFactories.add(tuple);
-        stateFactories.add(tuple);
-        stateFactories.add(tuple);
+        stateFactories.add(statConfig);
+        stateFactories.add(statConfig);
+        stateFactories.add(statConfig);
+        stateFactories.add(statConfig);
 
         // EvaluationFunctionStateFactories for the failed processing on stateTimeout raised
         stateFactoriesWithStateTimeoutsRaised = new ArrayList<>();
@@ -141,19 +141,19 @@ public class ChainedEvaluationFunctionTest implements Serializable {
                 .withPrototype(prototypeFunctionNoResult)
                 .build();
         // add single EvaluationFunctionStateFactory
-        stateFactoriesWithOverallTimeoutsRaised.add(new StateConfig("alias", cloneFactoryWithOverallTimeoutsRaised, stateTimeout));
+        stateFactoriesWithOverallTimeoutsRaised.add(new StateConfig("alias", cloneFactoryWithOverallTimeoutsRaised, stateTimeout+20_000L));
 
         // extractor on timeouts and exceptions
-        errorExtractor = (StateErrorExtractor) (events, ex, context) -> context.collect(errorEvent);
+        errorExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(errorEvent);
 
         // extractor on successful processing
-        stateCompleteExtractor = (ChainProcessingCompleteExtractor) (events, context) -> context.collect(completeEvent);
+        stateCompleteExtractor = (EvaluationCompleteExtractor) (events, context) -> context.collect(completeEvent);
     }
 
     @Test
     public void evalSimpleNoTimeouts() { // -> processing should be successful with no timers set
-        // create instance of the ChainedEvaluationFunction with parameters for this test
-        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
+        // create instance of the MultiStepEvaluationFunction with parameters for this test
+        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
                 .withErrorExtractor(errorExtractor)
                 .withStateCompleteExtractor(stateCompleteExtractor);
         for (StateConfig stateFactory : stateFactories) {
@@ -161,7 +161,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
                     stateFactory.getStateTimeout());
         }
 
-        ChainedEvaluationFunction stateMachine = builder.build();
+        MultiStepEvaluationFunction stateMachine = builder.build();
 
                 SimpleEvaluationContext context;
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
@@ -187,7 +187,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
     @Test
     public void evalSimpleWithTimeouts() { // -> processing should be successful while having set up timers
-        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
+        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
                 .withErrorExtractor(errorExtractor)
                 .withOverallTimeoutMs(overallTimeout)
                 .withStateCompleteExtractor(stateCompleteExtractor);
@@ -196,7 +196,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
                     stateFactory.getStateTimeout());
         }
 
-        ChainedEvaluationFunction statemachineWithTimeouts = builder.build();
+        MultiStepEvaluationFunction statemachineWithTimeouts = builder.build();
 
         SimpleEvaluationContext context;
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
@@ -222,10 +222,10 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
     @Test
     public void evalWithStateTimeoutRaised() { // -> a state timeout should be raised
-        StateErrorExtractor errorStateExtractor = (StateErrorExtractor) (events, ex, context) -> context.collect(
+        ErrorExtractor errorStateExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(
                 errorStateEvent);
 
-        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
+        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
                 .withErrorExtractor(errorStateExtractor)
                 .withOverallTimeoutMs(overallTimeout)
                 .withStateCompleteExtractor(stateCompleteExtractor);
@@ -234,10 +234,10 @@ public class ChainedEvaluationFunctionTest implements Serializable {
                     stateFactory.getStateTimeout());
         }
 
-        ChainedEvaluationFunction statemachineWithStateTimeoutsRaised = builder.build();
+        MultiStepEvaluationFunction statemachineWithStateTimeoutsRaised = builder.build();
 
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-            // the first call is to set up the timers
+            // the timersNotSet call is to set up the timers
             // prepare
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues1);
             // execute
@@ -245,7 +245,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
             // now the second call should trigger a state timeout
             // prepare
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(null);
+            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues1.getTimestamp()+10_000L, typedValues1.getValues()));
             // execute
             statemachineWithStateTimeoutsRaised.eval(context2); // second time, so that error can be passed
             // check
@@ -258,10 +258,10 @@ public class ChainedEvaluationFunctionTest implements Serializable {
     @Test
     public void evalWithOverallTimeoutRaised() { // -> a overall timeout should be raised
         // prepare a error extractor
-        StateErrorExtractor errorOverallExtractor = (StateErrorExtractor) (events, ex, context) -> context.collect(
+        ErrorExtractor errorOverallExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(
             errorOverallEvent);
 
-        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
+        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
                 .withErrorExtractor(errorOverallExtractor)
                 .withOverallTimeoutMs(overallTimeout)
                 .withStateCompleteExtractor(stateCompleteExtractor);
@@ -270,10 +270,10 @@ public class ChainedEvaluationFunctionTest implements Serializable {
                     stateFactory.getStateTimeout());
         }
 
-        ChainedEvaluationFunction statemachineWithOverallTimeoutsRaised = builder.build();
+        MultiStepEvaluationFunction statemachineWithOverallTimeoutsRaised = builder.build();
 
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-            // the first call is to set up the timers
+            // the timersNotSet call is to set up the timers
             // prepare
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues1);
             // execute
@@ -281,7 +281,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
             // now the second call should trigger a overall timeout
             // prepare
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(null);
+            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues1.getTimestamp()+10_000L, typedValues1.getValues()));
             // execute
             statemachineWithOverallTimeoutsRaised.eval(context2);
             // check
@@ -294,11 +294,11 @@ public class ChainedEvaluationFunctionTest implements Serializable {
     @Test
     public void addEvaluationFunction() {
         // prepare a error extractor
-        StateErrorExtractor errorOverallExtractor = (StateErrorExtractor) (events, ex, context) ->
+        ErrorExtractor errorOverallExtractor = (ErrorExtractor) (events, ex, context) ->
             context.collect(errorEvent);
 
         // create a statemachine/chained EvaluationFunction
-        ChainedEvaluationFunction function = ChainedEvaluationFunction.builder()
+        MultiStepEvaluationFunction function = MultiStepEvaluationFunction.builder()
                 .addEvaluationFunction(prototypeFunction, "alias")
                 .addEvaluationFunction(prototypeFunction, "alias")
                 .addEvaluationFunction(prototypeFunction, "alias")
@@ -325,7 +325,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
     @Test
     public void addEvaluationFunctionFactory() {
         // prepare a error extractor
-        StateErrorExtractor errorOverallExtractor = (StateErrorExtractor) (events, ex, context) ->
+        ErrorExtractor errorOverallExtractor = (ErrorExtractor) (events, ex, context) ->
             context.collect(errorEvent);
 
         // create a statemachine/chained EvaluationFunction
@@ -333,7 +333,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
             .withPrototype(prototypeFunction)
             .build();
 
-        ChainedEvaluationFunction function = ChainedEvaluationFunction.builder()
+        MultiStepEvaluationFunction function = MultiStepEvaluationFunction.builder()
             .addEvaluationFunctionFactory(factory, "alias")
             .addEvaluationFunctionFactory(factory, "alias")
             .addEvaluationFunctionFactory(factory, "alias")

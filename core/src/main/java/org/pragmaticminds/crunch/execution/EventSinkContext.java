@@ -1,8 +1,6 @@
 package org.pragmaticminds.crunch.execution;
 
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
-import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
-import org.pragmaticminds.crunch.api.pipe.timer.Timer;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 
@@ -42,10 +40,5 @@ class EventSinkContext extends EvaluationContext {
     @Override
     public void collect(Event event) {
         sink.handle(event);
-    }
-
-    @Override
-    public Timer createNewTimer(EvaluationFunction evaluationFunction) {
-        return null;
     }
 }

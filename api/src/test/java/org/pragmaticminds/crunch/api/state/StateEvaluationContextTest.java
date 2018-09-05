@@ -4,8 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
-import org.pragmaticminds.crunch.api.pipe.timer.Timer;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
@@ -25,12 +23,7 @@ public class StateEvaluationContextTest {
     @Before
     public void setUp() throws Exception {
         mockValues = Mockito.mock(TypedValues.class);
-        stateEvaluationContext = new StateEvaluationContext(mockValues, "alias") {
-            @Override
-            public Timer createNewTimer(EvaluationFunction evaluationFunction) {
-                return null; // no timers are tested here
-            }
-        };
+        stateEvaluationContext = new StateEvaluationContext(mockValues, "alias") {};
     }
     
     @Test

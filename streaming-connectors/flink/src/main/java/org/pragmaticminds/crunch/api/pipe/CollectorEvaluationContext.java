@@ -2,9 +2,6 @@ package org.pragmaticminds.crunch.api.pipe;
 
 import com.google.common.base.Preconditions;
 import org.apache.flink.util.Collector;
-import org.pragmaticminds.crunch.api.exceptions.TimerFactoryNotSetException;
-import org.pragmaticminds.crunch.api.pipe.timer.Timer;
-import org.pragmaticminds.crunch.api.pipe.timer.TimerFactory;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 
@@ -19,20 +16,16 @@ import org.pragmaticminds.crunch.events.Event;
 public class CollectorEvaluationContext extends EvaluationContext {
     private final MRecord value;
     private final transient Collector<Event> out;
-    private final TimerFactory timerFactory;
-    
+
     /**
      * private constructor for the inner {@link Builder} class.
      * @param value the current one to be processed
      * @param out the outgoing result {@link Collector} of Flink
-     * @param timerFactory creates a timer in a {@link Timer} fashion
      */
     private CollectorEvaluationContext(
-        MRecord value, Collector<Event> out, TimerFactory timerFactory
-    ) {
+            MRecord value, Collector<Event> out) {
         this.value = value;
         this.out = out;
-        this.timerFactory = timerFactory;
     }
     
     /**
@@ -56,21 +49,6 @@ public class CollectorEvaluationContext extends EvaluationContext {
     }
     
     /**
-     * Creates a Timer that is boxed in {@link Timer} class object
-     *
-     * @param evaluationFunction
-     * @return a Timer boxed in {@link Timer} class object
-     * @throws TimerFactoryNotSetException is thrown, when it is not set in this instance of the class
-     */
-    @Override
-    public Timer createNewTimer(EvaluationFunction evaluationFunction) {
-        if(timerFactory != null){
-            return timerFactory.create(evaluationFunction);
-        }
-        throw new TimerFactoryNotSetException();
-    }
-    
-    /**
      * Creates a builder for this class {@link CollectorEvaluationContext}
      * @return a builder for this class {@link CollectorEvaluationContext}
      */
@@ -82,8 +60,7 @@ public class CollectorEvaluationContext extends EvaluationContext {
     public static final class Builder {
         private MRecord value;
         private Collector<Event> out;
-        private TimerFactory timerFactory;
-        
+
         private Builder() {}
         
         public Builder withValue(MRecord value) {
@@ -96,16 +73,11 @@ public class CollectorEvaluationContext extends EvaluationContext {
             return this;
         }
         
-        public Builder withTimerFactory(TimerFactory timerFactory){
-            this.timerFactory = timerFactory;
-            return this;
-        }
-        
         public Builder but() { return builder().withValue(value).withOut(out); }
         
         public CollectorEvaluationContext build() {
             checkParameters();
-            return new CollectorEvaluationContext(value, out, timerFactory);
+            return new CollectorEvaluationContext(value, out);
         }
     
         private void checkParameters() {

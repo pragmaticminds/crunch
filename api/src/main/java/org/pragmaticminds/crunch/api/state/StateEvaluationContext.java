@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This is a special {@link EvaluationContext} implementation to be used inside a {@link ChainedEvaluationFunction},
- * to separate it from the outer of {@link ChainedEvaluationFunction} context.
+ * This is a special {@link EvaluationContext} implementation to be used inside a {@link MultiStepEvaluationFunction},
+ * to separate it from the outer of {@link MultiStepEvaluationFunction} context.
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
-public abstract class StateEvaluationContext extends EvaluationContext {
+public class StateEvaluationContext extends EvaluationContext {
     private final HashMap<String, Event>  events;
     private MRecord values;
     private String alias;
@@ -74,7 +74,7 @@ public abstract class StateEvaluationContext extends EvaluationContext {
     
     /**
      * collects the resulting {@link Event} of processing
-     * !! do not use the simple collect Method in the {@link ChainedEvaluationFunction} !!
+     * !! do not use the simple collect Method in the {@link MultiStepEvaluationFunction} !!
      * @param event result of the processing of an {@link EvaluationFunction}
      * @deprecated this collect method is not to be used in the case of this class, instead collect(key, event) is to
      * be used.

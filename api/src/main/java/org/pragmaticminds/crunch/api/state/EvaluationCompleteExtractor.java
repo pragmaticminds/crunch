@@ -9,19 +9,19 @@ import java.util.Map;
 
 /**
  * This interface if for the extraction of resulting {@link Event}s after the successful processing of the
- * {@link ChainedEvaluationFunction} from the resulting Events of all inner {@link EvaluationFunction}s of the
- * {@link ChainedEvaluationFunction}.
+ * {@link MultiStepEvaluationFunction} from the resulting Events of all inner {@link EvaluationFunction}s of the
+ * {@link MultiStepEvaluationFunction}.
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
 @FunctionalInterface
-public interface ChainProcessingCompleteExtractor extends Serializable {
+public interface EvaluationCompleteExtractor extends Serializable {
     
     /**
-     * If all states of the {@link ChainedEvaluationFunction} are done, this method is called.
+     * If all states of the {@link MultiStepEvaluationFunction} are done, this method is called.
      * It processes all {@link Event}s that where passed from inner {@link EvaluationFunction} of the
-     * {@link ChainedEvaluationFunction} and generates outgoing {@link Event}s, which are than collected by
+     * {@link MultiStepEvaluationFunction} and generates outgoing {@link Event}s, which are than collected by
      * the context
      *
      * @param events incoming values to generate a final resulting {@link Event}

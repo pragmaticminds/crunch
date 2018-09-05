@@ -7,16 +7,16 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * This extractor class processes error situations that happen while processing in the {@link ChainedEvaluationFunction}
+ * This extractor class processes error situations that happen while processing in the {@link MultiStepEvaluationFunction}
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
 @FunctionalInterface
-public interface StateErrorExtractor extends Serializable {
+public interface ErrorExtractor extends Serializable {
     
     /**
-     * If any states of the {@link ChainedEvaluationFunction} produce an Exception or a timeout exception is raised,
+     * If any states of the {@link MultiStepEvaluationFunction} produce an Exception or a timeout exception is raised,
      * this method is called.
      * This processes the so far generated result events and the occurred exception to generate final outgoing
      * {@link Event}s

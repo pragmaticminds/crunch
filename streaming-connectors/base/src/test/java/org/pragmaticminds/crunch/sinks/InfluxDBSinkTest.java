@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
-import org.pragmaticminds.crunch.api.pipe.timer.Timer;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
@@ -81,11 +80,6 @@ public class InfluxDBSinkTest {
             @Override
             public void collect(Event event) {
 
-            }
-
-            @Override
-            public Timer createNewTimer(EvaluationFunction evaluationFunction) {
-                return null;
             }
         };
     }

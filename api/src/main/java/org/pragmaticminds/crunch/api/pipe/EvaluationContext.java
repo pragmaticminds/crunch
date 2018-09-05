@@ -1,6 +1,5 @@
 package org.pragmaticminds.crunch.api.pipe;
 
-import org.pragmaticminds.crunch.api.pipe.timer.Timer;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.events.EventBuilder;
@@ -35,11 +34,4 @@ public abstract class EvaluationContext implements Serializable {
     public EventBuilder getEventBuilder(){
         return EventBuilder.anEvent();
     }
-
-    /**
-     * Creates a Timer that is boxed in {@link Timer} class object
-     * @param evaluationFunction
-     * @return a Timer boxed in {@link Timer} class object
-     */
-    public abstract Timer createNewTimer(EvaluationFunction evaluationFunction);
 }
