@@ -5,7 +5,6 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.timer.ReferenceTimer;
 import org.pragmaticminds.crunch.api.pipe.timer.Timer;
-import org.pragmaticminds.crunch.api.trigger.Tuple2;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
 import org.slf4j.Logger;
@@ -27,9 +26,9 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
     public static final  String TIMEOUT = "timeout";
     
     private static final Logger logger  = LoggerFactory.getLogger(ChainedEvaluationFunction.class);
-    
-    private final ArrayList<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactoriesAndTimeouts;
-    private final Long                                                    overallTimeoutMs;
+
+    private final List<StateConfig> stateConfigs;
+    private final Long                                                            overallTimeoutMs;
     
     private StateErrorExtractor              errorExtractor;
     private ChainProcessingCompleteExtractor stateCompleteExtractor;
@@ -42,7 +41,7 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
     /**
      * Main constructor of this class for the Builder.
      *
-     * @param stateFactoriesAndTimeouts is a list of Tuple2 values, which contains a {@link EvaluationFunction} factory
+     * @param stateConfigs is a list of {@link StateConfig} values, which contains a {@link EvaluationFunction} factory
      *                                  and a timeout for the chain step
      * @param overallTimeoutMs a timeout value for the complete processing duration of the processing of all inner
      *                         {@link EvaluationFunction}s
@@ -51,18 +50,23 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
      *                               generate final {@link Event}s to be send out of the {@link ChainedEvaluationFunction}
      */
     private ChainedEvaluationFunction(
-        List<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactoriesAndTimeouts,
-        Long overallTimeoutMs,
-        StateErrorExtractor errorExtractor,
-        ChainProcessingCompleteExtractor stateCompleteExtractor
+            List<StateConfig> stateConfigs,
+            Long overallTimeoutMs,
+            StateErrorExtractor errorExtractor,
+            ChainProcessingCompleteExtractor stateCompleteExtractor
     ) {
-        this.stateFactoriesAndTimeouts = new ArrayList<>(stateFactoriesAndTimeouts);
+        // Check Preconditions
+        Preconditions.checkNotNull(stateConfigs);
+        Preconditions.checkNotNull(errorExtractor);
+        Preconditions.checkNotNull(stateCompleteExtractor);
+
+        this.stateConfigs = new ArrayList<>(stateConfigs);
         this.overallTimeoutMs = overallTimeoutMs;
         this.errorExtractor = errorExtractor;
         this.stateCompleteExtractor = stateCompleteExtractor;
         
         this.currentStep = 0;
-        this.currentStateEvaluationFunction = stateFactoriesAndTimeouts.get(currentStep).getF0().create();
+        this.currentStateEvaluationFunction = stateConfigs.get(currentStep).create();
     }
     
     /**
@@ -109,9 +113,9 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
             overallTimer.tick(context.get().getTimestamp()); // if reference based timer -> needs to tick
         }
         // start state timer if running for the first time
-        if(stateFactoriesAndTimeouts.get(currentStep).getOptionalF1().isPresent() && stateTimer == null){
+        if (stateTimer == null) {
             stateTimer = context.createNewTimer(this);
-            resetStateTimeout(stateFactoriesAndTimeouts.get(currentStep).getF1());
+            resetStateTimeout(stateConfigs.get(currentStep).getStateTimeout());
             stateTimer.tick(context.get().getTimestamp()); // if reference based timer -> needs to tick
         }
     }
@@ -136,7 +140,7 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
      */
     private void updateOrSetInnerContext(EvaluationContext context) {
         if(innerContext == null){
-            innerContext = new StateEvaluationContext(context.get()) {
+            innerContext = new StateEvaluationContext(context.get(), stateConfigs.get(currentStep).getStateAlias()) {
                 @Override
                 public Timer createNewTimer(EvaluationFunction evaluationFunction) {
                     return context.createNewTimer(ChainedEvaluationFunction.this);
@@ -176,20 +180,13 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
         }
         
         // if timeout raised while processing
-        if(stateFactoriesAndTimeouts.get(currentStep).getOptionalF1().isPresent()
-        && innerContext.getEvents().containsKey(TIMEOUT)) {
-            errorExtractor.process(innerContext.getEvents(), null, context);
-            resetStatemachine();
-        // if last state completed
-        }else if(currentStep == stateFactoriesAndTimeouts.size() - 1){
+        if (currentStep == stateConfigs.size() - 1) {
             stateCompleteExtractor.process(events, context);
             resetStatemachine();
-        }else{
+        } else {
             currentStep++;
-            currentStateEvaluationFunction = stateFactoriesAndTimeouts.get(currentStep).getF0().create();
-            stateFactoriesAndTimeouts.get(currentStep)
-                .getOptionalF1()
-                .ifPresent(this::resetStateTimeout);
+            currentStateEvaluationFunction = stateConfigs.get(currentStep).create();
+            this.resetStateTimeout(stateConfigs.get(currentStep).getStateTimeout());
         }
     }
     
@@ -199,15 +196,11 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
     private void resetStatemachine() {
         // restart the processing
         currentStep = 0;
-        currentStateEvaluationFunction = stateFactoriesAndTimeouts.get(currentStep).getF0().create();
+        currentStateEvaluationFunction = stateConfigs.get(currentStep).create();
         
         // reset overall timeout and state timeout
-        stateFactoriesAndTimeouts.get(currentStep).getOptionalF1()
-            .ifPresent(this::resetStateTimeout);
-        
-        if(overallTimeoutMs!=null){
-            resetOverallTimeout(overallTimeoutMs);
-        }
+        this.resetStateTimeout(stateConfigs.get(currentStep).getStateTimeout());
+        resetOverallTimeout(overallTimeoutMs);
         
         innerContext = null;
     }
@@ -257,20 +250,66 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
      * Builder for this class
      */
     public static final class Builder {
-        private List<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactoriesAndTimeouts;
-        private Long                                               overallTimeoutMs;
-        private StateErrorExtractor                                errorExtractor;
-        private ChainProcessingCompleteExtractor                   stateCompleteExtractor;
+
+        private static final long DEFAULT_TIMEOUT_MS = 3_600_000;
+
+        private List<StateConfig> stateConfigs;
+        private long overallTimeoutMs = DEFAULT_TIMEOUT_MS;
+        private StateErrorExtractor errorExtractor;
+        private ChainProcessingCompleteExtractor stateCompleteExtractor;
         
         private Builder() {}
-    
+
         /**
-         * @param stateFactoriesAndTimeouts is a list of Tuple2 values, which contains a {@link EvaluationFunction} factory
-         *                                  and a timeout for the chain step
-         * @return self
+         * Adds an EvaluationFunction to the chain of {@link EvaluationFunction}s.
+         *
+         * @param function the {@link EvaluationFunction} that is added.
+         * @param alias the alias for the results of the {@link EvaluationFunction}.
+         * @return the {@link Builder}.
          */
-        public Builder withStateFactoriesAndTimeouts(List<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactoriesAndTimeouts) {
-            this.stateFactoriesAndTimeouts = stateFactoriesAndTimeouts;
+        public Builder addEvaluationFunction(EvaluationFunction function, String alias) {
+            return addEvaluationFunction(function, alias, DEFAULT_TIMEOUT_MS);
+        }
+
+        /**
+         * Adds an EvaluationFunction to the chain of {@link EvaluationFunction}s.
+         *
+         * @param function the {@link EvaluationFunction} that is added.
+         * @param alias the alias for the results of the {@link EvaluationFunction}.
+         * @param timeoutMs the chain step timeout.
+         * @return the {@link Builder}.
+         */
+        public Builder addEvaluationFunction(EvaluationFunction function, String alias, long timeoutMs) {
+            CloneStateEvaluationFunctionFactory factory = CloneStateEvaluationFunctionFactory.builder()
+                .withPrototype(function)
+                .build();
+            return addEvaluationFunctionFactory(factory, alias, timeoutMs);
+        }
+
+        /**
+         * Adds an {@link EvaluationFunctionStateFactory} to the chain of {@link EvaluationFunction}s.
+         *
+         * @param factory that creates new instances of a {@link EvaluationFunction}, when this step is on.
+         * @param alias the alias for the results of the {@link EvaluationFunction}.
+         * @return the {@link Builder}
+         */
+        public Builder addEvaluationFunctionFactory(EvaluationFunctionStateFactory factory, String alias){
+            return addEvaluationFunctionFactory(factory, alias, DEFAULT_TIMEOUT_MS);
+        }
+
+        /**
+         * Adds an {@link EvaluationFunctionStateFactory} to the chain of {@link EvaluationFunction}s.
+         *
+         * @param factory that creates new instances of a {@link EvaluationFunction}, when this step is on.
+         * @param alias the alias for the results of the {@link EvaluationFunction}.
+         * @param timeoutMs the chain step timeout
+         * @return the {@link Builder}
+         */
+        public Builder addEvaluationFunctionFactory(EvaluationFunctionStateFactory factory, String alias, long timeoutMs) {
+            if (this.stateConfigs == null) {
+                this.stateConfigs = new ArrayList<>();
+            }
+            this.stateConfigs.add(new StateConfig(alias, factory, timeoutMs));
             return this;
         }
     
@@ -279,7 +318,7 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
          *                         {@link EvaluationFunction}s
          * @return self
          */
-        public Builder withOverallTimeoutMs(Long overallTimeoutMs) {
+        public Builder withOverallTimeoutMs(long overallTimeoutMs) {
             this.overallTimeoutMs = overallTimeoutMs;
             return this;
         }
@@ -302,30 +341,13 @@ public class ChainedEvaluationFunction implements EvaluationFunction {
             this.stateCompleteExtractor = stateCompleteExtractor;
             return this;
         }
-    
-        public Builder but() {
-            checkValues();
-            return builder()
-                .withStateFactoriesAndTimeouts(stateFactoriesAndTimeouts)
-                .withOverallTimeoutMs(overallTimeoutMs)
-                .withErrorExtractor(errorExtractor)
-                .withStateCompleteExtractor(stateCompleteExtractor);
-        }
-    
-        /**
-         * check if all necessary values are set
-         */
-        private void checkValues() {
-            Preconditions.checkNotNull(stateFactoriesAndTimeouts);
-            Preconditions.checkNotNull(errorExtractor);
-            Preconditions.checkNotNull(stateCompleteExtractor);
-        }
-    
+
         public ChainedEvaluationFunction build() {
-            return new ChainedEvaluationFunction(stateFactoriesAndTimeouts,
-                                                 overallTimeoutMs,
-                                                 errorExtractor,
-                                                 stateCompleteExtractor);
+            return new ChainedEvaluationFunction(
+                    stateConfigs,
+                overallTimeoutMs,
+                errorExtractor,
+                stateCompleteExtractor);
         }
     }
 }

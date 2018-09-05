@@ -25,7 +25,7 @@ public class StateEvaluationContextTest {
     @Before
     public void setUp() throws Exception {
         mockValues = Mockito.mock(TypedValues.class);
-        stateEvaluationContext = new StateEvaluationContext(mockValues) {
+        stateEvaluationContext = new StateEvaluationContext(mockValues, "alias") {
             @Override
             public Timer createNewTimer(EvaluationFunction evaluationFunction) {
                 return null; // no timers are tested here

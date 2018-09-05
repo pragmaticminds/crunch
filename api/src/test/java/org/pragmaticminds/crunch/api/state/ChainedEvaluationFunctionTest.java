@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
-import org.pragmaticminds.crunch.api.trigger.Tuple2;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
@@ -29,42 +28,26 @@ import java.util.List;
  */
 public class ChainedEvaluationFunctionTest implements Serializable {
 
-    private ChainedEvaluationFunction                          stateMachine;
-    private ChainedEvaluationFunction                          statemachineWithTimeouts;
-    private ChainedEvaluationFunction                          statemachineWithStateTimeoutsRaised;
-    private ChainedEvaluationFunction                          statemachineWithOverallTimeoutsRaised;
-    private List<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactories;
-    private List<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactoriesWithTimeouts;
-    private List<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactoriesWithStateTimeoutsRaised;
-    private List<Tuple2<EvaluationFunctionStateFactory, Long>> stateFactoriesWithOverallTimeoutsRaised;
-    private StateErrorExtractor                                errorExtractor;
-    private ChainProcessingCompleteExtractor                   stateCompleteExtractor;
-    private EvaluationFunction                                 prototypeFunction;
-    private EvaluationFunction                                 prototypeFunction10ms;
-    private EvaluationFunction                                 prototypeFunctionNoResult;
-    private CloneStateEvaluationFunctionFactory                cloneFactory;
-    private CloneStateEvaluationFunctionFactory                cloneFactoryWithTimeouts;
-    private CloneStateEvaluationFunctionFactory                cloneFactoryWithStateTimeoutsRaised;
-    private CloneStateEvaluationFunctionFactory                cloneFactoryWithOverallTimeoutsRaised;
-    private Long                                               stateTimeout;
-    private Long                                               stateTimeout10ms;
-    private Long                                               overallTimeout;
-    private Long                                               overallTimeoutShort;
-    private Event                                              errorStateEvent;
-    private Event                                              errorOverallEvent;
-    private Event                                              errorEvent;
-    private Event                                              completeEvent;
-    private Event                                              event;
-    private HashMap<String, Value>                             values;
-    private TypedValues                                        typedValues1;
-    private TypedValues                                        typedValues2;
+    private List<StateConfig> stateFactories;
+    private List<StateConfig> stateFactoriesWithStateTimeoutsRaised;
+    private List<StateConfig> stateFactoriesWithOverallTimeoutsRaised;
+    private StateErrorExtractor                                        errorExtractor;
+    private ChainProcessingCompleteExtractor                           stateCompleteExtractor;
+    private EvaluationFunction                                         prototypeFunction;
+    private Long                                                       overallTimeout;
+    private Event                                                      errorStateEvent;
+    private Event                                                      errorOverallEvent;
+    private Event                                                      errorEvent;
+    private Event                                                      completeEvent;
+    private Event                                                      event;
+    private TypedValues                                                typedValues1;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
 
         // prepare all values
 
-        values = new HashMap<>();
+        HashMap<String, Value> values = new HashMap<>();
         values.put("test", Value.of("test"));
 
         typedValues1 = TypedValues.builder().source("test").timestamp(System.currentTimeMillis()).values(values).build();
@@ -111,11 +94,10 @@ public class ChainedEvaluationFunctionTest implements Serializable {
                 .build();
 
         // for successful processing
-        stateTimeout = 100L;
+        long stateTimeout = 100L;
         overallTimeout = 10000L;
         // for timeouts raised
-        stateTimeout10ms = 10L;
-        overallTimeoutShort = 10L;
+        long stateTimeout10ms = 10L;
 
         // always successful processing EvaluationFunction
         prototypeFunction = new EvaluationFunction() {
@@ -126,7 +108,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
         };
 
         // no resulting Event
-        prototypeFunctionNoResult = new EvaluationFunction() {
+        EvaluationFunction prototypeFunctionNoResult = new EvaluationFunction() {
             @Override
             public void eval(EvaluationContext ctx) {
                 /* do nothing */
@@ -135,43 +117,31 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
         // EvaluationFunctionStateFactories for the successful processing without any timeout settings
         stateFactories = new ArrayList<>();
-        cloneFactory = CloneStateEvaluationFunctionFactory.builder()
+        CloneStateEvaluationFunctionFactory cloneFactory = CloneStateEvaluationFunctionFactory.builder()
                 .withPrototype(prototypeFunction)
                 .build();
-        Tuple2<EvaluationFunctionStateFactory, Long> tuple = new Tuple2<>(cloneFactory, null);
+        StateConfig tuple = new StateConfig("alias", cloneFactory, 0L);
         // add 4 times the same EvaluationFunction
         stateFactories.add(tuple);
         stateFactories.add(tuple);
         stateFactories.add(tuple);
         stateFactories.add(tuple);
-
-        // EvaluationFunctionStateFactories for the successful processing with timeout settings
-        stateFactoriesWithTimeouts = new ArrayList<>();
-        cloneFactoryWithTimeouts = CloneStateEvaluationFunctionFactory.builder()
-                .withPrototype(prototypeFunction)
-                .build();
-        tuple = new Tuple2<>(cloneFactoryWithTimeouts, stateTimeout);
-        // add 4 times the same EvaluationFunction
-        stateFactoriesWithTimeouts.add(tuple);
-        stateFactoriesWithTimeouts.add(tuple);
-        stateFactoriesWithTimeouts.add(tuple);
-        stateFactoriesWithTimeouts.add(tuple);
 
         // EvaluationFunctionStateFactories for the failed processing on stateTimeout raised
         stateFactoriesWithStateTimeoutsRaised = new ArrayList<>();
-        cloneFactoryWithStateTimeoutsRaised = CloneStateEvaluationFunctionFactory.builder()
+        CloneStateEvaluationFunctionFactory cloneFactoryWithStateTimeoutsRaised = CloneStateEvaluationFunctionFactory.builder()
                 .withPrototype(prototypeFunctionNoResult)
                 .build();
         // add single EvaluationFunctionStateFactory
-        stateFactoriesWithStateTimeoutsRaised.add(new Tuple2<>(cloneFactoryWithStateTimeoutsRaised, stateTimeout10ms));
+        stateFactoriesWithStateTimeoutsRaised.add(new StateConfig("alias", cloneFactoryWithStateTimeoutsRaised, stateTimeout10ms));
 
         // EvaluationFunctionStateFactories for the failed processing on overallTimeout raised
         stateFactoriesWithOverallTimeoutsRaised = new ArrayList<>();
-        cloneFactoryWithOverallTimeoutsRaised = CloneStateEvaluationFunctionFactory.builder()
+        CloneStateEvaluationFunctionFactory cloneFactoryWithOverallTimeoutsRaised = CloneStateEvaluationFunctionFactory.builder()
                 .withPrototype(prototypeFunctionNoResult)
                 .build();
         // add single EvaluationFunctionStateFactory
-        stateFactoriesWithOverallTimeoutsRaised.add(new Tuple2<>(cloneFactoryWithOverallTimeoutsRaised, stateTimeout));
+        stateFactoriesWithOverallTimeoutsRaised.add(new StateConfig("alias", cloneFactoryWithOverallTimeoutsRaised, stateTimeout));
 
         // extractor on timeouts and exceptions
         errorExtractor = (StateErrorExtractor) (events, ex, context) -> context.collect(errorEvent);
@@ -183,14 +153,17 @@ public class ChainedEvaluationFunctionTest implements Serializable {
     @Test
     public void evalSimpleNoTimeouts() { // -> processing should be successful with no timers set
         // create instance of the ChainedEvaluationFunction with parameters for this test
-        stateMachine = ChainedEvaluationFunction.builder()
-                .withStateFactoriesAndTimeouts(stateFactories)
-                .withOverallTimeoutMs(null)
+        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
                 .withErrorExtractor(errorExtractor)
-                .withStateCompleteExtractor(stateCompleteExtractor)
-                .build();
+                .withStateCompleteExtractor(stateCompleteExtractor);
+        for (StateConfig stateFactory : stateFactories) {
+            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
+                    stateFactory.getStateTimeout());
+        }
 
-        SimpleEvaluationContext context;
+        ChainedEvaluationFunction stateMachine = builder.build();
+
+                SimpleEvaluationContext context;
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
             for (int j = 0; j < 3; j++) {
                 // prepare
@@ -214,12 +187,16 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
     @Test
     public void evalSimpleWithTimeouts() { // -> processing should be successful while having set up timers
-        statemachineWithTimeouts = ChainedEvaluationFunction.builder()
-                .withStateFactoriesAndTimeouts(stateFactoriesWithTimeouts)
-                .withOverallTimeoutMs(overallTimeout)
+        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
                 .withErrorExtractor(errorExtractor)
-                .withStateCompleteExtractor(stateCompleteExtractor)
-                .build();
+                .withOverallTimeoutMs(overallTimeout)
+                .withStateCompleteExtractor(stateCompleteExtractor);
+        for (StateConfig stateFactory : stateFactories) {
+            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
+                    stateFactory.getStateTimeout());
+        }
+
+        ChainedEvaluationFunction statemachineWithTimeouts = builder.build();
 
         SimpleEvaluationContext context;
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
@@ -247,12 +224,17 @@ public class ChainedEvaluationFunctionTest implements Serializable {
     public void evalWithStateTimeoutRaised() { // -> a state timeout should be raised
         StateErrorExtractor errorStateExtractor = (StateErrorExtractor) (events, ex, context) -> context.collect(
                 errorStateEvent);
-        statemachineWithStateTimeoutsRaised = ChainedEvaluationFunction.builder()
-                .withStateFactoriesAndTimeouts(stateFactoriesWithStateTimeoutsRaised)
-                .withOverallTimeoutMs(overallTimeout)
+
+        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
                 .withErrorExtractor(errorStateExtractor)
-                .withStateCompleteExtractor(stateCompleteExtractor)
-                .build();
+                .withOverallTimeoutMs(overallTimeout)
+                .withStateCompleteExtractor(stateCompleteExtractor);
+        for (StateConfig stateFactory : stateFactoriesWithStateTimeoutsRaised) {
+            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
+                    stateFactory.getStateTimeout());
+        }
+
+        ChainedEvaluationFunction statemachineWithStateTimeoutsRaised = builder.build();
 
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
             // the first call is to set up the timers
@@ -263,7 +245,7 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
             // now the second call should trigger a state timeout
             // prepare
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(typedValues2);
+            SimpleEvaluationContext context2 = new SimpleEvaluationContext(null);
             // execute
             statemachineWithStateTimeoutsRaised.eval(context2); // second time, so that error can be passed
             // check
@@ -277,15 +259,18 @@ public class ChainedEvaluationFunctionTest implements Serializable {
     public void evalWithOverallTimeoutRaised() { // -> a overall timeout should be raised
         // prepare a error extractor
         StateErrorExtractor errorOverallExtractor = (StateErrorExtractor) (events, ex, context) -> context.collect(
-                errorOverallEvent);
+            errorOverallEvent);
 
-        // create a statemachine/chained EvaluationFunction
-        statemachineWithOverallTimeoutsRaised = ChainedEvaluationFunction.builder()
-                .withStateFactoriesAndTimeouts(stateFactoriesWithOverallTimeoutsRaised)
-                .withOverallTimeoutMs(overallTimeoutShort)
+        ChainedEvaluationFunction.Builder builder = ChainedEvaluationFunction.builder()
                 .withErrorExtractor(errorOverallExtractor)
-                .withStateCompleteExtractor(stateCompleteExtractor)
-                .build();
+                .withOverallTimeoutMs(overallTimeout)
+                .withStateCompleteExtractor(stateCompleteExtractor);
+        for (StateConfig stateFactory : stateFactoriesWithOverallTimeoutsRaised) {
+            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
+                    stateFactory.getStateTimeout());
+        }
+
+        ChainedEvaluationFunction statemachineWithOverallTimeoutsRaised = builder.build();
 
         for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
             // the first call is to set up the timers
@@ -296,13 +281,80 @@ public class ChainedEvaluationFunctionTest implements Serializable {
 
             // now the second call should trigger a overall timeout
             // prepare
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(typedValues2);
+            SimpleEvaluationContext context2 = new SimpleEvaluationContext(null);
             // execute
             statemachineWithOverallTimeoutsRaised.eval(context2);
             // check
             Assert.assertNotNull(context2.getEvents());
             Assert.assertEquals(1, context2.getEvents().size());
             Assert.assertEquals(errorOverallEvent, context2.getEvents().get(0));
+        }
+    }
+
+    @Test
+    public void addEvaluationFunction() {
+        // prepare a error extractor
+        StateErrorExtractor errorOverallExtractor = (StateErrorExtractor) (events, ex, context) ->
+            context.collect(errorEvent);
+
+        // create a statemachine/chained EvaluationFunction
+        ChainedEvaluationFunction function = ChainedEvaluationFunction.builder()
+                .addEvaluationFunction(prototypeFunction, "alias")
+                .addEvaluationFunction(prototypeFunction, "alias")
+                .addEvaluationFunction(prototypeFunction, "alias")
+            .withErrorExtractor(errorOverallExtractor)
+            .withStateCompleteExtractor(stateCompleteExtractor)
+            .build();
+
+        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
+
+            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues1);
+            for (int j = 0; j < 3; j++) {
+//                context = new SimpleEvaluationContext(typedValues2);
+                // execute
+                function.eval(context);
+            }
+            // check
+            Assert.assertNotNull(context.getEvents());
+            Assert.assertEquals(1, context.getEvents().size());
+            Assert.assertEquals(completeEvent, context.getEvents().get(0));
+        }
+    }
+
+
+    @Test
+    public void addEvaluationFunctionFactory() {
+        // prepare a error extractor
+        StateErrorExtractor errorOverallExtractor = (StateErrorExtractor) (events, ex, context) ->
+            context.collect(errorEvent);
+
+        // create a statemachine/chained EvaluationFunction
+        CloneStateEvaluationFunctionFactory factory = CloneStateEvaluationFunctionFactory.builder()
+            .withPrototype(prototypeFunction)
+            .build();
+
+        ChainedEvaluationFunction function = ChainedEvaluationFunction.builder()
+            .addEvaluationFunctionFactory(factory, "alias")
+            .addEvaluationFunctionFactory(factory, "alias")
+            .addEvaluationFunctionFactory(factory, "alias")
+            .withErrorExtractor(errorOverallExtractor)
+            .withStateCompleteExtractor(stateCompleteExtractor)
+            .build();
+
+        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
+
+            SimpleEvaluationContext context = null;
+            for (int j = 0; j < 3; j++) {
+                // prepare
+                context = new SimpleEvaluationContext(typedValues1);
+
+                // execute
+                function.eval(context);
+            }
+            // check
+            Assert.assertNotNull(context.getEvents());
+            Assert.assertEquals(1, context.getEvents().size());
+            Assert.assertEquals(completeEvent, context.getEvents().get(0));
         }
     }
 }

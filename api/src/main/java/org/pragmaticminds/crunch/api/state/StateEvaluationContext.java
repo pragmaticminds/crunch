@@ -18,13 +18,15 @@ import java.util.Map;
 public abstract class StateEvaluationContext extends EvaluationContext {
     private final HashMap<String, Event>  events;
     private MRecord values;
+    private String alias;
     
     /**
      * private constructor on base of a {@link MRecord} object
      * @param values
      */
-    public StateEvaluationContext(MRecord values){
+    public StateEvaluationContext(MRecord values, String alias){
         this.values = values;
+        this.alias = alias;
         this.events = new HashMap<>();
     }
     
@@ -43,6 +45,7 @@ public abstract class StateEvaluationContext extends EvaluationContext {
         return values;
     }
     
+    // setter
     /**
      * sets the current {@link MRecord} data to be processed
      * @param values the record to be processed next
@@ -51,6 +54,15 @@ public abstract class StateEvaluationContext extends EvaluationContext {
         this.values = values;
     }
     
+    /**
+     * sets the alias for naming resulting {@link Event}s.
+     * @param alias name for resulting Events.
+     */
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+    
+    // methods
     /**
      * collects the resulting {@link Event} of processing with it's key
      * @param key should be unique, else it overrides the last value
@@ -71,6 +83,12 @@ public abstract class StateEvaluationContext extends EvaluationContext {
     @Deprecated
     @SuppressWarnings("squid:S1133") // no reminder to remove the deprecated method needed
     public void collect(Event event) {
-        this.events.put(Integer.toString(this.events.size()), event);
+        String key;
+        if(this.events.size() == 0){
+            key = alias;
+        }else{
+            key = String.format("%s%s", alias, Integer.toString(this.events.size()-1));
+        }
+        this.events.put(key, event);
     }
 }
