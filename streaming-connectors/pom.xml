@@ -10,9 +10,10 @@
     <artifactId>streaming-connectors</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>streaming-connector-flink</module>
-        <module>streaming-connector-base</module>
-        <module>streaming-chronicle</module>
+        <module>flink</module>
+        <module>base</module>
+        <module>chronicle</module>
+        <module>kafka</module>
     </modules>
 
     <properties>

@@ -1,5 +1,6 @@
 package org.pragmaticminds.crunch.api.values;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -90,6 +91,7 @@ public class UntypedValues implements MRecord {
     }
 
     @Override
+    @JsonIgnore
     public Collection<String> getChannels() {
         return this.values.keySet();
     }
@@ -130,6 +132,7 @@ public class UntypedValues implements MRecord {
      * Returns true if there are no values in the Values-Map.
      * @return
      */
+    @JsonIgnore // prevent interpretation as a getter
     public boolean isEmpty() {
         return values.isEmpty();
     }
