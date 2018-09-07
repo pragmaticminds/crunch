@@ -16,6 +16,7 @@ public class AggregationsTest {
         max.aggregate(2);
         max.aggregate(3);
         max.aggregate(4);
+        max.aggregate(null);
         int aggregated = max.getAggregated();
         Assert.assertEquals(4, aggregated);
         Assert.assertEquals("max", max.getIdentifier());
@@ -28,6 +29,7 @@ public class AggregationsTest {
         min.aggregate(1L);
         min.aggregate(2L);
         min.aggregate(3L);
+        min.aggregate(null);
         min.aggregate(4L);
         long aggregated = min.getAggregated();
         Assert.assertEquals(1L, aggregated);
@@ -40,6 +42,7 @@ public class AggregationsTest {
         Aggregation<Float, Float> sum = Aggregations.sum();
         sum.aggregate(1F);
         sum.aggregate(2F);
+        sum.aggregate(null);
         sum.aggregate(3F);
         sum.aggregate(4F);
         float aggregated = sum.getAggregated();
@@ -51,6 +54,7 @@ public class AggregationsTest {
     @Test
     public void average() {
         Aggregation<Double, Double> avg = Aggregations.avg();
+        avg.aggregate(null);
         avg.aggregate(1D);
         avg.aggregate(2D);
         avg.aggregate(3D);

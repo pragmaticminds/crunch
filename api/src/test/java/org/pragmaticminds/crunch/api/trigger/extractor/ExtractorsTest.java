@@ -39,7 +39,12 @@ public class ExtractorsTest {
     /** Extract 3 channels from a {@link TypedValues} */
     @Test
     public void valuesExtractor() {
-        EventExtractor eventExtractor = Extractors.valuesExtractor("channel1", "channel2", "channel3");
+        EventExtractor eventExtractor = Extractors.valuesExtractor(
+            "channel1",
+            "channel2",
+            "channel3",
+            "null" // this will be ignored in the results
+        );
         ArrayList<Event> events = new ArrayList<>(eventExtractor.process(evaluationContext));
         assertEquals(1, events.size());
         assertEquals(1L, (long) events.get(0).getParameter("channel1").getAsLong());
@@ -54,6 +59,7 @@ public class ExtractorsTest {
         aliasedChannels.put("channel1", "key1");
         aliasedChannels.put("channel2", "key2");
         aliasedChannels.put("channel3", "key3");
+        aliasedChannels.put("null", "null"); // this will be ignored for the results
         EventExtractor eventExtractor = Extractors.valuesExtractor(aliasedChannels);
         ArrayList<Event> events = new ArrayList<>(eventExtractor.process(evaluationContext));
         assertEquals(1, events.size());

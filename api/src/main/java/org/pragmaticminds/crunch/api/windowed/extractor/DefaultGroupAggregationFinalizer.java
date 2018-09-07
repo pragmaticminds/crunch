@@ -47,7 +47,11 @@ public class DefaultGroupAggregationFinalizer implements GroupAggregationFinaliz
             .withTimestamp(context.get().getTimestamp());
     
         // add all results as parameters in the new Event
-        aggregatedValues.forEach((key, value) -> eventBuilder.withParameter(key, Value.of(value)));
+        aggregatedValues.forEach((key, value) -> {
+            if(value != null){
+                eventBuilder.withParameter(key, Value.of(value));
+            }
+        });
     
         // build the event, pack in list and return
         context.collect(eventBuilder.build());

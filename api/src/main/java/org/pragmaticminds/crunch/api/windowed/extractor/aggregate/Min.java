@@ -26,7 +26,7 @@ class Min<T extends Serializable & Comparable> implements Aggregation<T, T> {
      */
     @Override
     public void aggregate(T value) {
-        if(minValue == null || AggregationUtils.compare(value, minValue) < 0){
+        if(minValue == null || value != null && AggregationUtils.compare(value, minValue) < 0){
             minValue = value;
         }
     }

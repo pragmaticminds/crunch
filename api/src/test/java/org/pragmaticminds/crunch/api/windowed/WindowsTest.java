@@ -20,6 +20,7 @@ public class WindowsTest {
     
     TypedValues valuesTrue;
     TypedValues valuesFalse;
+    TypedValues valuesNull;
     
     @Before
     public void setUp() throws Exception {
@@ -30,10 +31,14 @@ public class WindowsTest {
         Map<String, Value> valueMap1 = new HashMap<>();
         valueMap1.put("flag", Value.of(true));
         valuesTrue = valuesBuilder.values(valueMap1).build();
-        
+    
         Map<String, Value> valueMap2 = new HashMap<>();
         valueMap2.put("flag", Value.of(false));
         valuesFalse = valuesBuilder.values(valueMap2).build();
+    
+        Map<String, Value> valueMap3 = new HashMap<>();
+        // do not add "flag"
+        valuesNull = valuesBuilder.values(valueMap3).build();
     }
     
     @Test
@@ -42,8 +47,11 @@ public class WindowsTest {
         
         boolean result = recordWindow.inWindow(valuesTrue);
         Assert.assertTrue(result);
-        
+    
         result = recordWindow.inWindow(valuesFalse);
+        Assert.assertFalse(result);
+        
+        result = recordWindow.inWindow(valuesNull);
         Assert.assertFalse(result);
     }
     
@@ -56,6 +64,9 @@ public class WindowsTest {
     
         result = recordWindow.inWindow(valuesFalse);
         Assert.assertTrue(result);
+    
+        result = recordWindow.inWindow(valuesNull);
+        Assert.assertFalse(result);
     }
     
     @Test
@@ -66,6 +77,9 @@ public class WindowsTest {
         Assert.assertTrue(result);
     
         result = recordWindow.inWindow(valuesFalse);
+        Assert.assertFalse(result);
+    
+        result = recordWindow.inWindow(valuesNull);
         Assert.assertFalse(result);
     }
     
@@ -78,5 +92,8 @@ public class WindowsTest {
     
         result = recordWindow.inWindow(valuesFalse);
         Assert.assertTrue(result);
+    
+        result = recordWindow.inWindow(valuesNull);
+        Assert.assertFalse(result);
     }
 }

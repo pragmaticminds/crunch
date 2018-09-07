@@ -4,11 +4,7 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.events.EventBuilder;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * A collection of {@link EventExtractor} implementation for usual use cases
@@ -31,10 +27,14 @@ public class Extractors {
         return ctx -> {
             // create a map of parameters for the event to be created
             Map<String, Value> collectedValues = Arrays.stream(channels)
-                .collect(Collectors.toMap(
-                    channel -> channel,
-                    channel -> ctx.get().getValue(channel)
-                ));
+                .collect(
+                    // supplier
+                    HashMap::new,
+                    // accumulator
+                    (map, channel) -> map.put(channel, ctx.get().getValue(channel)),
+                    // combiner
+                    HashMap::putAll
+                );
             
             // create Event and put in a ArrayList
             return new ArrayList<>(Collections.singletonList(
@@ -62,10 +62,17 @@ public class Extractors {
             Map<String, Value> collectedValues = aliasedChannels.entrySet()
                 .stream()
                 .collect(
-                    Collectors.toMap(
-                        Map.Entry::getValue,
-                        entry -> ctx.get().getValue(entry.getKey())
-                    )
+                    // supplier
+                    HashMap::new,
+                    // accumulator
+                    (map, entry) -> map.put(
+                        // get value as new key
+                        entry.getValue(),
+                        // get value of filed in MRecord by the key
+                        ctx.get().getValue(entry.getKey())
+                    ),
+                    // combiner
+                    HashMap::putAll
                 );
     
             // create Event and put in a ArrayList

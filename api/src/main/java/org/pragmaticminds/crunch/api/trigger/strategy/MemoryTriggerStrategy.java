@@ -39,6 +39,12 @@ public abstract class MemoryTriggerStrategy<T> implements TriggerStrategy {
     @Override
     public boolean isToBeTriggered(MRecord values) {
         T decisionBase = supplier.extract(values);
+        
+        // ignore null values
+        if(decisionBase == null){
+            return false;
+        }
+        
         boolean result = isToBeTriggered(decisionBase);
         lastDecisionBases.add(decisionBase);
         if(lastDecisionBases.size() > bufferSize){

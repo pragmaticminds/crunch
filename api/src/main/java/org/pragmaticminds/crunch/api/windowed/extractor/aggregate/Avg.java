@@ -27,6 +27,10 @@ class Avg<T extends Serializable> implements Aggregation<T, Double>{
      */
     @Override
     public void aggregate(T value) {
+        // ignore null values
+        if(value == null){
+            return;
+        }
         count++;
         if(sum == null){
             sum = value;

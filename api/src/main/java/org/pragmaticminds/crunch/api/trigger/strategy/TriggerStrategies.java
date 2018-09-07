@@ -19,16 +19,20 @@ public class TriggerStrategies {
      * @return true if triggered
      */
     public static TriggerStrategy onTrue(Supplier<Boolean> supplier){
-        return supplier::extract;
+        return values -> supplier.extract(values) != null && supplier.extract(values);
     }
     
     /**
      * This method triggers always on supplied value = false
      * @param supplier extracts the relevant values from a {@link TypedValues}
-     * @return true if triggered
+     * @return true if triggered, false if not or supplied value is null
      */
     public static TriggerStrategy onFalse(Supplier<Boolean> supplier){
-        return values -> !supplier.extract(values);
+        return values ->
+            // null check
+            supplier.extract(values) != null
+            // on false check
+            && !supplier.extract(values);
     }
     
     /**
@@ -40,7 +44,11 @@ public class TriggerStrategies {
         return new MemoryTriggerStrategy<Boolean>(supplier, 1) {
             @Override
             public boolean isToBeTriggered(Boolean decisionBase) {
-                return !lastDecisionBases.isEmpty() && !lastDecisionBases.get(0) && decisionBase;
+                return
+                    // null check
+                    decisionBase != null
+                    // condition check
+                    && !lastDecisionBases.isEmpty() && !lastDecisionBases.get(0) && decisionBase;
             }
         };
     }
@@ -54,7 +62,11 @@ public class TriggerStrategies {
         return new MemoryTriggerStrategy<Boolean>(supplier, 1) {
             @Override
             public boolean isToBeTriggered(Boolean decisionBase) {
-                return !lastDecisionBases.isEmpty() && lastDecisionBases.get(0) && !decisionBase;
+                return
+                    // null check
+                    decisionBase != null
+                    // condition check
+                    && !lastDecisionBases.isEmpty() && lastDecisionBases.get(0) && !decisionBase;
             }
         };
     }
@@ -68,7 +80,11 @@ public class TriggerStrategies {
         return new MemoryTriggerStrategy<Boolean>(supplier, 1) {
             @Override
             public boolean isToBeTriggered(Boolean decisionBase) {
-                return !lastDecisionBases.isEmpty() && lastDecisionBases.get(0) != decisionBase;
+                return
+                    // null check
+                    decisionBase != null
+                    // condition check
+                    && !lastDecisionBases.isEmpty() && lastDecisionBases.get(0) != decisionBase;
             }
         };
     }

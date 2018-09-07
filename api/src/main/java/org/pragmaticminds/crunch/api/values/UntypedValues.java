@@ -5,11 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.api.records.RecordItemConversionException;
-import org.pragmaticminds.crunch.api.records.UnknownRecordItemException;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
-import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,7 +18,9 @@ import java.util.stream.Collectors;
  * @see TypedValues
  *
  * @author julian
+ * @author Erwin Wagasow
  * Created by julian on 23.10.17
+ * Modified by Erwin Wagasow on 06.09.2018
  */
 @Data
 @EqualsAndHashCode
@@ -41,51 +40,47 @@ public class UntypedValues implements MRecord {
         this.prefix = prefix;
         this.values = values == null ? null : new HashMap<>(values);
     }
-
+    
     @Override
-    public double getDouble(String channel) {
+    public Double getDouble(String channel) {
         Value v = getValue(channel);
-        return v.getAsDouble();
+        return v == null ? null : v.getAsDouble();
     }
 
     @Override
-    public long getLong(String channel) {
+    public Long getLong(String channel) {
         Value v = getValue(channel);
-        return v.getAsLong();
+        return v == null ? null : v.getAsLong();
     }
 
     @Override
-    public boolean getBoolean(String channel) {
+    public Boolean getBoolean(String channel) {
         Value v = getValue(channel);
-        return v.getAsBoolean();
+        return v == null ? null : v.getAsBoolean();
     }
 
     @Override
     public Date getDate(String channel) {
         Value v = getValue(channel);
-        return v.getAsDate();
+        return v == null ? null : v.getAsDate();
     }
 
     @Override
     public String getString(String channel) {
         Value v = getValue(channel);
-        return v.getAsString();
+        return v == null ? null : v.getAsString();
     }
 
     @Override
     public Value getValue(String channel) {
-        try {
-            return Value.of(get(channel));
-        } catch (InvalidParameterException e) {
-            throw new RecordItemConversionException("Cannot provide typed version of item " + channel +
-                    " with value " + get(channel) + ".", e);
-        }
+        Object v = get(channel);
+        return v == null ? null : Value.of(v);
     }
 
     @Override
     public Object get(String channel) {
         if (!values.containsKey(channel)) {
-            throw new UnknownRecordItemException("Item " + channel + " not present!");
+            return null;
         }
         return values.get(channel);
     }

@@ -37,7 +37,7 @@ public class TypedValuesTest {
         fillTypedValues(values);
 
         assertEquals(3.141, values.getDouble("double"), 1e-16);
-        assertEquals(100, values.getLong("long"));
+        assertEquals(100L, (long)values.getLong("long"));
         assertEquals("hallo", values.getString("String"));
         assertEquals(false, values.getBoolean("boolean"));
     }
@@ -84,7 +84,7 @@ public class TypedValuesTest {
         TypedValues merge = values.merge(values1);
 
         assertEquals(101, merge.getTimestamp());
-        assertEquals(111, merge.getLong("additional"));
+        assertEquals(111, (long)merge.getLong("additional"));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class TypedValuesTest {
         TypedValues merge = values.merge(values1);
 
         assertEquals(101, merge.getTimestamp());
-        assertEquals(111, merge.getLong("long"));
+        assertEquals(111, (long)merge.getLong("long"));
     }
 
     @Test(expected = UnsupportedOperationException.class)

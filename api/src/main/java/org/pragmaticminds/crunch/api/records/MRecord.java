@@ -38,31 +38,31 @@ public interface MRecord extends CRecord {
     String getSource();
 
     /**
-     * Typed Getter
+     * Typed Nullable Getter
      *
      * @param channel Channel to extract
      * @return Channel Value as double
      */
-    double getDouble(String channel);
+    Double getDouble(String channel);
 
     /**
-     * Typed Getter
+     * Typed Nullable Getter
      *
      * @param channel Channel to extract
      * @return Channel value as Long
      */
-    long getLong(String channel);
+    Long getLong(String channel);
 
     /**
-     * Typed Getter
+     * Typed Nullable Getter
      *
      * @param channel Channel to extract
      * @return Channel Value as Boolean
      */
-    boolean getBoolean(String channel);
+    Boolean getBoolean(String channel);
 
     /**
-     * Typed Getter
+     * Typed Nullable Getter
      *
      * @param channel Channel to extract
      * @return Channel Value as Date
@@ -70,7 +70,7 @@ public interface MRecord extends CRecord {
     Date getDate(String channel);
 
     /**
-     * Typed Getter
+     * Typed Nullable Getter
      *
      * @param channel Channel to extract
      * @return Channel Value as String

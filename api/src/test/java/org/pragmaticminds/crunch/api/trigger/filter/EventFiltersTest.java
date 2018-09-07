@@ -20,6 +20,7 @@ public class EventFiltersTest {
     
     private TypedValues values1;
     private TypedValues values2;
+    private TypedValues valuesNull;
     
     @Before
     public void setUp() throws Exception {
@@ -30,15 +31,28 @@ public class EventFiltersTest {
         Map<String, Value> valueMap2 = new HashMap<>();
         valueMap2.put("val", Value.of("string2"));
         values2 = TypedValues.builder().source("test").timestamp(System.currentTimeMillis()).values(valueMap2).build();
+    
+        Map<String, Value> valueMap3 = new HashMap<>();
+        valuesNull = TypedValues.builder().source("test").timestamp(System.currentTimeMillis()).values(valueMap3).build();
     }
     
     @Test
     public void valueChangedTest() {
+        // value test
         EventFilter filter = onValueChanged(stringChannel("val"));
     
+        // first value receive -> false
         Assert.assertFalse(filter.apply(null, values1));
+        // first change -> true
         Assert.assertTrue(filter.apply(null, values2));
+        // value is null -> false
+        Assert.assertFalse(filter.apply(null, valuesNull));
+        // value change -> true
         Assert.assertTrue(filter.apply(null, values1));
+        // no change -> false
         Assert.assertFalse(filter.apply(null, values1));
+        // value is null again -> false
+        Assert.assertFalse(filter.apply(null, valuesNull));
+    
     }
 }

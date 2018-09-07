@@ -9,7 +9,6 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,39 +44,46 @@ public class TypedValues implements MRecord, Serializable {
     }
 
     @Override
-    public double getDouble(String channel) {
-        return values.get(channel).getAsDouble();
+    public Double getDouble(String channel) {
+        return !values.containsKey(channel) ? null : values.get(channel).getAsDouble();
     }
 
     @Override
-    public long getLong(String channel) {
-        return values.get(channel).getAsLong();
+    public Long getLong(String channel) {
+        return !values.containsKey(channel) ? null : values.get(channel).getAsLong();
     }
 
     @Override
-    public boolean getBoolean(String channel) {
-        return values.get(channel).getAsBoolean();
+    public Boolean getBoolean(String channel) {
+        return !values.containsKey(channel) ? null : values.get(channel).getAsBoolean();
     }
 
     @Override
     public Date getDate(String channel) {
-        return values.get(channel).getAsDate();
+        return !values.containsKey(channel) ? null : values.get(channel).getAsDate();
     }
 
     @Override
     public String getString(String channel) {
-        if (!values.containsKey(channel)) {
-            throw new InvalidParameterException("The requested Channel \"" + channel + "\" is not in the TypedValues Map!");
-        }
-        return values.get(channel).getAsString();
+        return !values.containsKey(channel) ? null : values.get(channel).getAsString();
     }
 
     @Override
     public Value getValue(String channel) {
-        return values.get(channel);
+        return values.getOrDefault(channel, null);
     }
-
+    
+    /**
+     * This method should not be used on this class
+     *
+     * @param channel Channel to extract
+     * @return nothing -&gt; should not be used on this implementation
+     * @throws UnsupportedOperationException always when this method is called
+     * @deprecated should not be used in this implementation of {@link MRecord}
+     */
     @Override
+    @Deprecated
+    @SuppressWarnings("squid:S1133") // suppress deprecated warning
     public Object get(String channel) {
         throw new UnsupportedOperationException("This is a typed object untyped getter not supported!");
     }

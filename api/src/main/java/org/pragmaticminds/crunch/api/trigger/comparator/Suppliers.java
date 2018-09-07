@@ -9,7 +9,9 @@ import java.util.Date;
  * Created by Erwin Wagasow on 13.08.2018
  */
 public class Suppliers {
-    private Suppliers() { /* do nothing */}
+    private Suppliers() {
+        throw new UnsupportedOperationException("this constructor should not be used!");
+    }
     
     /**
      * Holds all the channel extraction {@link Supplier}s
@@ -78,32 +80,61 @@ public class Suppliers {
          * Creates an AND Operation on two {@link Supplier}s
          * @param s1 the first {@link Supplier}
          * @param s2 the second {@link Supplier}
-         * @return a {@link Supplier} that combines both supplier values
+         * @return a {@link Supplier} that combines both supplier values, null if one of the {@link Supplier}s
+         * delivered null.
          */
         public static Supplier<Boolean> and(Supplier<Boolean> s1, Supplier<Boolean> s2){
             String identifier = String.format("and(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> s1.extract(values) && s2.extract(values));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                    s1.extract(values) != null && s2.extract(values) != null
+                    // "and" condition
+                    ? s1.extract(values) && s2.extract(values)
+                    // return null if one of the suppliers delivered null
+                    : null
+            );
         }
     
         /**
          * Creates an OR Operation on two {@link Supplier}s
          * @param s1 the first {@link Supplier}
          * @param s2 the second {@link Supplier}
-         * @return a {@link Supplier} that combines both supplier values
+         * @return a {@link Supplier} that combines both supplier values, null if one of the {@link Supplier}s
+         * delivered null.
          */
         public static Supplier<Boolean> or(Supplier<Boolean> s1, Supplier<Boolean> s2){
             String identifier = String.format("or(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> s1.extract(values) || s2.extract(values));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                    s1.extract(values) != null && s2.extract(values) != null
+                    // "or" condition
+                    ? (s1.extract(values) || s2.extract(values))
+                    // return null if one of the suppliers delivered null
+                    : null
+            );
         }
     
         /**
          * Craetes an inversion of the {@link Supplier} value
          * @param supplier with the result to be inverted
-         * @return the inverted result of the inner {@link Supplier}
+         * @return the inverted result of the inner {@link Supplier} or null if inner {@link Supplier} delivered null.
          */
         public static Supplier<Boolean> not(Supplier<Boolean> supplier){
             String identifier = String.format("not(%s)", supplier.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> !supplier.extract(values));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                    supplier.extract(values) != null
+                    // "invert" the extracted value
+                    ? !supplier.extract(values)
+                    // return null of delivered value is null
+                    : null
+            );
         }
     }
     
@@ -122,7 +153,16 @@ public class Suppliers {
         @SuppressWarnings("squid:S1221") // using of the name equal
         public static Supplier<Boolean> equal(String expected, Supplier<String> supplier){
             String identifier = String.format("equal(\"%s\",%s)", expected, supplier.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> expected.equals(supplier.extract(values)));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                    supplier.extract(values) != null
+                    // compare expected with delivered value
+                    ? expected.equals(supplier.extract(values))
+                    // return null if delivered value is null
+                    : null
+            );
         }
     
         /**
@@ -134,7 +174,16 @@ public class Suppliers {
         @SuppressWarnings("squid:S1221") // using of the name equal
         public static Supplier<Boolean> equal(Supplier<String> s1, Supplier<String> s2){
             String identifier = String.format("equal(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> s1.extract(values).equals(s2.extract(values)));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                    s1.extract(values) != null && s2.extract(values) != null
+                    // compare supplied values with each other
+                    ? s1.extract(values).equals(s2.extract(values))
+                    // return null if one of the supplied values is null
+                    : null
+            );
         }
     
         /**
@@ -145,7 +194,16 @@ public class Suppliers {
          */
         public static Supplier<Boolean> match(String regex, Supplier<String> supplier){
             String identifier = String.format("match(\"%s\",%s)", regex, supplier.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> supplier.extract(values).matches(regex));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                    supplier.extract(values) != null
+                    // match the supplied value to regex
+                    ? supplier.extract(values).matches(regex)
+                    // if supplied value was null return null
+                    : null
+            );
         }
     
         /**
@@ -156,7 +214,16 @@ public class Suppliers {
          */
         public static Supplier<Boolean> contains(String string, Supplier<String> supplier){
             String identifier = String.format("contains(\"%s\",%s)", string, supplier.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> supplier.extract(values).contains(string));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                    supplier.extract(values) != null
+                    // check if supplied value contains the string given
+                    ? supplier.extract(values).contains(string)
+                    // return null if supplied value was null
+                    : null
+            );
         }
     
         /**
@@ -166,7 +233,21 @@ public class Suppliers {
          */
         public static Supplier<Long> length(Supplier<String> supplier){
             String identifier = String.format("length(%s)", supplier.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> (long) supplier.extract(values).length());
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // null check
+                {
+                    String extract = supplier.extract(values);
+                    // extract length
+                    // return null if supplied value was null
+                    if (extract != null) {
+                        return (long) extract.length();
+                    } else {
+                        return null;
+                    }
+                }
+            );
         }
     }
     

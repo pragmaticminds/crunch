@@ -21,6 +21,7 @@ import static org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategies.*
 public class TriggerStrategiesTest {
     private TypedValues falseValues;
     private TypedValues trueValues;
+    private TypedValues nullValues;
     
     @Before
     public void setUp() throws Exception {
@@ -38,6 +39,12 @@ public class TriggerStrategiesTest {
             .source("test")
             .values(trueMap)
             .build();
+        Map<String, Value> nullMap = new HashMap<>();
+        nullValues = TypedValues.builder()
+            .timestamp(System.currentTimeMillis())
+            .source("test")
+            .values(trueMap)
+            .build();
     }
     
     @Test
@@ -45,6 +52,10 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onTrue(new NamedSupplier<>("true", values -> true));
         boolean result = strategy.isToBeTriggered(null);
         Assert.assertTrue(result);
+        
+        strategy = onTrue(new NamedSupplier<>("null", values -> null));
+        result = strategy.isToBeTriggered(null);
+        Assert.assertFalse(result);
     }
  
     @Test
@@ -59,6 +70,10 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onFalse(new NamedSupplier<>("false", values -> false));
         boolean result = strategy.isToBeTriggered(null);
         Assert.assertTrue(result);
+    
+        strategy = onFalse(new NamedSupplier<>("null", values -> null));
+        result = strategy.isToBeTriggered(null);
+        Assert.assertFalse(result);
     }
  
     @Test
@@ -79,6 +94,10 @@ public class TriggerStrategiesTest {
         strategy.isToBeTriggered(trueValues);
         boolean result2 = strategy.isToBeTriggered(falseValues);
         Assert.assertTrue(result2);
+    
+        strategy = onChange(new NamedSupplier<>("null", values -> null));
+        result = strategy.isToBeTriggered(nullValues);
+        Assert.assertFalse(result);
     }
  
     @Test
@@ -100,6 +119,10 @@ public class TriggerStrategiesTest {
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(trueValues);
         Assert.assertTrue(result);
+    
+        strategy = onBecomeTrue(new NamedSupplier<>("null", values -> null));
+        result = strategy.isToBeTriggered(nullValues);
+        Assert.assertFalse(result);
     }
  
     @Test
@@ -116,6 +139,10 @@ public class TriggerStrategiesTest {
         strategy.isToBeTriggered(trueValues);
         boolean result = strategy.isToBeTriggered(falseValues);
         Assert.assertTrue(result);
+    
+        strategy = onBecomeFalse(new NamedSupplier<>("null", values -> null));
+        result = strategy.isToBeTriggered(nullValues);
+        Assert.assertFalse(result);
     }
  
     @Test

@@ -27,7 +27,7 @@ class Max<T extends Serializable & Comparable> implements Aggregation<T, T>{
      */
     @Override
     public void aggregate(T value) {
-        if(maxValue == null || AggregationUtils.compare(value, maxValue) > 0){
+        if(maxValue == null || value != null && AggregationUtils.compare(value, maxValue) > 0){
             maxValue = value;
         }
     }

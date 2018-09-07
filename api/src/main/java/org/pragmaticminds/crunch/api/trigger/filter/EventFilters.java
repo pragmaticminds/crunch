@@ -36,6 +36,9 @@ public class EventFilters {
             public boolean apply(Event event, MRecord values) {
                 boolean keep = false; // filter by default
                 T value = supplier.extract(values);
+                if(value == null){
+                    return false;
+                }
                 if(lastValue != null){
                     keep = !value.equals(lastValue);
                 }

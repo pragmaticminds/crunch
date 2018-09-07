@@ -50,10 +50,16 @@ public class ValueTest {
         Value of = Value.of(o);
         assertEquals(new Long(42L), of.getAsLong());
     }
-
+    
     @Test(expected = InvalidParameterException.class)
     public void ofObject_fails() {
         Object o = Instant.now();
+        Value.of(o);
+    }
+    
+    @Test
+    public void ofNull() {
+        Object o = null;
         Value.of(o);
     }
 

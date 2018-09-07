@@ -25,6 +25,9 @@ class Sum<T extends Serializable> implements Aggregation<T, T> {
      */
     @Override
     public void aggregate(T value) {
+        if(value == null){
+            return;
+        }
         if(sumValue == null){
             sumValue = value;
         }else{

@@ -18,7 +18,7 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static RecordWindow bitActive(Supplier<Boolean> supplier) {
-        return supplier::extract;
+        return values -> supplier.extract(values) != null && supplier.extract(values);
     }
     
     
@@ -29,7 +29,7 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static RecordWindow bitNotActive(Supplier<Boolean> supplier) {
-        return record -> !supplier.extract(record);
+        return record -> supplier.extract(record) != null && !supplier.extract(record);
     }
     
     /**
@@ -39,7 +39,7 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static <T> RecordWindow valueEquals(Supplier<T> supplier, T expected) {
-        return record -> supplier.extract(record).equals(expected);
+        return record -> supplier.extract(record) != null && supplier.extract(record).equals(expected);
     }
     
     /**
@@ -49,6 +49,6 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static <T> RecordWindow valueNotEquals(Supplier<T> supplier, T notExpected) {
-        return record -> !supplier.extract(record).equals(notExpected);
+        return record -> supplier.extract(record) != null && !supplier.extract(record).equals(notExpected);
     }
 }

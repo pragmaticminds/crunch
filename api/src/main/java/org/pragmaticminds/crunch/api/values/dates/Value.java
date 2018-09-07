@@ -84,6 +84,9 @@ public abstract class Value implements Serializable {
      * @return the Value the element of the map at the given key is transformed to
      */
     public static Value of(Object o) {
+        if (o == null){
+            return null;
+        }
         if (Boolean.class.isAssignableFrom(o.getClass())) {
             return new BooleanValue((Boolean) o);
         }
