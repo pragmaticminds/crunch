@@ -126,7 +126,7 @@ public class TypedValuesTest {
         String string = values.toString();
         assertNotNull(string);
         assertFalse(string.isEmpty());
-        assertEquals("TypedValues(source=null, timestamp=0, values=null)", string);
+        assertEquals("TypedValues(source=null, timestamp=0, values={})", string);
     }
 
     @Test(expected = UnsupportedOperationException.class)

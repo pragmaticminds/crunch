@@ -40,8 +40,10 @@ public class TypedValues implements MRecord, Serializable {
         this.source = source;
         this.timestamp = timestamp;
         // Add the values in a new hash map, otherwise one could insert an immutable map.
-        if(values != null && !values.isEmpty()){
+        if (values != null) {
             this.values = new HashMap<>(values);
+        } else {
+            this.values = new HashMap<>();
         }
     }
 
