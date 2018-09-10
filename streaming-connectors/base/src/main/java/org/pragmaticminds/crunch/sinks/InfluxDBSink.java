@@ -159,20 +159,39 @@ public class InfluxDBSink implements EvaluationFunction {
 
         private final String url;
         private final String db;
+        private final String influxUser;
+        private final String influxPass;
         private int maxNumberOfBatchPoints;
         private int commitTimeMaxMs;
 
         /**
+         * Constructor without use of user/password
+         * user/password where set to empty string
          * @param url                    influx urls incl. port
          * @param db                     influx db where data shall be stored
          * @param maxNumberOfBatchPoints Number of Points per Batch
          * @param commitTimeMaxMs        Timeout between forcing batch commits
          */
         public DefaultInfluxFactory(String url, String db, int maxNumberOfBatchPoints, int commitTimeMaxMs) {
+            this(url,db,"","",maxNumberOfBatchPoints,commitTimeMaxMs);
+        }
+
+        /**
+         *
+         * @param url                       influx urls incl. port
+         * @param db                        influx db where data shall be stored
+         * @param influxUser                username to connected to influx server
+         * @param influxPass                password to connect to influx server
+         * @param maxNumberOfBatchPoints    Number of Points per Batch
+         * @param commitTimeMaxMs           Timeout between forcing batch commits
+         */
+        public DefaultInfluxFactory(String url, String db, String influxUser, String influxPass, int maxNumberOfBatchPoints, int commitTimeMaxMs) {
             this.url = url;
             this.db = db;
             this.maxNumberOfBatchPoints = maxNumberOfBatchPoints;
             this.commitTimeMaxMs = commitTimeMaxMs;
+            this.influxUser = influxUser;
+            this.influxPass = influxPass;
         }
 
         /**
@@ -191,7 +210,14 @@ public class InfluxDBSink implements EvaluationFunction {
 
         @Override
         public InfluxDB create() {
-            InfluxDB influxDB = InfluxDBFactory.connect(url);
+            InfluxDB influxDB;
+            if(!influxUser.isEmpty()){
+                influxDB = InfluxDBFactory.connect(url,influxUser,influxPass);
+            }
+            else{
+                influxDB = InfluxDBFactory.connect(url);
+            }
+
             checkOrCreateDatabaseIfNotExists(influxDB, db);
             influxDB.setDatabase(db);
             influxDB.enableBatch(maxNumberOfBatchPoints, commitTimeMaxMs, TimeUnit.MILLISECONDS);
