@@ -1,12 +1,17 @@
 package org.pragmaticminds.crunch.execution;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.pragmaticminds.crunch.LoggingUtil;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.serialization.JsonDeserializerWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -17,8 +22,9 @@ import java.util.*;
  */
 public class KafkaMRecordSource implements MRecordSource {
 
-    static final long POLL_TIMEOUT_MS = 500L;
-    
+    static final long POLL_TIMEOUT_MS = 1_000L;
+    private static final Logger logger = LoggerFactory.getLogger(KafkaMRecordSource.class);
+
     private transient KafkaConsumer<String, UntypedValues>      consumer;
     private transient Iterator<ConsumerRecord<String, UntypedValues>> recordIterator;
     
@@ -42,8 +48,22 @@ public class KafkaMRecordSource implements MRecordSource {
      */
     @SuppressWarnings("squid:S2095") // KafkaConsumer is responsible for the closing of the Deserializers
     public KafkaMRecordSource(String kafkaUrl, String kafkaGroup, Collection<String> topics){
-        initialize(kafkaUrl, kafkaGroup, topics, null);
+        initialize(kafkaUrl, kafkaGroup, topics, null, false);
     }
+
+    /**
+     * Main constructor. Creates a new instance of the {@link KafkaConsumer}
+     *
+     * @param kafkaUrl      to connect to kafka
+     * @param kafkaGroup    to connect to kafka
+     * @param topics        {@link List} of all to be subscribed
+     * @param fromBeginning If this should read from the beginning of the kafka topics if group is unset
+     */
+    @SuppressWarnings("squid:S2095") // KafkaConsumer is responsible for the closing of the Deserializers
+    public KafkaMRecordSource(String kafkaUrl, String kafkaGroup, Collection<String> topics, boolean fromBeginning) {
+        initialize(kafkaUrl, kafkaGroup, topics, null, fromBeginning);
+    }
+
     /**
      * Main constructor. Creates a new instance of the {@link KafkaConsumer}
      * @param kafkaUrl to connect to kafka
@@ -51,8 +71,9 @@ public class KafkaMRecordSource implements MRecordSource {
      * @param topics {@link List} of all to be subscribed
      * @param additionalProperties extra properties to be set up
      */
-    public KafkaMRecordSource(String kafkaUrl, String kafkaGroup, Collection<String> topics, Map<String, Object> additionalProperties){
-        initialize(kafkaUrl, kafkaGroup, topics, additionalProperties);
+    public KafkaMRecordSource(String kafkaUrl, String kafkaGroup, Collection<String> topics,
+                              Map<String, Object> additionalProperties) {
+        initialize(kafkaUrl, kafkaGroup, topics, null, false);
     }
     
     /**
@@ -64,7 +85,8 @@ public class KafkaMRecordSource implements MRecordSource {
      */
     @SuppressWarnings("squid:S2095") // KafkaConsumer is responsible for the closing of the Deserializers
     private void initialize(
-        String kafkaUrl, String kafkaGroup, Collection<String> topics, Map<String, Object> additionalProperties
+            String kafkaUrl, String kafkaGroup, Collection<String> topics, Map<String, Object> additionalProperties,
+            boolean fromBeginning
     ) {
         Map<String, Object> properties;
         if(additionalProperties == null){
@@ -76,6 +98,9 @@ public class KafkaMRecordSource implements MRecordSource {
         properties.put("group.id", kafkaGroup);
         properties.put("enable.auto.commit", "true");
         properties.put("auto.commit.interval.ms", "1000");
+        if (fromBeginning) {
+            properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        }
         Deserializer<String> keyDeserializer = new JsonDeserializerWrapper<>(String.class);
         Deserializer<UntypedValues> valueDeserializer = new JsonDeserializerWrapper<>(UntypedValues.class);
         this.consumer = new KafkaConsumer<>(properties, keyDeserializer, valueDeserializer);
@@ -94,7 +119,13 @@ public class KafkaMRecordSource implements MRecordSource {
         getMRecordsIfNoneAvailable();
     
         // return next record from the iterator
-        return recordIterator.next().value();
+        ConsumerRecord<String, UntypedValues> next = recordIterator.next();
+        if (logger.isTraceEnabled()) {
+            if (next.offset() % LoggingUtil.getTraceLogReportCheckpoint() == 0) {
+                logger.trace("Offset {} @ {}", next.offset(), Instant.ofEpochMilli(next.value().getTimestamp()));
+            }
+        }
+        return next.value();
     }
     
     /**

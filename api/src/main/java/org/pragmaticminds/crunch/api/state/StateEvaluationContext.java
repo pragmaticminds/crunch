@@ -80,15 +80,8 @@ public class StateEvaluationContext extends EvaluationContext {
      * be used.
      */
     @Override
-    @Deprecated
     @SuppressWarnings("squid:S1133") // no reminder to remove the deprecated method needed
     public void collect(Event event) {
-        String key;
-        if(this.events.size() == 0){
-            key = alias;
-        }else{
-            key = String.format("%s%s", alias, Integer.toString(this.events.size()-1));
-        }
-        this.events.put(key, event);
+        this.events.put(alias, event);
     }
 }

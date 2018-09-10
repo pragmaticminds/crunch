@@ -81,6 +81,9 @@ public class GraphFactory {
                 for (SubStream subStream : pipeline.getSubStreams()) {
                     // Generate a Flow from the Evaluation Functions
                     List<EvaluationFunction> evalFunctions = subStream.getEvalFunctions();
+                    // Initialize the eval function
+                    evalFunctions.forEach(EvaluationFunction::init);
+                    // Prepare the sream
                     stream = stream
                             .via(builder.add(
                                     Flow.of(MRecord.class)

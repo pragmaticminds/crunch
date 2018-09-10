@@ -9,6 +9,7 @@ import org.pragmaticminds.crunch.events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Map;
  * Created by Erwin Wagasow on 07.08.2018
  */
 public class MultiStepEvaluationFunction implements EvaluationFunction {
+
     private static final Logger logger = LoggerFactory.getLogger(MultiStepEvaluationFunction.class);
 
     private final List<StateConfig> stateConfigs;
@@ -38,6 +40,8 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
     private long timeoutStateTimeStamp;
 
     private boolean timersNotSet = true;
+
+    private int numberOfEventsProcessed = 0;
 
     /**
      * Main constructor of this class for the Builder.
@@ -94,7 +98,14 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
 
             // check for resulting Events
             Map<String, Event> events = innerContext.getEvents();
-            if(!events.isEmpty()){
+            if (innerContext.getEvents().size() > numberOfEventsProcessed) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Received new Event, map is currently: {}", innerContext.getEvents());
+                }
+
+                // Increment the number of processed events
+                numberOfEventsProcessed++;
+
                 //set the global timeout after first successful eval
                 if (timersNotSet) {
                     setOverallTimeout(record.getTimestamp());
@@ -106,6 +117,7 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
             }
         } catch (Exception ex) { // on thread interrupt
             logger.info("Exception during record processing", ex);
+            logger.debug("Calling error extractor with map {}", innerContext.getEvents());
             errorExtractor.process(innerContext == null ? Collections.emptyMap() : innerContext.getEvents(), ex, context);
             resetStatemachine();
         }
@@ -116,6 +128,12 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
      */
     private void setOverallTimeout(long timestamp) {
         timeoutOverallTimeStamp = timestamp + overallTimeoutMs;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Setting overall timeout for multi-stage to {}, current event timestamp is {}",
+                    Instant.ofEpochMilli(timeoutOverallTimeStamp),
+                    Instant.ofEpochMilli(timestamp));
+        }
     }
 
     /**
@@ -123,6 +141,12 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
      */
     private void setStateTimeout(long timestamp, long timeout) {
         timeoutStateTimeStamp = timestamp + timeout;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Setting State timeout for multi-stage to {}, current event timestamp is {}",
+                    Instant.ofEpochMilli(timeoutStateTimeStamp),
+                    Instant.ofEpochMilli(timestamp));
+        }
     }
 
     /**
@@ -143,10 +167,12 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
      */
     private void checkForTimeout(long timestamp) throws StepTimeoutException, OverallTimeoutException {
         if (timeoutStateTimeStamp <= timestamp) {
+            logger.debug("Encountered state timeout");
             throw new StepTimeoutException("Step timeout");
         }
 
         if (timeoutOverallTimeStamp <= timestamp) {
+            logger.debug("Encountered overall timeout");
             throw new OverallTimeoutException("Overall timeout");
         }
     }
@@ -160,12 +186,18 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
     private void nextState(Map<String, Event> events, EvaluationContext context) {
         // if timeout raised while processing
         if (currentStep == stateConfigs.size() - 1) {
+            logger.debug("Reached final state, calling state complete extractor with map: {}", events);
             stateCompleteExtractor.process(events, context);
             resetStatemachine();
         } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Switch state from {} to {}", stateConfigs.get(currentStep).getStateAlias(), stateConfigs.get(currentStep + 1).getStateAlias());
+            }
             this.setStateTimeout(context.get().getTimestamp(), stateConfigs.get(currentStep).getStateTimeout());
             currentStep++;
             currentStateEvaluationFunction = stateConfigs.get(currentStep).create();
+            // Set alias for the next Event which will be written in the map
+            innerContext.setAlias(stateConfigs.get(currentStep).getStateAlias());
         }
     }
 
@@ -173,9 +205,13 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
      * resets the inner structures in this instance, to begin processing from the start
      */
     private void resetStatemachine() {
+        logger.debug("Reset state machine to initial state");
         // restart the processing
         currentStep = 0;
         currentStateEvaluationFunction = stateConfigs.get(currentStep).create();
+
+        // No Events Processed yet
+        numberOfEventsProcessed = 0;
 
         // reset overall timeout and state timeout
         timersNotSet = true;

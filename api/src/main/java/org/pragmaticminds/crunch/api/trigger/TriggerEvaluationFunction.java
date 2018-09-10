@@ -1,13 +1,17 @@
 package org.pragmaticminds.crunch.api.trigger;
 
+import com.google.common.base.Preconditions;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.trigger.extractor.EventExtractor;
 import org.pragmaticminds.crunch.api.trigger.filter.EventFilter;
 import org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategy;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -22,6 +26,9 @@ import java.util.stream.Collectors;
  * Created by Erwin Wagasow on 27.07.2018
  */
 public class TriggerEvaluationFunction implements EvaluationFunction {
+
+    private static final Logger logger = LoggerFactory.getLogger(TriggerEvaluationFunction.class);
+
     private final TriggerStrategy triggerStrategy;
     private final EventExtractor  eventExtractor;
     private final EventFilter     filter;
@@ -38,6 +45,8 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
         EventExtractor eventExtractor,
         EventFilter filter
     ) {
+        Preconditions.checkNotNull(triggerStrategy, "Trigger Strategy has to be set");
+        Preconditions.checkNotNull(eventExtractor, "Event Extractor has to be set");
         this.triggerStrategy = triggerStrategy;
         this.eventExtractor = eventExtractor;
         this.filter = filter;
@@ -51,12 +60,19 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
      */
     @Override
     public void eval(EvaluationContext ctx) {
-        if(triggerStrategy.isToBeTriggered(ctx.get())){
+        MRecord record = ctx.get();
+
+        if (triggerStrategy.isToBeTriggered(record)) {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Trigger Strategy Triggered for record {}", record);
+            }
+
             Collection<Event> results = eventExtractor.process(ctx);
             if(results != null) {
                 if (filter != null) {
                     results = results.stream()
-                        .filter(event -> filter.apply(event, ctx.get()))
+                            .filter(event -> filter.apply(event, record))
                         .collect(Collectors.toList());
                 }
                 results.forEach(ctx::collect);
@@ -82,9 +98,6 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
             return this;
         }
         public TriggerEvaluationFunction build(){
-            assert triggerStrategy != null;
-            assert eventExtractor != null;
-            
             return new TriggerEvaluationFunction(triggerStrategy, eventExtractor, filter);
         }
     }
