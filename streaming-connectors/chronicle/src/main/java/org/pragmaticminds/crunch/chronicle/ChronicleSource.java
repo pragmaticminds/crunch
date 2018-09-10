@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.chronicle;
 
 
 import org.pragmaticminds.crunch.api.records.MRecord;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.execution.MRecordSource;
 import org.pragmaticminds.crunch.serialization.JsonDeserializer;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class ChronicleSource implements MRecordSource {
     private static final Logger logger = LoggerFactory.getLogger(ChronicleSource.class);
 
     private final ChronicleConsumerFactory consumerFactory;
-    private ChronicleConsumer<MRecord> consumer;
+    private ChronicleConsumer<UntypedValues> consumer;
 
     /**
      * Creates a Source which instantiates a default consumer.
@@ -80,7 +81,7 @@ public class ChronicleSource implements MRecordSource {
     @FunctionalInterface
     interface ChronicleConsumerFactory extends Serializable {
 
-        ChronicleConsumer<MRecord> create();
+        ChronicleConsumer<UntypedValues> create();
 
     }
 
@@ -99,11 +100,11 @@ public class ChronicleSource implements MRecordSource {
         }
 
         @Override
-        public ChronicleConsumer<MRecord> create() {
-            return ChronicleConsumer.<MRecord>builder()
+        public ChronicleConsumer<UntypedValues> create() {
+            return ChronicleConsumer.<UntypedValues>builder()
                     .withPath(path)
                     .withConsumerName(consumerName)
-                    .withDeserializer(new JsonDeserializer<>(MRecord.class))
+                    .withDeserializer(new JsonDeserializer<>(UntypedValues.class))
                     .build();
         }
     }
