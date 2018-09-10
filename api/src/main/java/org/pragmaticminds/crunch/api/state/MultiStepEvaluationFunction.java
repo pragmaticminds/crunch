@@ -19,6 +19,7 @@ import java.util.Map;
  * {@link EvaluationFunction}s must be processed.
  *
  * @author Erwin Wagasow
+ * @author kerstin
  * Created by Erwin Wagasow on 07.08.2018
  */
 public class MultiStepEvaluationFunction implements EvaluationFunction {
@@ -79,14 +80,11 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
         try{
             // Initialize timers on first run
             MRecord record = context.get();
-            if (timersNotSet) {
-                setOverallTimeout(record.getTimestamp());
-                setStateTimeout(record.getTimestamp(), stateConfigs.get(currentStep).getStateTimeout());
-                timersNotSet = false;
-            }
 
             // check if timeout appeared
-            checkForTimeout(record.getTimestamp());
+            if (!timersNotSet) {
+                checkForTimeout(record.getTimestamp());
+            }
 
             // update or set inner context
             updateOrSetInnerContext(context);
@@ -97,6 +95,13 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
             // check for resulting Events
             Map<String, Event> events = innerContext.getEvents();
             if(!events.isEmpty()){
+                //set the global timeout after first successful eval
+                if (timersNotSet) {
+                    setOverallTimeout(record.getTimestamp());
+                    timersNotSet = false;
+                }
+
+                //then go to next stage
                 nextState(events, context);
             }
         } catch (Exception ex) { // on thread interrupt
@@ -148,7 +153,7 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
 
     /**
      * Switches the chain to the next step, cancels if error timeout occurred or restarts if processing of the chain is
-     * complete. In the last case the stateCompleteExtractor is called.
+     * complete. In the last case the evaluationCompleteExtractor is called.
      * @param events so far gained from the processing of the chain steps
      * @param context current of the eval method
      */
@@ -158,9 +163,9 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
             stateCompleteExtractor.process(events, context);
             resetStatemachine();
         } else {
+            this.setStateTimeout(context.get().getTimestamp(), stateConfigs.get(currentStep).getStateTimeout());
             currentStep++;
             currentStateEvaluationFunction = stateConfigs.get(currentStep).create();
-            this.setStateTimeout(context.get().getTimestamp(), stateConfigs.get(currentStep).getStateTimeout());
         }
     }
 
@@ -194,7 +199,7 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
         private List<StateConfig> stateConfigs;
         private long overallTimeoutMs = DEFAULT_TIMEOUT_MS;
         private ErrorExtractor errorExtractor;
-        private EvaluationCompleteExtractor stateCompleteExtractor;
+        private EvaluationCompleteExtractor evaluationCompleteExtractor;
 
         private Builder() {}
 
@@ -275,8 +280,8 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
          *                               generate final {@link Event}s to be send out of the {@link MultiStepEvaluationFunction}
          * @return self
          */
-        public Builder withStateCompleteExtractor(EvaluationCompleteExtractor stateCompleteExtractor) {
-            this.stateCompleteExtractor = stateCompleteExtractor;
+        public Builder withEvaluationCompleteExtractor(EvaluationCompleteExtractor stateCompleteExtractor) {
+            this.evaluationCompleteExtractor = stateCompleteExtractor;
             return this;
         }
 
@@ -285,7 +290,7 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
                     stateConfigs,
                     overallTimeoutMs,
                     errorExtractor,
-                    stateCompleteExtractor);
+                    evaluationCompleteExtractor);
         }
     }
 }

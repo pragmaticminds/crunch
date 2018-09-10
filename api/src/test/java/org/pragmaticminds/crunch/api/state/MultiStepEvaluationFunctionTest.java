@@ -1,360 +1,117 @@
 package org.pragmaticminds.crunch.api.state;
 
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.events.EventBuilder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-/**
- * This test covers 4 cases of processing {@link TypedValues} by a {@link MultiStepEvaluationFunction}.
- * Case 1: no timeouts are set
- * Case 2: timeouts are set but should not be raised while processing
- * Case 3: timeouts are set and a state timeout should be raised
- * Case 4: timeouts are set and a overall timeout should be raised
- *
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+/** *
  * @author Erwin Wagasow
+ * @author kerstin
  * Created by Erwin Wagasow on 09.08.2018
  */
 public class MultiStepEvaluationFunctionTest implements Serializable {
 
-    private List<StateConfig> stateFactories;
-    private List<StateConfig> stateFactoriesWithStateTimeoutsRaised;
-    private List<StateConfig> stateFactoriesWithOverallTimeoutsRaised;
-    private ErrorExtractor errorExtractor;
-    private EvaluationCompleteExtractor stateCompleteExtractor;
-    private EvaluationFunction                                         prototypeFunction;
-    private Long                                                       overallTimeout;
-    private Event                                                      errorStateEvent;
-    private Event                                                      errorOverallEvent;
-    private Event                                                      errorEvent;
-    private Event                                                      completeEvent;
-    private Event                                                      event;
-    private TypedValues                                                typedValues1;
-
-    @Before
-    public void setUp() {
-
-        // prepare all values
-
-        HashMap<String, Value> values = new HashMap<>();
-        values.put("test", Value.of("test"));
-
-        typedValues1 = TypedValues.builder().source("test").timestamp(System.currentTimeMillis()).values(values).build();
-        typedValues1 = TypedValues.builder().source("test").timestamp(System.currentTimeMillis()+100).values(values).build();
-
-        // this Event is expected to be the result on timeouts
-        errorStateEvent = EventBuilder.anEvent()
-                .withTimestamp(System.currentTimeMillis())
-                .withSource("test")
-                .withEvent("success")
-                .withParameter("type", "Error")
-                .build();
-
-        // this Event is expected to be the result on timeouts
-        errorOverallEvent = EventBuilder.anEvent()
-                .withTimestamp(System.currentTimeMillis())
-                .withSource("test")
-                .withEvent("success")
-                .withParameter("type", "Error")
-                .build();
-
-        // this Event is expected to be the result on timeouts
-        errorEvent = EventBuilder.anEvent()
-                .withTimestamp(System.currentTimeMillis())
-                .withSource("test")
-                .withEvent("success")
-                .withParameter("type", "Error")
-                .build();
-
-        // this Event is expected to be the result on successfull processing
-        completeEvent = EventBuilder.anEvent()
-                .withTimestamp(System.currentTimeMillis())
-                .withSource("test")
-                .withEvent("success")
-                .withParameter("type", "Complete")
-                .build();
-
-        // this Event is always given back as result from inner EvaluationFunctions
-        event = EventBuilder.anEvent()
-                .withTimestamp(System.currentTimeMillis())
-                .withSource("test")
-                .withEvent("success")
-                .withParameter("type", "Default")
-                .build();
-
-        // for successful processing
-        long stateTimeout = 10_000L;
-        overallTimeout = 10_000L;
-        // for timeouts raised
-        long stateTimeout10ms = 10L;
-
-        // always successful processing EvaluationFunction
-        prototypeFunction = new EvaluationFunction() {
-            @Override
-            public void eval(EvaluationContext ctx) {
-                ctx.collect(event);
-            }
-        };
-
-        // no resulting Event
-        EvaluationFunction prototypeFunctionNoResult = new EvaluationFunction() {
-            @Override
-            public void eval(EvaluationContext ctx) {
-                /* do nothing */
-            }
-        };
-
-        // EvaluationFunctionStateFactories for the successful processing without any timeout settings
-        stateFactories = new ArrayList<>();
-        CloneStateEvaluationFunctionFactory cloneFactory = CloneStateEvaluationFunctionFactory.builder()
-                .withPrototype(prototypeFunction)
-                .build();
-        StateConfig statConfig = new StateConfig("alias", cloneFactory, 10_000L);
-        // add 4 times the same EvaluationFunction
-        stateFactories.add(statConfig);
-        stateFactories.add(statConfig);
-        stateFactories.add(statConfig);
-        stateFactories.add(statConfig);
-
-        // EvaluationFunctionStateFactories for the failed processing on stateTimeout raised
-        stateFactoriesWithStateTimeoutsRaised = new ArrayList<>();
-        CloneStateEvaluationFunctionFactory cloneFactoryWithStateTimeoutsRaised = CloneStateEvaluationFunctionFactory.builder()
-                .withPrototype(prototypeFunctionNoResult)
-                .build();
-        // add single EvaluationFunctionStateFactory
-        stateFactoriesWithStateTimeoutsRaised.add(new StateConfig("alias", cloneFactoryWithStateTimeoutsRaised, stateTimeout10ms));
-
-        // EvaluationFunctionStateFactories for the failed processing on overallTimeout raised
-        stateFactoriesWithOverallTimeoutsRaised = new ArrayList<>();
-        CloneStateEvaluationFunctionFactory cloneFactoryWithOverallTimeoutsRaised = CloneStateEvaluationFunctionFactory.builder()
-                .withPrototype(prototypeFunctionNoResult)
-                .build();
-        // add single EvaluationFunctionStateFactory
-        stateFactoriesWithOverallTimeoutsRaised.add(new StateConfig("alias", cloneFactoryWithOverallTimeoutsRaised, stateTimeout+20_000L));
-
-        // extractor on timeouts and exceptions
-        errorExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(errorEvent);
-
-        // extractor on successful processing
-        stateCompleteExtractor = (EvaluationCompleteExtractor) (events, context) -> context.collect(completeEvent);
-    }
+    private ErrorExtractor errorExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(new Event(0L, ex.getClass().getName(), ""));
+    private EvaluationCompleteExtractor evaluationCompleteExtractor = (EvaluationCompleteExtractor) (events, context) -> {
+        for (Map.Entry<String, Event> stringEventEntry : events.entrySet()) {
+            context.collect(stringEventEntry.getValue());
+        }
+    };
+    private Event successEvent = EventBuilder.anEvent()
+            .withTimestamp(System.currentTimeMillis())
+            .withSource("test")
+            .withEvent("success")
+            .build();
+    private TypedValues typedValues = TypedValues.builder().source("test").values(Collections.emptyMap()).build();
 
     @Test
-    public void evalSimpleNoTimeouts() { // -> processing should be successful with no timers set
+    public void evalDefaultTimeOut_noTimeOutOccurs() { // -> processing should be successful with no timers set
         // create instance of the MultiStepEvaluationFunction with parameters for this test
-        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
+        MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
                 .withErrorExtractor(errorExtractor)
-                .withStateCompleteExtractor(stateCompleteExtractor);
-        for (StateConfig stateFactory : stateFactories) {
-            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
-                    stateFactory.getStateTimeout());
-        }
-
-        MultiStepEvaluationFunction stateMachine = builder.build();
+                .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
+                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success", 10)
+                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success")
+                .build();
 
                 SimpleEvaluationContext context;
-        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-            for (int j = 0; j < 3; j++) {
-                // prepare
-                context= new SimpleEvaluationContext(typedValues1);
-                // execute
+                context= new SimpleEvaluationContext(typedValues);
                 stateMachine.eval(context);
-                // check
-                Assert.assertEquals(0, context.getEvents().size());
-            }
-            // last state
-            // prepare
-            context = new SimpleEvaluationContext(typedValues1);
-            // execute
+            context = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+9, typedValues.getValues()));
             stateMachine.eval(context);
-            // check
-            Assert.assertNotNull(context.getEvents());
-            Assert.assertEquals(1, context.getEvents().size());
-            Assert.assertEquals(completeEvent, context.getEvents().get(0));
+            assertNotNull(context.getEvents());
+            assertEquals(2, context.getEvents().size());
+        for (Event event : context.getEvents()) {
+            assertEquals(successEvent, event);
+
         }
+
     }
 
     @Test
-    public void evalSimpleWithTimeouts() { // -> processing should be successful while having set up timers
-        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
+    public void eval_withStepTimeout() { // -> a state timeout should be raised
+        MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
                 .withErrorExtractor(errorExtractor)
-                .withOverallTimeoutMs(overallTimeout)
-                .withStateCompleteExtractor(stateCompleteExtractor);
-        for (StateConfig stateFactory : stateFactories) {
-            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
-                    stateFactory.getStateTimeout());
-        }
+                .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
+                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success", 10)
+                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout")
+                .build();
 
-        MultiStepEvaluationFunction statemachineWithTimeouts = builder.build();
-
-        SimpleEvaluationContext context;
-        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-            for (int j = 0; j < 3; j++) {
-                // prepare
-                context = new SimpleEvaluationContext(typedValues1);
-                // execute
-                statemachineWithTimeouts.eval(context);
-                // check
-                Assert.assertEquals(0, context.getEvents().size());
-            }
-            // last state
-            // prepare
-            context = new SimpleEvaluationContext(typedValues1);
-            // execute
-            statemachineWithTimeouts.eval(context);
-            // check
-            Assert.assertNotNull(context.getEvents());
-            Assert.assertEquals(1, context.getEvents().size());
-            Assert.assertEquals(completeEvent, context.getEvents().get(0));
-        }
+            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+            stateMachine.eval(context); // second time, so that error can be passed
+            // now the second call should trigger a state timeout because it's timestamp is 100 but can be 10 at maximum
+            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+100, typedValues.getValues()));
+            stateMachine.eval(context2);
+            assertTrue(context.getEvents().isEmpty());
+            assertEquals(1, context2.getEvents().size());
+            assertEquals(StepTimeoutException.class.getName(), context2.getEvents().get(0).getEventName());
     }
 
     @Test
-    public void evalWithStateTimeoutRaised() { // -> a state timeout should be raised
-        ErrorExtractor errorStateExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(
-                errorStateEvent);
+    public void eval_withOverallTimeout() { // -> a overall timeout should be raised
+        MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
+                .withErrorExtractor(errorExtractor)
+                .withOverallTimeoutMs(10)
+                .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
+                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success", 10)
+                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout")
+                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout")
+                .build();
+            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+            stateMachine.eval(context);
+            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+5, typedValues.getValues()));
+            stateMachine.eval(context2);
+        SimpleEvaluationContext context3 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+11, typedValues.getValues()));
+        stateMachine.eval(context3);
+        assertTrue(context.getEvents().isEmpty());
+        assertTrue(context2.getEvents().isEmpty());
+            assertEquals(1, context3.getEvents().size());
+        assertEquals(OverallTimeoutException.class.getName(), context3.getEvents().get(0).getEventName());
+    }
 
+    @Test
+    public void test_builder() {
         MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
-                .withErrorExtractor(errorStateExtractor)
-                .withOverallTimeoutMs(overallTimeout)
-                .withStateCompleteExtractor(stateCompleteExtractor);
-        for (StateConfig stateFactory : stateFactoriesWithStateTimeoutsRaised) {
-            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
-                    stateFactory.getStateTimeout());
-        }
+                .withErrorExtractor((ErrorExtractor) (events, ex, context) -> { })
+                .withEvaluationCompleteExtractor((EvaluationCompleteExtractor) (events, context) -> { })
+                .withOverallTimeoutMs(0L)
+                .addEvaluationFunction((EvaluationFunction) ctx -> {}, "")
+                .addEvaluationFunction((EvaluationFunction) ctx -> {}, "", 0L)
+                .addEvaluationFunctionFactory((EvaluationFunctionStateFactory) () -> null, "")
+                .addEvaluationFunctionFactory((EvaluationFunctionStateFactory) () -> null, "", 0L);
 
-        MultiStepEvaluationFunction statemachineWithStateTimeoutsRaised = builder.build();
-
-        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-            // the timersNotSet call is to set up the timers
-            // prepare
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues1);
-            // execute
-            statemachineWithStateTimeoutsRaised.eval(context); // second time, so that error can be passed
-
-            // now the second call should trigger a state timeout
-            // prepare
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues1.getTimestamp()+10_000L, typedValues1.getValues()));
-            // execute
-            statemachineWithStateTimeoutsRaised.eval(context2); // second time, so that error can be passed
-            // check
-            Assert.assertNotNull(context2.getEvents());
-            Assert.assertEquals(1, context2.getEvents().size());
-            Assert.assertEquals(errorStateEvent, context2.getEvents().get(0));
-        }
+        builder.build();
     }
 
-    @Test
-    public void evalWithOverallTimeoutRaised() { // -> a overall timeout should be raised
-        // prepare a error extractor
-        ErrorExtractor errorOverallExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(
-            errorOverallEvent);
-
-        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
-                .withErrorExtractor(errorOverallExtractor)
-                .withOverallTimeoutMs(overallTimeout)
-                .withStateCompleteExtractor(stateCompleteExtractor);
-        for (StateConfig stateFactory : stateFactoriesWithOverallTimeoutsRaised) {
-            builder.addEvaluationFunction(stateFactory.getFactory().create(), stateFactory.getStateAlias(),
-                    stateFactory.getStateTimeout());
-        }
-
-        MultiStepEvaluationFunction statemachineWithOverallTimeoutsRaised = builder.build();
-
-        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-            // the timersNotSet call is to set up the timers
-            // prepare
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues1);
-            // execute
-            statemachineWithOverallTimeoutsRaised.eval(context);
-
-            // now the second call should trigger a overall timeout
-            // prepare
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues1.getTimestamp()+10_000L, typedValues1.getValues()));
-            // execute
-            statemachineWithOverallTimeoutsRaised.eval(context2);
-            // check
-            Assert.assertNotNull(context2.getEvents());
-            Assert.assertEquals(1, context2.getEvents().size());
-            Assert.assertEquals(errorOverallEvent, context2.getEvents().get(0));
-        }
-    }
-
-    @Test
-    public void addEvaluationFunction() {
-        // prepare a error extractor
-        ErrorExtractor errorOverallExtractor = (ErrorExtractor) (events, ex, context) ->
-            context.collect(errorEvent);
-
-        // create a statemachine/chained EvaluationFunction
-        MultiStepEvaluationFunction function = MultiStepEvaluationFunction.builder()
-                .addEvaluationFunction(prototypeFunction, "alias")
-                .addEvaluationFunction(prototypeFunction, "alias")
-                .addEvaluationFunction(prototypeFunction, "alias")
-            .withErrorExtractor(errorOverallExtractor)
-            .withStateCompleteExtractor(stateCompleteExtractor)
-            .build();
-
-        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues1);
-            for (int j = 0; j < 3; j++) {
-//                context = new SimpleEvaluationContext(typedValues2);
-                // execute
-                function.eval(context);
-            }
-            // check
-            Assert.assertNotNull(context.getEvents());
-            Assert.assertEquals(1, context.getEvents().size());
-            Assert.assertEquals(completeEvent, context.getEvents().get(0));
-        }
-    }
-
-
-    @Test
-    public void addEvaluationFunctionFactory() {
-        // prepare a error extractor
-        ErrorExtractor errorOverallExtractor = (ErrorExtractor) (events, ex, context) ->
-            context.collect(errorEvent);
-
-        // create a statemachine/chained EvaluationFunction
-        CloneStateEvaluationFunctionFactory factory = CloneStateEvaluationFunctionFactory.builder()
-            .withPrototype(prototypeFunction)
-            .build();
-
-        MultiStepEvaluationFunction function = MultiStepEvaluationFunction.builder()
-            .addEvaluationFunctionFactory(factory, "alias")
-            .addEvaluationFunctionFactory(factory, "alias")
-            .addEvaluationFunctionFactory(factory, "alias")
-            .withErrorExtractor(errorOverallExtractor)
-            .withStateCompleteExtractor(stateCompleteExtractor)
-            .build();
-
-        for (int i = 0; i < 10; i++) { // do it 10 times, to make sure nothing is out of order
-
-            SimpleEvaluationContext context = null;
-            for (int j = 0; j < 3; j++) {
-                // prepare
-                context = new SimpleEvaluationContext(typedValues1);
-
-                // execute
-                function.eval(context);
-            }
-            // check
-            Assert.assertNotNull(context.getEvents());
-            Assert.assertEquals(1, context.getEvents().size());
-            Assert.assertEquals(completeEvent, context.getEvents().get(0));
-        }
-    }
 }

@@ -44,6 +44,12 @@ TODO Kerstin?
 A bugfix / implementation release is pretty simple.
 First, ensure that everything is commited and pushed!
 
+You can do a dry run to check if your release will go through
+
+```
+mvn release:prepare -DdryRun=true
+```
+
 Then, prepare using
 ```
 mvn clean release:prepare
