@@ -30,7 +30,7 @@ public class SuppliersTest {
         valueMap.put("string", Value.of("string"));
         valueMap.put("long", Value.of(123L));
         valueMap.put("date", Value.of(Date.from(Instant.now())));
-        valueMap.put("double", Value.of(0.1F));
+        valueMap.put("double", Value.of(0.1D));
         values = TypedValues.builder().timestamp(System.currentTimeMillis()).source("test").values(valueMap).build();
     }
     
@@ -137,5 +137,33 @@ public class SuppliersTest {
         Supplier<Long> supplier = length(stringChannel("string"));
         long extract = supplier.extract(values);
         Assert.assertEquals(6L, extract);
+    }
+    
+    @Test
+    public void comparatorEquals() {
+        Supplier<Boolean> supplier = Suppliers.Comparators.equals(0.1D, doubleChannel("double"));
+        boolean extract = supplier.extract(values);
+        Assert.assertTrue(extract);
+    }
+    
+    @Test
+    public void comparatorEquals2() {
+        Supplier<Boolean> supplier = Suppliers.Comparators.equals(doubleChannel("double"), doubleChannel("double"));
+        boolean extract = supplier.extract(values);
+        Assert.assertTrue(extract);
+    }
+    
+    @Test
+    public void comparatorCompare() {
+        Supplier<Long> supplier = Suppliers.Comparators.compare(0.1D, doubleChannel("double"));
+        Long extract = supplier.extract(values);
+        Assert.assertEquals(0L, (long)extract);
+    }
+    
+    @Test
+    public void comparatorCompare2() {
+        Supplier<Long> supplier = Suppliers.Comparators.compare(doubleChannel("double"), doubleChannel("double"));
+        Long extract = supplier.extract(values);
+        Assert.assertEquals(0L, (long)extract);
     }
 }

@@ -34,3 +34,17 @@ Library of static available [Supplier\<T\>](SUPPLIER.html) implementations, that
 - contains(String string, [Supplier\<String\>](SUPPLIER.html) supplier) : Checks if the String value of the supplier contains the given string value. Returns a [Supplier\<Boolean\>](SUPPLIER.html).
 
 - length([Supplier\<String\>](SUPPLIER.html) supplier) : determines the length of the supplied String value. Returns a [Supplier\<Long\>](SUPPLIER.html).
+
+#### Comparators
+
+- equals(T value, [Supplier\<T\>](SUPPLIER.html)) : checks whether value and supplied value are equal.
+
+- equals([Supplier\<T\>](SUPPLIER.html) s1, [Supplier\<T\>](SUPPLIER.html) s2) : checks the two supplied values for equality.
+
+- compare([Supplier\<T\>](SUPPLIER.html) s1, [Supplier\<T\>](SUPPLIER.html) s2) : determines a difference value for the 
+two supplied values. If the values are equal the result is 0, if value of s1 is bigger, than the resulting number is >1,
+if value of s2 is bigger, than the resulting value is negative.
+
+- compare(T value, [Supplier\<T\>](SUPPLIER.html) supplier) : determines a difference value for the 
+value and the supplied value. If the values are equal the result is 0, if value of s1 is bigger, than the resulting number is >1,
+if value of s2 is bigger, than the resulting value is negative.
