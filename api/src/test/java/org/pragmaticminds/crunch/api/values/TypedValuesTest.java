@@ -7,7 +7,7 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 import java.util.Collections;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Tests for the {@link TypedValues}
@@ -101,6 +101,32 @@ public class TypedValuesTest {
 
         assertEquals(101, merge.getTimestamp());
         assertEquals(111, (long)merge.getLong("long"));
+    }
+    
+    @Test
+    public void toStringTest(){
+        TypedValues values = TypedValues.builder()
+            .source("test")
+            .timestamp(123L)
+            .values(Collections.singletonMap("key", Value.of("test")))
+            .build();
+        String string = values.toString();
+        assertNotNull(string);
+        assertFalse(string.isEmpty());
+        assertEquals(
+            "TypedValues(source=test, timestamp=123, values={key=StringValue(value=test)})",
+            string
+        );
+    }
+    
+    @Test
+    public void toStringWithNullsTest(){
+        // set no values in the TypedValues
+        TypedValues values = TypedValues.builder().build();
+        String string = values.toString();
+        assertNotNull(string);
+        assertFalse(string.isEmpty());
+        assertEquals("TypedValues(source=null, timestamp=0, values=null)", string);
     }
 
     @Test(expected = UnsupportedOperationException.class)

@@ -10,8 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests for the UntypedValues.
@@ -27,22 +26,38 @@ public class UntypedValuesTest {
 
         assertEquals(13L, event.getTimestamp());
     }
-
+    
     @Test
     public void toTypedValues() {
         UntypedValues untypedValues = UntypedValues.builder()
-                .timestamp(13L)
-                .prefix("")
-                .source("test")
-                .values(Collections.singletonMap("key", 42L))
-                .build();
-
+            .timestamp(13L)
+            .prefix("")
+            .source("test")
+            .values(Collections.singletonMap("key", 42L))
+            .build();
+        
         TypedValues typedValues = untypedValues.toTypedValues();
-
+        
         assertEquals(untypedValues.getTimestamp(), typedValues.getTimestamp());
         assertEquals(untypedValues.getSource(), typedValues.getSource());
         assertTrue(LongValue.class.isAssignableFrom(typedValues.getValues().get("key").getClass()));
         assertEquals(42L, untypedValues.getValues().get("key"));
+    }
+    
+    @Test
+    public void toTypedValuesWithNulls() {
+        UntypedValues untypedValues = UntypedValues.builder()
+            .timestamp(13L)
+            .prefix(null)
+            .source("test")
+            .values(Collections.singletonMap("key", null))
+            .build();
+        
+        TypedValues typedValues = untypedValues.toTypedValues();
+        
+        assertEquals(untypedValues.getTimestamp(), typedValues.getTimestamp());
+        assertEquals(untypedValues.getSource(), typedValues.getSource());
+        assertNull(typedValues.getValues().get("key"));
     }
 
     @Test(expected = InvalidParameterException.class)
@@ -94,7 +109,31 @@ public class UntypedValuesTest {
         assertEquals(0, untypedValues.getValues().size());
         assertTrue(untypedValues.isEmpty());
     }
-
+    
+    @Test
+    public void toStringTest() {
+        String string = getUntypedValues().toString();
+        assertNotNull(string);
+        assertEquals(
+            "UntypedValues(source=test, timestamp=13, prefix=, values={channel1=1, channel2=2, channel3=3})",
+            string
+        );
+    }
+    
+    @Test
+    public void toStringTestWithNulls() {
+        UntypedValues values = UntypedValues.builder()
+            .values(Collections.singletonMap("key", null))
+            .build();
+        String string = values.toString();
+        assertNotNull(string);
+        System.out.println(string);
+        assertEquals(
+            "UntypedValues(source=null, timestamp=0, prefix=null, values={key=null})",
+            string
+        );
+    }
+    
     private UntypedValues getUntypedValues() {
         HashMap<String, Object> values = new HashMap<>();
         values.put("channel1", 1);

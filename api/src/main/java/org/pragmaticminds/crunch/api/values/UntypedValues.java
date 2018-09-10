@@ -102,7 +102,7 @@ public class UntypedValues implements MRecord {
 
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             String channelName = entry.getKey();
-            if (!prefix.isEmpty()) {
+            if (prefix != null && !prefix.isEmpty()) {
                 channelName = prefix + "_" + entry.getKey();
             }
             valueMap.put(channelName, Value.of(entry.getValue()));
