@@ -38,7 +38,7 @@ public class JsonDeserializer<T> implements Deserializer<T> {
         try {
             return mapper.readValue(bytes, clazz);
         } catch (IOException e) {
-            logger.warn("Unable to deserialize Object from byte array", e);
+            logger.warn("Unable to deserialize Object from byte array returning null", e);
             return null;
         }
     }
