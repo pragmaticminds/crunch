@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>playground</artifactId>
+    <version>0.1-RC6</version>
     <description>This module is for "Playin" Around Stuff which is runnable enough to serve others as well.
     </description>
 

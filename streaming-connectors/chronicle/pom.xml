@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streaming-connector-chronicle</artifactId>
+    <version>0.1-RC6</version>
     <description>Contains the Connections to a Chronicle Queue</description>
 
     <dependencies>

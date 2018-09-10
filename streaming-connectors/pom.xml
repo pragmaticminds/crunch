@@ -8,7 +8,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streaming-connectors</artifactId>
+    <version>0.1-RC6</version>
     <packaging>pom</packaging>
+
     <modules>
         <module>flink</module>
         <module>base</module>

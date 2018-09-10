@@ -8,6 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streaming-connector-flink</artifactId>
+    <version>0.1-RC6</version>
     <properties>
         <flink.version>1.4.0</flink.version>
         <flink-scala.version>2.11</flink-scala.version>
