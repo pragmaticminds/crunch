@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.booleanChannel;
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.stringChannel;
 import static org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategies.*;
 
 /**
@@ -151,6 +152,22 @@ public class TriggerStrategiesTest {
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(trueValues);
         Assert.assertFalse(result);
+    }
+    
+    @Test
+    public void isToBeTriggeredOnNull(){
+        TriggerStrategy strategy = onNull(stringChannel("null"));
+        strategy.isToBeTriggered(trueValues);
+        boolean result = strategy.isToBeTriggered(trueValues);
+        Assert.assertTrue(result);
+    }
+    
+    @Test
+    public void isToBeTriggeredOnNotNull(){
+        TriggerStrategy strategy = onNotNull(booleanChannel("val"));
+        strategy.isToBeTriggered(trueValues);
+        boolean result = strategy.isToBeTriggered(trueValues);
+        Assert.assertTrue(result);
     }
  
     @Test

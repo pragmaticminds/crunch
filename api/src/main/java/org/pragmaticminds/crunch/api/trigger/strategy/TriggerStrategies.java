@@ -1,5 +1,6 @@
 package org.pragmaticminds.crunch.api.trigger.strategy;
 
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 
@@ -76,19 +77,45 @@ public class TriggerStrategies {
      * @param supplier extracts the relevant values from a {@link TypedValues}
      * @return true if triggered
      */
-    public static TriggerStrategy onChange(Supplier<Boolean> supplier){
-        return new MemoryTriggerStrategy<Boolean>(supplier, 1) {
+    public static <T> TriggerStrategy onChange(Supplier<T> supplier){
+        return new MemoryTriggerStrategy<T>(supplier, 1) {
+            /**
+             * This method is to be implemented by the user of this class, with the final decision making.
+             *
+             * @param decisionBase the extracted value
+             * @return true if triggered, otherwise false
+             */
             @Override
-            public boolean isToBeTriggered(Boolean decisionBase) {
+            public boolean isToBeTriggered(T decisionBase) {
                 return
                     // null check
                     decisionBase != null
                     // condition check
-                    && !lastDecisionBases.isEmpty() && lastDecisionBases.get(0) != decisionBase;
+                    && !lastDecisionBases.isEmpty() && !lastDecisionBases.get(0).equals(decisionBase);
             }
         };
     }
-    
+
+    /**
+     * This method triggers on supplied value is not available
+     * @param supplier extracts the relevant values from a {@link MRecord}
+     * @param <T> type of the Supplier
+     * @return true if triggered
+     */
+    public static <T> TriggerStrategy onNull(Supplier<T> supplier){
+        return values -> supplier.extract(values) == null;
+    }
+
+    /**
+     * This method triggers on supplied value is available
+     * @param supplier extracts the relevant values from a {@link MRecord}
+     * @param <T> type of the Supplier
+     * @return true if triggered
+     */
+    public static <T> TriggerStrategy onNotNull(Supplier<T> supplier){
+        return values -> supplier.extract(values) != null;
+    }
+
     /**
      * This method triggers always
      * @return always true

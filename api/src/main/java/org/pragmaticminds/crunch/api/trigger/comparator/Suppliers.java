@@ -1,5 +1,7 @@
 package org.pragmaticminds.crunch.api.trigger.comparator;
 
+import org.pragmaticminds.crunch.api.windowed.extractor.aggregate.AggregationUtils;
+
 import java.util.Date;
 
 /**
@@ -248,6 +250,102 @@ public class Suppliers {
                     }
                 }
             );
+        }
+    }
+    
+    /**
+     * Holds comparative {@link Supplier}s
+     */
+    public static class Comparators{
+        /** hidden constructor */
+        private Comparators() { throw new UnsupportedOperationException("this class should not be instantiated!"); }
+    
+        /**
+         * Compares given value with the supplied value for equality.
+         *
+         * @param value to be compared.
+         * @param supplier extracts the values to be compared
+         * @param <T> type of values to be compared
+         * @return an equality check {@link Supplier}
+         */
+        @SuppressWarnings("squid:S1201") // use of equals
+        public static <T> Supplier<Boolean> equals(T value, Supplier<T> supplier){
+            String identifier = String.format("equals(%s, %s)", value.toString(), supplier.getIdentifier());
+            return new NamedSupplier<>(identifier, values ->
+                // null check
+                supplier.extract(values) != null
+                // apply condition
+                && value.equals(supplier.extract(values))
+            );
+        }
+        
+        /**
+         * Compares two supplied values for equality.
+         *
+         * @param s1 supplies the first value for comparison
+         * @param s2 supplies the second value for comparison
+         * @param <T> type of the values to be compared
+         * @return an equality check {@link Supplier}
+         */
+        @SuppressWarnings("squid:S1201") // use of equals
+        public static <T> Supplier<Boolean> equals(Supplier<T> s1, Supplier<T> s2){
+            String identifier = String.format("equals(%s, %s)", s1.getIdentifier(), s2.getIdentifier());
+            return new NamedSupplier<>(identifier, values ->
+                // check for null values
+                s1.extract(values) != null && s2.extract(values) != null
+                // check the condition
+                && s1.extract(values).equals(s2.extract(values)));
+        }
+    
+        /**
+         * Compares two supplied values and return the difference as a Long.
+         * Determines a difference value for the two supplied values. If the values are equal the result is 0, if value
+         * of s1 is bigger, than the resulting number is >1, if value of s2 is bigger, than the resulting value is
+         * negative.
+         *
+         * @param s1 supplies the fist value for comparison
+         * @param s2 supplies the second value for comparison
+         * @param <T> type of compared values
+         * @return a difference comparison {@link Supplier}
+         */
+        public static <T extends Comparable> Supplier<Long> compare(Supplier<T> s1, Supplier<T> s2){
+            String identifier = String.format("compare(%s, %s)", s1.getIdentifier(), s2.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> {
+                // extract values
+                T v1 = s1.extract(values);
+                T v2 = s2.extract(values);
+                // null check
+                if(v1 == null || v2 == null){
+                    return null;
+                }
+                // apply comparison
+                return (long)AggregationUtils.compare(v1, v2);
+            });
+        }
+    
+        /**
+         * Compares a value with a supplied value and return the difference as a Long
+         * Determines a difference value for the value and the supplied value. If the values are equal the result is 0,
+         * if value of s1 is bigger, than the resulting number is >1, if value of s2 is bigger, than the resulting value
+         * is negative.
+         *
+         * @param value the fix value for comparison
+         * @param supplier supplies the second value for comparison
+         * @param <T> type of compared values
+         * @return a difference comparison {@link Supplier}
+         */
+        public static <T extends Comparable> Supplier<Long> compare(T value, Supplier<T> supplier){
+            String identifier = String.format("compare(%s, %s)", value.toString(), supplier.getIdentifier());
+            return new NamedSupplier<>(identifier, values -> {
+                // extract value
+                T value2 = supplier.extract(values);
+                // null check
+                if (value2 == null) {
+                    return null;
+                }
+                // apply comparison
+                return (long) AggregationUtils.compare(value, value2);
+            });
         }
     }
     
