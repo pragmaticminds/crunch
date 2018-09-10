@@ -15,6 +15,8 @@ Library of static available [Supplier\<T\>](SUPPLIER.html) implementations, that
 
 - stringChannel(String name) : extracts String channel values from the MRecord
 
+- channel(String name) : extracts a value from the MRecord where the type has not be given (and the inferred type is used)
+
 #### BooleanOperators
 
 - and([Supplier\<Boolean\>](SUPPLIER.html) s1, [Supplier\<Boolean\>](SUPPLIER.html) s2) : logical and operation on both supplied values

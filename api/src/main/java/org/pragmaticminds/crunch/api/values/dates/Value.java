@@ -87,6 +87,10 @@ public abstract class Value implements Serializable {
         if (o == null){
             return null;
         }
+        // Itempotency
+        if (Value.class.isAssignableFrom(o.getClass())) {
+            return (Value) o;
+        }
         if (Boolean.class.isAssignableFrom(o.getClass())) {
             return new BooleanValue((Boolean) o);
         }

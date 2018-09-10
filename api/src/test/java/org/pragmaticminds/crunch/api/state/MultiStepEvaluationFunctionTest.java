@@ -1,7 +1,6 @@
 package org.pragmaticminds.crunch.api.state;
 
 import org.junit.Test;
-import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.values.TypedValues;
@@ -9,11 +8,10 @@ import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.events.EventBuilder;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /** *
  * @author Erwin Wagasow
@@ -32,6 +30,7 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
             .withTimestamp(System.currentTimeMillis())
             .withSource("test")
             .withEvent("success")
+            .withParameter("string", "string")
             .build();
     private TypedValues typedValues = TypedValues.builder().source("test").values(Collections.emptyMap()).build();
 
@@ -39,24 +38,31 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
     public void evalDefaultTimeOut_noTimeOutOccurs() { // -> processing should be successful with no timers set
         // create instance of the MultiStepEvaluationFunction with parameters for this test
         MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
-                .withErrorExtractor(errorExtractor)
-                .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
-                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success", 10)
-                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success")
-                .build();
-
-                SimpleEvaluationContext context;
-                context= new SimpleEvaluationContext(typedValues);
-                stateMachine.eval(context);
-            context = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+9, typedValues.getValues()));
-            stateMachine.eval(context);
-            assertNotNull(context.getEvents());
-            assertEquals(2, context.getEvents().size());
+            .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success1", 10)
+            .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success2", 10)
+            .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
+            .withErrorExtractor(errorExtractor)
+            .build();
+    
+        SimpleEvaluationContext context;
+        context = new SimpleEvaluationContext(typedValues);
+        
+        stateMachine.eval(context);
+    
+        context = new SimpleEvaluationContext(
+            new TypedValues(
+                "",
+                typedValues.getTimestamp() + 9,
+                typedValues.getValues()
+            )
+        );
+        stateMachine.eval(context);
+        
+        assertNotNull(context.getEvents());
+        assertEquals(2, context.getEvents().size());
         for (Event event : context.getEvents()) {
             assertEquals(successEvent, event);
-
         }
-
     }
 
     @Test
@@ -84,14 +90,14 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
                 .withErrorExtractor(errorExtractor)
                 .withOverallTimeoutMs(10)
                 .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
-                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success", 10)
-                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout")
-                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout")
+                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success1")
+                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout1")
+                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout2")
                 .build();
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
-            stateMachine.eval(context);
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+5, typedValues.getValues()));
-            stateMachine.eval(context2);
+        SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+        stateMachine.eval(context);
+        SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+5, typedValues.getValues()));
+        stateMachine.eval(context2);
         SimpleEvaluationContext context3 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+11, typedValues.getValues()));
         stateMachine.eval(context3);
         assertTrue(context.getEvents().isEmpty());
