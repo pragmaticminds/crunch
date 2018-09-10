@@ -117,8 +117,10 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
             }
         } catch (Exception ex) { // on thread interrupt
             logger.info("Exception during record processing", ex);
-            logger.debug("Calling error extractor with map {}", innerContext.getEvents());
-            errorExtractor.process(innerContext == null ? Collections.emptyMap() : innerContext.getEvents(), ex, context);
+            // Check in case Exception is e.g. a NPE for innerContext
+            Map<String, Event> eventsMap = (innerContext == null) ? Collections.emptyMap() : innerContext.getEvents();
+            logger.debug("Calling error extractor with map {}", eventsMap);
+            errorExtractor.process(eventsMap, ex, context);
             resetStatemachine();
         }
     }
