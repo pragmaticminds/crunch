@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
+import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
+import org.pragmaticminds.crunch.api.trigger.comparator.Suppliers;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
@@ -40,6 +42,7 @@ public class ExtractorsTest {
     @Test
     public void valuesExtractor() {
         EventExtractor eventExtractor = Extractors.valuesExtractor(
+            "event",
             "channel1",
             "channel2",
             "channel3",
@@ -47,9 +50,22 @@ public class ExtractorsTest {
         );
         ArrayList<Event> events = new ArrayList<>(eventExtractor.process(evaluationContext));
         assertEquals(1, events.size());
+        assertEquals("Unknown", events.get(0).getEventName());
         assertEquals(1L, (long) events.get(0).getParameter("channel1").getAsLong());
         assertEquals(2L, (long) events.get(0).getParameter("channel2").getAsLong());
         assertEquals(3L, (long) events.get(0).getParameter("channel3").getAsLong());
+    }
+    
+    @Test
+    public void valuesExtractorNamed(){
+        EventExtractor eventExtractor = Extractors.valuesExtractor(
+            "event",
+            Suppliers.ChannelExtractors.longChannel("channel1")
+        );
+        ArrayList<Event> events = new ArrayList<>(eventExtractor.process(evaluationContext));
+        assertEquals(1, events.size());
+        assertEquals("event", events.get(0).getEventName());
+        assertEquals(1L, (long) events.get(0).getParameter("channel1").getAsLong());
     }
     
     /** Extract 3 channels from a {@link TypedValues} and rename them with their alias */
@@ -63,6 +79,24 @@ public class ExtractorsTest {
         EventExtractor eventExtractor = Extractors.valuesExtractor(aliasedChannels);
         ArrayList<Event> events = new ArrayList<>(eventExtractor.process(evaluationContext));
         assertEquals(1, events.size());
+        assertEquals("Unknown", events.get(0).getEventName());
+        assertEquals(1L, (long) events.get(0).getParameter("key1").getAsLong());
+        assertEquals(2L, (long) events.get(0).getParameter("key2").getAsLong());
+        assertEquals(3L, (long) events.get(0).getParameter("key3").getAsLong());
+    }
+    
+    /** Extract 3 channels from a {@link TypedValues} and rename them with their alias */
+    @Test
+    public void valuesExtractorWithAliasMappingAndNaming() {
+        Map<Supplier, String> aliasedChannels = new HashMap<>();
+        aliasedChannels.put(Suppliers.ChannelExtractors.longChannel("channel1"), "key1");
+        aliasedChannels.put(Suppliers.ChannelExtractors.longChannel("channel2"), "key2");
+        aliasedChannels.put(Suppliers.ChannelExtractors.longChannel("channel3"), "key3");
+        aliasedChannels.put(Suppliers.ChannelExtractors.longChannel("null"), "null"); // this will be ignored for the results
+        EventExtractor eventExtractor = Extractors.valuesExtractor("event", aliasedChannels);
+        ArrayList<Event> events = new ArrayList<>(eventExtractor.process(evaluationContext));
+        assertEquals(1, events.size());
+        assertEquals("event", events.get(0).getEventName());
         assertEquals(1L, (long) events.get(0).getParameter("key1").getAsLong());
         assertEquals(2L, (long) events.get(0).getParameter("key2").getAsLong());
         assertEquals(3L, (long) events.get(0).getParameter("key3").getAsLong());

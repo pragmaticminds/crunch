@@ -9,6 +9,8 @@ import org.pragmaticminds.crunch.api.pipe.SubStream;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.events.EventBuilder;
 
+import java.util.Collections;
+
 import static org.mockito.ArgumentMatchers.any;
 
 /**
@@ -26,7 +28,14 @@ public class CrunchExecutorTest {
     @Test
     public void run() {
         // Create source
-        MRecordSource source = MRecordSources.of(new UntypedValues(), new UntypedValues());
+        UntypedValues values = UntypedValues.builder()
+            .source("test")
+            .prefix("")
+            .timestamp(123L)
+            .values(Collections.singletonMap("test", "test"))
+            .build();
+        
+        MRecordSource source = MRecordSources.of(values, values);
         // Create Pipeline
         EvaluationPipeline pipeline = createPipeline();
         // Create Sink
