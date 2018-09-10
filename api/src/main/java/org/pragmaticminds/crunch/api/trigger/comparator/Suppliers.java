@@ -71,11 +71,12 @@ public class Suppliers {
         public static Supplier<String> stringChannel(String name) {
             return new NamedSupplier<>(name, values -> values.getString(name));
         }
-    
+
         /**
          * Extracts a value from a channel without explicit type knowledge.
          *
          * @param name of the channel
+         * @param <T> type of value of the channel
          * @return a {@link Supplier} for the given channel
          */
         public static Supplier<Value> channel(String name) {
