@@ -1,9 +1,9 @@
 package org.pragmaticminds.chronicle;
 
 import net.openhft.chronicle.queue.ChronicleQueue;
-import net.openhft.chronicle.queue.ChronicleQueueBuilder;
 import net.openhft.chronicle.queue.ExcerptAppender;
 import net.openhft.chronicle.queue.ExcerptTailer;
+import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.ValueIn;
 
 /**
@@ -20,7 +20,7 @@ public class WriteAndReadChronicleQueueNT {
     public static void main(String... ignored) {
         String basePath = System.getProperty("java.io.tmpdir") + "/SimpleChronicle";
 
-        ChronicleQueue chronicleQueue = ChronicleQueueBuilder
+        ChronicleQueue chronicleQueue = SingleChronicleQueueBuilder
                 .single()
                 .path(basePath)
                 .build();

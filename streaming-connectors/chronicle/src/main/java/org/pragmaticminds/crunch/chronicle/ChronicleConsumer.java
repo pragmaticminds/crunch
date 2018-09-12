@@ -2,13 +2,15 @@ package org.pragmaticminds.crunch.chronicle;
 
 import com.google.common.base.Preconditions;
 import net.openhft.chronicle.queue.ChronicleQueue;
-import net.openhft.chronicle.queue.ChronicleQueueBuilder;
 import net.openhft.chronicle.queue.ExcerptTailer;
+import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.DocumentContext;
 import net.openhft.chronicle.wire.Wire;
 import org.pragmaticminds.crunch.chronicle.consumers.ConsumerManager;
 import org.pragmaticminds.crunch.chronicle.consumers.JdbcConsumerManager;
 import org.pragmaticminds.crunch.serialization.Deserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.nio.file.Paths;
@@ -21,6 +23,8 @@ import java.util.Properties;
  * Created by julian on 16.08.18
  */
 public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChronicleConsumer.class);
 
     public static final String CHRONICLE_PATH_KEY = "chronicle.path";
     public static final String CHRONICLE_CONSUMER_KEY = "chronicle.consumer";
@@ -63,7 +67,9 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
         String path = properties.getProperty(CHRONICLE_PATH_KEY);
 
-        chronicleQueue = ChronicleQueueBuilder
+        logger.info("Starting Chronicle Consumer with group {} in path {}", consumer, path);
+
+        chronicleQueue = SingleChronicleQueueBuilder
                 .single()
                 .path(path)
                 .build();
@@ -72,12 +78,16 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
         // Set tailer to the current offset for this group
         long offset = manager.getOffset(consumer);
+        logger.info("Fetching offset for consumer {}, offset {}", consumer, offset);
         // If offset -1 set to start
         if (offset == -1L) {
+            logger.info("Resetting offset for consumer {} to start", consumer);
             tailer.toStart();
         } else {
             tailer.moveToIndex(offset);
+            logger.info("Setting offset for consumer {} to {}", consumer, offset);
         }
+
         currentOffset = tailer.index();
     }
 
@@ -110,28 +120,33 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
         // Acknowledge last read, i.e., set the stored index +1
         manager.acknowledgeOffset(consumer, currentOffset);
         // Skip until we read Data.
-        DocumentContext documentContext;
-        do {
-            documentContext = tailer.readingDocument();
+        try (DocumentContext documentContext = tailer.readingDocument()) {
             currentOffset = documentContext.index();
-        } while (!documentContext.isData());
 
-        // Extract the wire and assure it is not null
-        Wire wire = documentContext.wire();
-        // TODO jf 21.08.18: Is this the right way to handle this case?
-        // Perhaps we should throw a dedicated Exception?
-        // Perhaps throw no Exception and return null?
-        Preconditions.checkNotNull(wire);
+            // Extract the wire and assure it is not null
+            Wire wire = documentContext.wire();
+            // TODO jf 21.08.18: Is this the right way to handle this case?
+            // Perhaps we should throw a dedicated Exception?
+            // Perhaps throw no Exception and return null?
+            Preconditions.checkNotNull(wire);
 
-        byte[] bytes = wire
-                .read("msg")
-                .bytes();
+            String msg = wire
+                    .read("msg")
+                    .text();
 
-        return this.deserializer.deserialize(bytes);
+            logger.trace("Current offset is {} record is {}", currentOffset, msg);
+
+            if (msg == null) {
+                return null;
+            } else {
+                return this.deserializer.deserialize(msg.getBytes());
+            }
+        }
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
+        logger.info("Closing Chronicle Consumer");
         chronicleQueue.close();
     }
 

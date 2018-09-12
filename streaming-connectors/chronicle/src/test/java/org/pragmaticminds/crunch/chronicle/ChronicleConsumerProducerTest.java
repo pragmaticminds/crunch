@@ -5,8 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.chronicle.consumers.MemoryManager;
 import org.pragmaticminds.crunch.serialization.Deserializer;
+import org.pragmaticminds.crunch.serialization.JsonDeserializer;
+import org.pragmaticminds.crunch.serialization.JsonSerializer;
 import org.pragmaticminds.crunch.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.Collections;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -26,6 +31,49 @@ import static org.junit.Assert.assertTrue;
 public class ChronicleConsumerProducerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ChronicleConsumerProducerTest.class);
+
+    @Test
+    public void produceAndConsume_manyMessages() throws Exception {
+        String basePath = System.getProperty("java.io.tmpdir");
+        String path = Files.createTempDirectory(Paths.get(basePath), "chronicle-")
+                .toAbsolutePath()
+                .toString();
+        logger.info("Using temp path '{}'", path);
+
+        Properties properties = new Properties();
+        properties.put(ChronicleConsumer.CHRONICLE_PATH_KEY, path);
+        properties.put(ChronicleConsumer.CHRONICLE_CONSUMER_KEY, "asdf");
+
+        // Create before, because moves to end
+        int counter;
+        try (ChronicleConsumer<UntypedValues> consumer = new ChronicleConsumer<>(properties, new MemoryManager(), new JsonDeserializer<>(UntypedValues.class))) {
+            try (ChronicleProducer<UntypedValues> producer = new ChronicleProducer<>(properties, new JsonSerializer<>())) {
+
+                // Write
+                for (int i = 0; i <= 1_000; i++) {
+                    logger.debug("Writing {}", i);
+                    assertTrue(producer.send(
+                            UntypedValues.builder()
+                                    .prefix("")
+                                    .source("test")
+                                    .timestamp(Instant.now().toEpochMilli())
+                                    .values(Collections.singletonMap("key", i))
+                                    .build()
+                    ));
+                }
+                // Read
+                counter = 0;
+                for (int i = 0; i <= 1_000; i++) {
+                    logger.debug("Reading {}", i);
+                    consumer.poll();
+                    counter++;
+                }
+            }
+        }
+        assertEquals(1_001, counter);
+    }
+
+    // Test with custom POJO
 
     @Test
     public void produceAndConsume() throws Exception {
