@@ -3,12 +3,12 @@
     <parent>
         <artifactId>streaming-connectors</artifactId>
         <groupId>org.pragmaticminds.crunch</groupId>
-        <version>0.1.2-SNAPSHOT</version>
+        <version>0.1.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streaming-connector-base</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
     <name>streaming-connector-base</name>
     <description>Basis for all Streaming Connectors, i.e. Kafka Connectivity.</description>
 
