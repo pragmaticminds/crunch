@@ -21,8 +21,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author julian
@@ -31,6 +30,67 @@ import static org.junit.Assert.assertTrue;
 public class ChronicleConsumerProducerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ChronicleConsumerProducerTest.class);
+
+    @Test
+    public void produceAndConsume_waitFornewMessage_blockNotNPE() throws Exception {
+        String basePath = System.getProperty("java.io.tmpdir");
+        String path = Files.createTempDirectory(Paths.get(basePath), "chronicle-")
+                .toAbsolutePath()
+                .toString();
+        logger.info("Using temp path '{}'", path);
+
+        Properties properties = new Properties();
+        properties.put(ChronicleConsumer.CHRONICLE_PATH_KEY, path);
+        properties.put(ChronicleConsumer.CHRONICLE_CONSUMER_KEY, "asdf");
+
+        // Create before, because moves to end
+        Thread thread;
+        try (ChronicleConsumer<UntypedValues> consumer = new ChronicleConsumer<>(properties, new MemoryManager(), new JsonDeserializer<>(UntypedValues.class))) {
+            try (ChronicleProducer<UntypedValues> producer = new ChronicleProducer<>(properties, new JsonSerializer<>())) {
+
+                // Write
+                UntypedValues values = UntypedValues.builder()
+                        .prefix("")
+                        .source("test")
+                        .timestamp(Instant.now().toEpochMilli())
+                        .values(Collections.singletonMap("key", "Julian"))
+                        .build();
+
+                producer.send(values);
+
+                // Read
+                consumer.poll();
+
+                // Do a second read which "waits" until another value is written
+                thread = new Thread(() -> {
+                    // Fail the test after two seconds
+
+                    try {
+                        Thread.sleep(2_00);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    try (ChronicleProducer<UntypedValues> producer2 = new ChronicleProducer<>(properties, new JsonSerializer<>())) {
+                        producer2.send(values);
+                    }
+                    try {
+                        Thread.sleep(2_000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                    fail("Did not read the record");
+                });
+
+                // Start background thread that writes after 2 seconds
+                thread.start();
+                UntypedValues poll = consumer.poll();
+                thread.interrupt();
+                // Assert not null
+                assertNotNull(poll);
+            }
+        }
+    }
 
     @Test
     public void produceAndConsume_manyMessages() throws Exception {

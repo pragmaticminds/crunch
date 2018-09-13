@@ -28,6 +28,7 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
     public static final String CHRONICLE_PATH_KEY = "chronicle.path";
     public static final String CHRONICLE_CONSUMER_KEY = "chronicle.consumer";
+    public static final int WAIT_SLEEP_TIME_MS = 10;
 
     private final transient ChronicleQueue chronicleQueue;
     private final transient ExcerptTailer tailer;
@@ -119,16 +120,38 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
     public T poll() {
         // Acknowledge last read, i.e., set the stored index +1
         manager.acknowledgeOffset(consumer, currentOffset);
-        // Skip until we read Data.
+        // Fetch records until we read a non null entry
+        while (true) {
+            T record = fetchNextRecord();
+            if (record != null) {
+                return record;
+            }
+            try {
+                Thread.sleep(WAIT_SLEEP_TIME_MS);
+            } catch (InterruptedException e) {
+                logger.warn("Interrupted polling of Chronicle Consumer", e);
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Fetches the next record from the chronicle.
+     * Can in some situations return null.
+     *
+     * @return Next Record, possibly null
+     */
+    private T fetchNextRecord() {
         try (DocumentContext documentContext = tailer.readingDocument()) {
             currentOffset = documentContext.index();
 
             // Extract the wire and assure it is not null
             Wire wire = documentContext.wire();
-            // TODO jf 21.08.18: Is this the right way to handle this case?
-            // Perhaps we should throw a dedicated Exception?
-            // Perhaps throw no Exception and return null?
-            Preconditions.checkNotNull(wire);
+
+            // End of document, wire should be not null otherwise
+            if (documentContext.isData() == false) {
+                return null;
+            }
 
             String msg = wire
                     .read("msg")
@@ -137,6 +160,7 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
             logger.trace("Current offset is {} record is {}", currentOffset, msg);
 
             if (msg == null) {
+                // Forces to skip these situations
                 return null;
             } else {
                 return this.deserializer.deserialize(msg.getBytes());

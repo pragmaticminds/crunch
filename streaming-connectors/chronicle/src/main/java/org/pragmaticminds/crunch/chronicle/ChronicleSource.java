@@ -37,11 +37,11 @@ public class ChronicleSource implements MRecordSource {
     }
 
     /**
-     * Only for testing.
+     * For fine grained control or testing.
      *
      * @param consumerFactory Factory to build the consumer.
      */
-    ChronicleSource(ChronicleConsumerFactory consumerFactory) {
+    public ChronicleSource(ChronicleConsumerFactory consumerFactory) {
         this.consumerFactory = consumerFactory;
     }
 

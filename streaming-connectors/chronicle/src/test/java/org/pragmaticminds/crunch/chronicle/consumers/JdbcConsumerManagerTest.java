@@ -43,14 +43,17 @@ public class JdbcConsumerManagerTest {
     public void storeConsumer() throws SQLException {
         JdbcConsumerManager manager = createJdbcConsumerManager();
 
-        manager.acknowledgeOffset(CONSUMER, 17);
+                //call 1000 time cause only every 1000 times (default value) offset will be persisted due to performance issues
+        for(int iterations=0;iterations<1000;iterations++){
+            manager.acknowledgeOffset(CONSUMER, 123456789);
+        }
 
         // Check in the DB
         try (ResultSet resultSet = manager.connection.createStatement()
                 .executeQuery("SELECT CONSUMER, LAST_OFFSET FROM CONSUMER WHERE CONSUMER = 'Julian'")) {
 
             assertTrue(resultSet.next());
-            assertEquals(17, resultSet.getLong(2));
+            assertEquals(123456789, resultSet.getLong(2));
         }
 
         manager.close();
@@ -71,12 +74,16 @@ public class JdbcConsumerManagerTest {
     public void getOffset_offsetPresent_isReturned() {
         JdbcConsumerManager manager = createJdbcConsumerManager();
 
-        manager.acknowledgeOffset("Julian", 17);
+        //call 1000 time cause only every 1000 times (default value) offset will be persisted due to performance issues
+        for(int iterations=0;iterations<1000;iterations++){
+            manager.acknowledgeOffset("Julian", 123456789);
+        }
+
         long offset = manager.getOffset("Julian");
 
         manager.close();
 
-        assertEquals(17, offset);
+        assertEquals(123456789, offset);
     }
 
     /**

@@ -1,5 +1,8 @@
 package org.pragmaticminds.crunch.chronicle.consumers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Path;
 import java.sql.*;
 
@@ -13,6 +16,8 @@ import java.sql.*;
  */
 public class JdbcConsumerManager implements ConsumerManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(JdbcConsumerManager.class);
+
     private static final String CONSUMER_FILE = "consumers.db";
     // Create Statement
     private static final String CREATE_STMT =
@@ -24,20 +29,40 @@ public class JdbcConsumerManager implements ConsumerManager {
     private static final String GET_OFFSET =
             "SELECT LAST_OFFSET FROM CONSUMER WHERE CONSUMER = ?;";
 
+
     final transient Connection connection;
+    public final long acknowledgeRate;
 
     // Prepared Statements
     private transient PreparedStatement upsertStatement;
     private transient PreparedStatement getOffsetStatement;
+
+    // Ack Counter
+    private long count = 0;
 
     /**
      * Creates a new manager.
      * Information is stored in a sqlite database named consumers.db in the given path.
      * If one exists this one is taken, otherwise a new one is created.
      *
+     * Writes every 100th ack to the underlying persistent store
+     *
      * @param path Path to create (or read from) the db
      */
     public JdbcConsumerManager(Path path) {
+        this(path, 100);
+    }
+
+    /**
+     * Creates a new manager.
+     * Information is stored in a sqlite database named consumers.db in the given path.
+     * If one exists this one is taken, otherwise a new one is created.
+     *
+     * @param path            Path to create (or read from) the db
+     * @param acknowledgeRate Each n-th record is persisted to disk
+     */
+    public JdbcConsumerManager(Path path, long acknowledgeRate) {
+        this.acknowledgeRate = acknowledgeRate;
         String filename = path.resolve(CONSUMER_FILE).toAbsolutePath().toString();
         try {
             connection = DriverManager.getConnection(String.format("jdbc:sqlite:%s", filename));
@@ -93,16 +118,21 @@ public class JdbcConsumerManager implements ConsumerManager {
      */
     @Override
     public void acknowledgeOffset(String consumer, long offset) {
-        try {
-            upsertStatement.setString(1, consumer);
-            upsertStatement.setLong(2, offset);
-            int i = upsertStatement.executeUpdate();
-            // Should modify one line
-            if (i != 1) {
-                throw new ConsumerManagerException("Not able to acknowledge offset");
+        count++;
+        if (count == acknowledgeRate) {
+            count = 0;
+            logger.debug("Committing offset {} for consumer {} to sqlite", offset, consumer);
+            try {
+                upsertStatement.setString(1, consumer);
+                upsertStatement.setLong(2, offset);
+                int i = upsertStatement.executeUpdate();
+                // Should modify one line
+                if (i != 1) {
+                    throw new ConsumerManagerException("Not able to acknowledge offset");
+                }
+            } catch (SQLException e) {
+                throw new ConsumerManagerException("Not able to acknowledge offset", e);
             }
-        } catch (SQLException e) {
-            throw new ConsumerManagerException("Not able to acknowledge offset", e);
         }
     }
 

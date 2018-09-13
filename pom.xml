@@ -58,6 +58,7 @@
         <mockito.version>2.13.0</mockito.version>
         <chronicle-queue.version>5.16.13</chronicle-queue.version>
         <maven-deploy-plugin.version>2.7</maven-deploy-plugin.version>
+        <log4j.version>2.9.1</log4j.version>
     </properties>
 
     <scm>
