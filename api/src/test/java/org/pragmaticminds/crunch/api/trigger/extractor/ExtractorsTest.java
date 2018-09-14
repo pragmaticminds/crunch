@@ -101,4 +101,15 @@ public class ExtractorsTest {
         assertEquals(2L, (long) events.get(0).getParameter("key2").getAsLong());
         assertEquals(3L, (long) events.get(0).getParameter("key3").getAsLong());
     }
+    
+    @Test
+    public void allValuesExtractor() {
+        EventExtractor extractor = Extractors.allValuesExtractor("allValues");
+        ArrayList<Event> events = new ArrayList<>(extractor.process(evaluationContext));
+        assertEquals(1, events.size());
+        Event event = events.get(0);
+        assertEquals(1L, (long) event.getParameter("channel1").getAsLong());
+        assertEquals(2L, (long) event.getParameter("channel2").getAsLong());
+        assertEquals(3L, (long) event.getParameter("channel3").getAsLong());
+    }
 }

@@ -144,4 +144,40 @@ public class Extractors {
             ));
         };
     }
+    
+    /**
+     * Creates an {@link EventExtractor}, which collects all channel values from an MRecord.
+     *
+     * @param eventName Name of the {@link Event} that is created inside this method.
+     * @return the resulting {@link EventExtractor}.
+     */
+    public static EventExtractor allValuesExtractor(String eventName){
+        return ctx -> new ArrayList<>(Collections.singletonList(
+            // build an event
+            EventBuilder.anEvent()
+                // set event name
+                .withEvent(eventName)
+                // set source
+                .withSource(ctx.get().getSource())
+                // set timestamp
+                .withTimestamp(ctx.get().getTimestamp())
+                // set parameters
+                .withParameters(
+                    // extract all channel values as Map
+                    ctx.get()
+                        // stream all channel names
+                        .getChannels().stream()
+                        // collect as map
+                        .collect(
+                            Collectors.toMap(
+                                // channel name as channel name
+                                channel -> channel,
+                                // extract the Value from the record and put it into the map
+                                channel -> ctx.get().getValue(channel)
+                            )
+                        )
+                )
+                .build()
+        ));
+    }
 }
