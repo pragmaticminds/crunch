@@ -100,18 +100,26 @@ public class TriggerStrategiesTest {
         result = strategy.isToBeTriggered(nullValues);
         Assert.assertFalse(result);
     }
- 
+    
     @Test
     public void isToBeTriggeredOnChangeNegative() {
         TriggerStrategy strategy = onChange(booleanChannel("val"));
-    
+        
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(falseValues);
         Assert.assertFalse(result);
-    
+        
         strategy.isToBeTriggered(trueValues);
         boolean result2 = strategy.isToBeTriggered(trueValues);
         Assert.assertFalse(result2);
+    }
+    
+    @Test
+    public void isToBeTriggeredOnChangeInitialValue() {
+        TriggerStrategy strategy = onChange(booleanChannel("val"), true);
+        
+        boolean result = strategy.isToBeTriggered(falseValues);
+        Assert.assertTrue(result);
     }
  
     @Test
@@ -133,7 +141,15 @@ public class TriggerStrategiesTest {
         boolean result = strategy.isToBeTriggered(falseValues);
         Assert.assertFalse(result);
     }
- 
+    
+    @Test
+    public void isToBeTriggeredOnBecomeTrueInitialValue() {
+        TriggerStrategy strategy = onBecomeTrue(booleanChannel("val"), false);
+        
+        boolean result = strategy.isToBeTriggered(trueValues);
+        Assert.assertTrue(result);
+    }
+    
     @Test
     public void isToBeTriggeredOnBecomeFalsePositive() {
         TriggerStrategy strategy = onBecomeFalse(booleanChannel("val"));
@@ -152,6 +168,14 @@ public class TriggerStrategiesTest {
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(trueValues);
         Assert.assertFalse(result);
+    }
+    
+    @Test
+    public void isToBeTriggeredOnBecomeFalseInitialValue() {
+        TriggerStrategy strategy = onBecomeFalse(booleanChannel("val"), true);
+        
+        boolean result = strategy.isToBeTriggered(falseValues);
+        Assert.assertTrue(result);
     }
     
     @Test

@@ -4,6 +4,7 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -13,20 +14,25 @@ import java.util.ArrayList;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 13.08.2018
  */
-public abstract class MemoryTriggerStrategy<T> implements TriggerStrategy {
+public abstract class MemoryTriggerStrategy<T extends Serializable> implements TriggerStrategy {
     
     protected ArrayList<T> lastDecisionBases = new ArrayList<>();
     protected Supplier<T>  supplier;
     protected int          bufferSize;
+    protected T            initialValue;
     
     /**
      * Main constructor
      * @param supplier of the decision base, which extracts relevant values from the {@link TypedValues}
      * @param bufferSize defines how many steps are to be safed
      */
-    public MemoryTriggerStrategy(Supplier<T> supplier, int bufferSize) {
+    public MemoryTriggerStrategy(Supplier<T> supplier, int bufferSize, T initialValue) {
         this.supplier = supplier;
         this.bufferSize = bufferSize;
+        this.initialValue = initialValue;
+        if(initialValue != null){
+            lastDecisionBases.add(initialValue);
+        }
     }
     
     /**
