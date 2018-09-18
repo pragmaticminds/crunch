@@ -182,10 +182,12 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
         private String path;
         private String name;
+        private Long acknowledgementRate;
         private ConsumerManager manager;
         private Deserializer<T> deserializer;
 
         private Builder() {
+            this.acknowledgementRate=null;
             // Nothing needed here
         }
 
@@ -196,6 +198,14 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
         public Builder<T> withConsumerName(String consumerName) {
             this.name = consumerName;
+            return this;
+        }
+
+        public Builder<T> withAcknowledgementRate(Long acknowledgementRate) {
+            if(acknowledgementRate!=null && acknowledgementRate>0) {
+                //only positive not 0 acknowledgement rate are plausible, otherwise fall back to default
+                this.acknowledgementRate = acknowledgementRate;
+            }
             return this;
         }
 
@@ -220,7 +230,12 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
             properties.put(CHRONICLE_PATH_KEY, path);
             properties.put(CHRONICLE_CONSUMER_KEY, name);
             if (manager == null) {
-                return new ChronicleConsumer<>(properties, new JdbcConsumerManager(Paths.get(path)), deserializer);
+                if(acknowledgementRate==null){
+                    return new ChronicleConsumer<>(properties, new JdbcConsumerManager(Paths.get(path)), deserializer);
+                }
+                else{
+                    return new ChronicleConsumer<>(properties, new JdbcConsumerManager(Paths.get(path),acknowledgementRate), deserializer);
+                }
             } else {
                 return new ChronicleConsumer<>(properties, manager, deserializer);
             }

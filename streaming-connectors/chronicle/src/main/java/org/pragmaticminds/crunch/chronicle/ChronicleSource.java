@@ -37,6 +37,17 @@ public class ChronicleSource implements MRecordSource {
     }
 
     /**
+     * Creates a Source which instantiates a default consumer with a custom acknowledgementRate
+     *
+     * @param path                  path to the chronicle queue
+     * @param consumerName          Name for the consumer to use
+     * @param acknowledgementRate   AcknowledgemntRate that indicates every xth offset will be commited
+     */
+    public ChronicleSource(String path, String consumerName,Long acknowledgementRate) {
+        consumerFactory = new ChronicleConsumerFactoryImpl(path, consumerName,acknowledgementRate);
+    }
+
+    /**
      * For fine grained control or testing.
      *
      * @param consumerFactory Factory to build the consumer.
@@ -92,11 +103,16 @@ public class ChronicleSource implements MRecordSource {
 
         private final String path;
         private final String consumerName;
+        private final Long acknowledgementRate;
 
         public ChronicleConsumerFactoryImpl(String path, String consumerName) {
+            this(path,consumerName,null);
+        }
 
+        public ChronicleConsumerFactoryImpl(String path, String consumerName,Long acknowledgementRate) {
             this.path = path;
             this.consumerName = consumerName;
+            this.acknowledgementRate = acknowledgementRate;
         }
 
         @Override
@@ -104,6 +120,7 @@ public class ChronicleSource implements MRecordSource {
             return ChronicleConsumer.<UntypedValues>builder()
                     .withPath(path)
                     .withConsumerName(consumerName)
+                    .withAcknowledgementRate(acknowledgementRate)
                     .withDeserializer(new JsonDeserializer<>(UntypedValues.class))
                     .build();
         }
