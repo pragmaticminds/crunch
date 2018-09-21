@@ -24,9 +24,10 @@ public class MemoryManager implements ConsumerManager {
     }
 
     @Override
-    public void acknowledgeOffset(String consumer, long offset) {
+    public void acknowledgeOffset(String consumer, long offset, boolean useAcknowledgeRate) {
         offsetMap.put(consumer, offset);
     }
+
 
     @Override
     public void close() {

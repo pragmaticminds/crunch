@@ -37,6 +37,8 @@ public class JdbcConsumerManager implements ConsumerManager {
     private transient PreparedStatement upsertStatement;
     private transient PreparedStatement getOffsetStatement;
 
+
+
     // Ack Counter
     private long count = 0;
 
@@ -117,22 +119,31 @@ public class JdbcConsumerManager implements ConsumerManager {
      * @param offset   offset to store
      */
     @Override
-    public void acknowledgeOffset(String consumer, long offset) {
-        count++;
-        if (count == acknowledgeRate) {
-            count = 0;
-            logger.debug("Committing offset {} for consumer {} to sqlite", offset, consumer);
-            try {
-                upsertStatement.setString(1, consumer);
-                upsertStatement.setLong(2, offset);
-                int i = upsertStatement.executeUpdate();
-                // Should modify one line
-                if (i != 1) {
-                    throw new ConsumerManagerException("Not able to acknowledge offset");
-                }
-            } catch (SQLException e) {
-                throw new ConsumerManagerException("Not able to acknowledge offset", e);
+    public void acknowledgeOffset(String consumer, long offset, boolean useAcknowledgeRate) {
+        if (useAcknowledgeRate) {
+            count++;
+            if (count == acknowledgeRate) {
+                count = 0;
+                updateAcknowledgment(consumer, offset);
             }
+        } else {
+            updateAcknowledgment(consumer, offset);
+        }
+    }
+
+
+    private void updateAcknowledgment(String consumer, long offset) {
+        logger.debug("Committing offset {} for consumer {} to sqlite", offset, consumer);
+        try {
+            upsertStatement.setString(1, consumer);
+            upsertStatement.setLong(2, offset);
+            int i = upsertStatement.executeUpdate();
+            // Should modify one line
+            if (i != 1) {
+                throw new ConsumerManagerException("Not able to acknowledge offset");
+            }
+        } catch (SQLException e) {
+            throw new ConsumerManagerException("Not able to acknowledge offset", e);
         }
     }
 

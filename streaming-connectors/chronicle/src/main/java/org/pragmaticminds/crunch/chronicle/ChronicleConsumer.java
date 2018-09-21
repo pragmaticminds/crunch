@@ -28,15 +28,17 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
     public static final String CHRONICLE_PATH_KEY = "chronicle.path";
     public static final String CHRONICLE_CONSUMER_KEY = "chronicle.consumer";
-    public static final int WAIT_SLEEP_TIME_MS = 10;
 
-    private final transient ChronicleQueue chronicleQueue;
-    private final transient ExcerptTailer tailer;
+    private  transient ChronicleQueue chronicleQueue;
+    private  transient ExcerptTailer tailer;
     private final ConsumerManager manager;
     private final String consumer;
     private final Deserializer<T> deserializer;
     // Offset of the last "read" record
-    private long currentOffset;
+    private long currentIndex;
+    private long lastIndex;
+    private String path;
+
 
     /**
      * Creates a Chronicle Consumer with the given Properties.
@@ -66,10 +68,17 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
         this.manager = manager;
         consumer = properties.getProperty(CHRONICLE_CONSUMER_KEY);
 
-        String path = properties.getProperty(CHRONICLE_PATH_KEY);
+        this.path = properties.getProperty(CHRONICLE_PATH_KEY);
 
         logger.info("Starting Chronicle Consumer with group {} in path {}", consumer, path);
 
+        createQueue();
+    }
+
+    /**
+     * Creates a new queue. Before calling this method, an existing queue on the same path has to be closed.
+     */
+    private void createQueue() {
         chronicleQueue = SingleChronicleQueueBuilder
                 .single()
                 .path(path)
@@ -89,7 +98,7 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
             logger.info("Setting offset for consumer {} to {}", consumer, offset);
         }
 
-        currentOffset = tailer.index();
+        currentIndex = tailer.index();
     }
 
     /**
@@ -119,20 +128,17 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
      */
     public T poll() {
         // Acknowledge last read, i.e., set the stored index +1
-        manager.acknowledgeOffset(consumer, currentOffset);
+        manager.acknowledgeOffset(consumer, currentIndex, true);
         // Fetch records until we read a non null entry
-        while (true) {
-            T record = fetchNextRecord();
-            if (record != null) {
-                return record;
-            }
-            try {
-                Thread.sleep(WAIT_SLEEP_TIME_MS);
-            } catch (InterruptedException e) {
-                logger.warn("Interrupted polling of Chronicle Consumer", e);
-                Thread.currentThread().interrupt();
-            }
-        }
+        return fetchNextRecord();
+    }
+
+    /**
+     * Closes and re-creates the queue.
+     */
+    private void reinitialize() {
+        this.close();
+        createQueue();
     }
 
     /**
@@ -143,13 +149,26 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
      */
     private T fetchNextRecord() {
         try (DocumentContext documentContext = tailer.readingDocument()) {
-            currentOffset = documentContext.index();
+            currentIndex = documentContext.index();
+
+            // save the last valid index. When index becomes invalid, reinitialize queue
+            if (currentIndex > 0) {
+                lastIndex = currentIndex;
+            } else {
+                currentIndex = lastIndex +1;
+                manager.acknowledgeOffset(consumer, currentIndex, false);
+
+                //reinitialize
+                reinitialize();
+            }
+
+            logger.trace("Current offset is {}", currentIndex);
 
             // Extract the wire and assure it is not null
             Wire wire = documentContext.wire();
 
             // End of document, wire should be not null otherwise
-            if (documentContext.isData() == false) {
+            if (!documentContext.isData()) {
                 return null;
             }
 
@@ -157,7 +176,7 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
                     .read("msg")
                     .text();
 
-            logger.trace("Current offset is {} record is {}", currentOffset, msg);
+            logger.trace("Current offset is {} record is {}", currentIndex, msg);
 
             if (msg == null) {
                 // Forces to skip these situations

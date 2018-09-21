@@ -87,7 +87,7 @@ public class ChronicleConsumerProducerTest {
                 UntypedValues poll = consumer.poll();
                 thread.interrupt();
                 // Assert not null
-                assertNotNull(poll);
+                assertNull(poll);
             }
         }
     }

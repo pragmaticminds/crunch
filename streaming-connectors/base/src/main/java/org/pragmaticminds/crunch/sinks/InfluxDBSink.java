@@ -9,6 +9,8 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  * Created on 15.08.18
  */
 public class InfluxDBSink implements EvaluationFunction {
+    private static final Logger logger = LoggerFactory.getLogger(InfluxDBSink.class);
 
     private final InfluxFactory factory;
     private final String measurement;
@@ -218,6 +221,7 @@ public class InfluxDBSink implements EvaluationFunction {
 
         @Override
         public InfluxDB create() {
+
             InfluxDB influxDB;
             if(!influxUser.isEmpty()){
                 influxDB = InfluxDBFactory.connect(url,influxUser,influxPass);
@@ -226,6 +230,7 @@ public class InfluxDBSink implements EvaluationFunction {
                 influxDB = InfluxDBFactory.connect(url);
             }
 
+            logger.trace("Influx created: {} {} {} {}", url, db, maxNumberOfBatchPoints, commitTimeMaxMs);
             checkOrCreateDatabaseIfNotExists(influxDB, db);
             influxDB.setDatabase(db);
             influxDB.enableBatch(maxNumberOfBatchPoints, commitTimeMaxMs, TimeUnit.MILLISECONDS);

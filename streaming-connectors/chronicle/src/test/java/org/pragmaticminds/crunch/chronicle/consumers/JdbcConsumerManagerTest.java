@@ -45,7 +45,7 @@ public class JdbcConsumerManagerTest {
 
                 //call 1000 time cause only every 1000 times (default value) offset will be persisted due to performance issues
         for(int iterations=0;iterations<1000;iterations++){
-            manager.acknowledgeOffset(CONSUMER, 123456789);
+            manager.acknowledgeOffset(CONSUMER, 123456789, true);
         }
 
         // Check in the DB
@@ -76,7 +76,7 @@ public class JdbcConsumerManagerTest {
 
         //call 1000 time cause only every 1000 times (default value) offset will be persisted due to performance issues
         for(int iterations=0;iterations<1000;iterations++){
-            manager.acknowledgeOffset("Julian", 123456789);
+            manager.acknowledgeOffset("Julian", 123456789, true);
         }
 
         long offset = manager.getOffset("Julian");
@@ -98,7 +98,7 @@ public class JdbcConsumerManagerTest {
 
         long start = System.currentTimeMillis();
         for (int i = 1; i <= 100; i++) {
-            manager.acknowledgeOffset("Julian", i);
+            manager.acknowledgeOffset("Julian", i, true);
         }
         long stop = System.currentTimeMillis();
 

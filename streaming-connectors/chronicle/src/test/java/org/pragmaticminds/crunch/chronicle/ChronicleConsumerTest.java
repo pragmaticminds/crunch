@@ -58,7 +58,7 @@ public class ChronicleConsumerTest {
         return new ConsumerManager() {
 
             @Override
-            public void close() throws Exception {
+            public void close() {
             }
 
             @Override
@@ -67,7 +67,7 @@ public class ChronicleConsumerTest {
             }
 
             @Override
-            public void acknowledgeOffset(String consumer, long offset) {
+            public void acknowledgeOffset(String consumer, long offset, boolean useAcknowledgeRate) {
             }
         };
     }

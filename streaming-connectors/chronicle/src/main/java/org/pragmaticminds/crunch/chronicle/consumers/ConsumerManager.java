@@ -23,6 +23,7 @@ public interface ConsumerManager extends AutoCloseable, Serializable {
      *
      * @param consumer name of the consumer
      * @param offset   offset to store
+     * @param useAcknowledgeRate if true, only acknowledge when count reaches given rate, otherwise always acknowledge
      */
-    void acknowledgeOffset(String consumer, long offset);
+    void acknowledgeOffset(String consumer, long offset, boolean useAcknowledgeRate);
 }

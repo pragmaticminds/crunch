@@ -21,9 +21,9 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="INFO">
-            <AppenderRef ref="Console" level="DEBUG"/>
+        <Root level="TRACE">
+            <AppenderRef ref="Console" level="TRACE"/>
         </Root>
-        <logger name="org.pragmaticminds" level="DEBUG"/>
+        <logger name="org.pragmaticminds" level="TRACE"/>
     </Loggers>
 </Configuration>
