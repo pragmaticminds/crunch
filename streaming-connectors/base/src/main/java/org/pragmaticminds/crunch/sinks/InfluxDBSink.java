@@ -11,6 +11,7 @@ import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.*;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,8 @@ public class InfluxDBSink implements EvaluationFunction {
     private final String measurement;
 
     private transient InfluxDB influxDB = null;
+
+    private Map<String, Value> lastValues = new HashMap<>();
 
     /**
      * Default constructor
@@ -73,14 +76,19 @@ public class InfluxDBSink implements EvaluationFunction {
         }
 
         for (Map.Entry<String, Value> entry : values.getValues().entrySet()) {
-            PointGeneratingVisitor visitor = new PointGeneratingVisitor(values.getTimestamp(), measurement, values.getSource(), entry.getKey());
-            // Write (Batched mode is active)
-            influxDB.write(entry.getValue().accept(visitor));
+            //only write the new values or the values that changed
+            if(!lastValues.containsKey(entry.getKey()) ||
+                    (lastValues.containsKey(entry.getKey()) && !lastValues.get(entry.getKey()).equals(entry.getValue()))) {
+                PointGeneratingVisitor visitor = new PointGeneratingVisitor(values.getTimestamp(), measurement, values.getSource(), entry.getKey());
+                // Write (Batched mode is active)
+                influxDB.write(entry.getValue().accept(visitor));
+            }
+            lastValues.put(entry.getKey(), entry.getValue());
         }
     }
 
     @FunctionalInterface
-    interface InfluxFactory extends Serializable {
+    public interface InfluxFactory extends Serializable {
 
         /**
          * Creates and returns an Instance of {@link InfluxDB}

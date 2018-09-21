@@ -39,36 +39,70 @@ public class InfluxDBSinkTest {
 
         // Perform
         sink.init();
-        sink.eval(createContext(createUntypedValues()));
-        sink.eval(createContext(createTypedValues()));
+        sink.eval(createContext(createUntypedValues1()));
+        sink.eval(createContext(createUntypedValues2()));
+        sink.eval(createContext(createUntypedValues3()));
         sink.close();
 
         // Verify that something has been done
-        verify(mock, times(6)).write(any(Point.class));
+        verify(mock, times(4+7+3)).write(any(Point.class));
     }
 
-    private UntypedValues createUntypedValues() {
+    private UntypedValues createUntypedValues1() {
         HashMap<String, Object> values = new HashMap<>();
-        values.put("value1", 1L);
-        values.put("value2", "s");
-        values.put("value3", 3.0);
-        values.put("value4", true);
-        values.put("value5", new Date(Instant.now().toEpochMilli()));
+        values.put("M1", 34);
+        values.put("M1_0", false);
+        values.put("M1_2", false);
+        values.put("M1_3", false);
         return UntypedValues.builder()
-                .source("source")
+                .source("hemaScraper")
                 .prefix("")
-                .timestamp(0L)
+                .timestamp(1537279723248L)
                 .values(values)
                 .build();
     }
 
-    private TypedValues createTypedValues() {
-        return TypedValues.builder()
-                .source("source")
-                .timestamp(0L)
-                .values(Collections.singletonMap("value", Value.of("String")))
+        private UntypedValues createUntypedValues2() {
+            HashMap<String, Object> values = new HashMap<>();
+                values.put("M1", -103);
+                values.put("M1_0", true);
+            values.put("M1_1", false);
+            values.put("M1_2", false);
+                values.put("M1_3", true);
+                values.put("M1_4", true);
+                values.put("M1_5", false);
+                values.put("M1_7", true);
+
+
+                return UntypedValues.builder()
+                        .source("hemaScraper")
+                        .prefix("")
+                        .timestamp(1537279723525L)
+                        .values(values)
+                        .build();
+            }
+
+    private UntypedValues createUntypedValues3() {
+        HashMap<String, Object> values = new HashMap<>();
+
+        values.put("M1", -112);
+        values.put("M1_0", false);
+        values.put("M1_1", false);
+        values.put("M1_2", false);
+        values.put("M1_3", false);
+        values.put("M1_4", true);
+        values.put("M1_5", false);
+        values.put("M1_7", true);
+
+        return UntypedValues.builder()
+                .source("hemaScraper")
+                .prefix("")
+                .timestamp(1537279723547L)
+                .values(values)
                 .build();
     }
+
+
 
     private EvaluationContext createContext(MRecord record) {
         return new EvaluationContext() {
