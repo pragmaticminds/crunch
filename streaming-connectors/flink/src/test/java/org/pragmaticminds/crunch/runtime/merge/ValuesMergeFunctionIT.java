@@ -10,10 +10,12 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
 import org.slf4j.LoggerFactory;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,22 +47,24 @@ public class ValuesMergeFunctionIT {
     }
 
     @Test
-    public void map() {
+    public void mapUntypedValues() {
         ValuesMergeFunction mergeFunction = new ValuesMergeFunction();
 
-        TypedValues values1 = TypedValues.builder()
+        UntypedValues values1 = UntypedValues.builder()
                 .source("source1")
+                .prefix("pf1")
                 .timestamp(100)
-                .values(Collections.singletonMap("key", Value.of("value1")))
+                .values(Collections.singletonMap("key", "value1"))
                 .build();
 
-        TypedValues values2 = TypedValues.builder()
+        UntypedValues values2 = UntypedValues.builder()
                 .source("source1")
+                .prefix("pf1")
                 .timestamp(110)
-                .values(Collections.singletonMap("key", Value.of("value2")))
+                .values(Collections.singletonMap("key", "value2"))
                 .build();
 
-        TypedValues mergedValues = mergeFunction.mapWithoutState(values1, values2);
+        UntypedValues mergedValues = mergeFunction.mapWithoutState(values1, values2);
 
         assertEquals(110, mergedValues.getTimestamp());
         assertEquals("value2", mergedValues.getString("key"));
@@ -70,23 +74,27 @@ public class ValuesMergeFunctionIT {
     public void map_aggregateMultipleKeys() {
         ValuesMergeFunction mergeFunction = new ValuesMergeFunction();
 
-        TypedValues values1 = TypedValues.builder()
+        UntypedValues values1 = UntypedValues.builder()
                 .source("source1")
+                .prefix("pf1")
                 .timestamp(100)
-                .values(Collections.singletonMap("key1", Value.of("value1")))
+                .values(Collections.singletonMap("key1", "value1"))
                 .build();
 
-        TypedValues values2 = TypedValues.builder()
+        UntypedValues values2 = UntypedValues.builder()
                 .source("source1")
+                .prefix("pf1")
                 .timestamp(110)
-                .values(Collections.singletonMap("key2", Value.of("value2")))
+                .values(Collections.singletonMap("key2", "value2"))
                 .build();
 
-        TypedValues mergedValues = mergeFunction.mapWithoutState(values1, values2);
+
+        UntypedValues mergedValues = mergeFunction.mapWithoutState(values1, values2);
 
         assertEquals(110, mergedValues.getTimestamp());
         assertEquals("value1", mergedValues.getString("key1"));
         assertEquals("value2", mergedValues.getString("key2"));
+        assertEquals(2,mergedValues.getChannels().size());
     }
 
     /**
@@ -118,8 +126,9 @@ public class ValuesMergeFunctionIT {
         ArrayList<MRecord> input = new ArrayList<>();
 
         for (long i = 0; i < 10; i++) {
-            input.add(TypedValues.builder()
+            input.add(UntypedValues.builder()
                     .source("source1")
+                    .prefix("pf1")
                     .timestamp(i)
                     .values(Collections.singletonMap("key" + i, Value.of(i)))
                     .build());

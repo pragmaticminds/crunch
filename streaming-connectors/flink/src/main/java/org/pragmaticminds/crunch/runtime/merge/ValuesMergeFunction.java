@@ -16,40 +16,39 @@ import java.security.InvalidParameterException;
  * This state is then pushed downstream.
  *
  * TODO Implement a more efficient {@link ValuesMergeFunction#map(MRecord)} version (as this always casts to typed!!!)
+ * TM(2018.09.27) improved to Untyped (no cast nesseary) ... further improvement make it generic to {@link MRecord)
  *
  * @author julian
  * Created by julian on 03.11.17
  */
 public class ValuesMergeFunction extends RichMapFunction<MRecord, MRecord> {
 
-    private transient ValueState<TypedValues> valueState;
+    private transient ValueState<UntypedValues> valueState;
 
     @Override
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
         // Get Value State
-        ValueStateDescriptor<TypedValues> descriptor = new ValueStateDescriptor<>(
+        ValueStateDescriptor<UntypedValues> descriptor = new ValueStateDescriptor<>(
                 // state name
                 "valueState-state",
                 // type information of state
-                TypeInformation.of(TypedValues.class));
+                TypeInformation.of(UntypedValues.class));
         valueState = getRuntimeContext().getState(descriptor);
     }
 
     @Override
     public MRecord map(MRecord value) throws Exception {
         // Merge the Records
-        TypedValues currentValue;
-        if (TypedValues.class.isInstance(value)) {
-            currentValue = (TypedValues) value;
-        } else if (UntypedValues.class.isInstance(value)) {
-            currentValue = ((UntypedValues) value).toTypedValues();
+        UntypedValues currentValue;
+        if (UntypedValues.class.isInstance(value)) {
+            currentValue = (UntypedValues) value;
         } else {
-            throw new InvalidParameterException("ValuesMergeFunction currently only supports TypedValues and " +
+            throw new InvalidParameterException("ValuesMergeFunction currently only supports " +
                     "UntypedValues and not " + value.getClass().getName());
         }
         // Fetch Flink State Object
-        TypedValues values = valueState.value();
+        UntypedValues values = valueState.value();
         // Do the mapping
         values = mapWithoutState(values, currentValue);
         // Return Flink State Object
@@ -65,9 +64,9 @@ public class ValuesMergeFunction extends RichMapFunction<MRecord, MRecord> {
      * @param newValues
      * @return
      */
-    TypedValues mapWithoutState(TypedValues currentValues, TypedValues newValues) {
+    UntypedValues mapWithoutState(UntypedValues currentValues, UntypedValues newValues) {
         // Init the valueState object on first value object
-        TypedValues state;
+        UntypedValues state;
         if (currentValues == null) {
             state = newValues;
         } else {
