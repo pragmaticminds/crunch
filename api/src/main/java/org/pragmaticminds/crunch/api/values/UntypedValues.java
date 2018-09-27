@@ -1,6 +1,7 @@
 package org.pragmaticminds.crunch.api.values;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -146,6 +147,28 @@ public class UntypedValues implements MRecord {
      */
     public void setValues(Map<String, Object> values) {
         this.values = values == null ? null : new HashMap<>(values);
+    }
+
+    /**
+     * Merges another set of untyped values into this untyped values and returns the merged set.
+     * This set is not updated!
+     *
+     * @param untypedValues Values to merge in
+     * @return Merged Untyped Values
+     */
+    public UntypedValues merge(UntypedValues untypedValues) {
+        Preconditions.checkArgument(this.source.equals(untypedValues.getSource()), "Both values have to come from the same source!");
+        Preconditions.checkArgument(untypedValues.getTimestamp() >= timestamp, "You try to merge a untyped value that is older than the current state.");
+        Preconditions.checkArgument(this.prefix.equals(untypedValues.getPrefix()), "Both prefixes must be the same.");
+
+        Map<String, Object> newValues = new HashMap<>();
+        newValues.putAll(values);
+        newValues.putAll(untypedValues.getValues());
+
+        return new UntypedValues(this.source,
+                untypedValues.getTimestamp(),
+                this.prefix,
+                newValues);
     }
     
     /**

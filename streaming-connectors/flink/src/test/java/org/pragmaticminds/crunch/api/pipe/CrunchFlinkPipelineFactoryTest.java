@@ -114,7 +114,7 @@ public class CrunchFlinkPipelineFactoryTest {
     private UntypedValues getValueAtTimestamp(int i2, long l) {
         UntypedValues lastValues = new UntypedValues();
         // set some values
-        lastValues.setPrefix("test" + i2);
+        lastValues.setPrefix("test");
         lastValues.setSource("testSource");
         lastValues.setTimestamp(l);
         Map<String, Object> vals = new HashMap<>();
