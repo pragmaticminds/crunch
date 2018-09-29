@@ -1,5 +1,8 @@
 ## Release Notes
 
+## 0.1.5 Critical Hotrix
+* CRUNCH-585 changed merge from typed to UntypedValue due to performance issues, fixed tests
+
 ## 0.1.4 Critical hotfix
 * HEMA-40 Bugfix for Chronicle source. The last valid index is saved
 * CRUNCH-583 Influx eval function saves now only the values that changed
