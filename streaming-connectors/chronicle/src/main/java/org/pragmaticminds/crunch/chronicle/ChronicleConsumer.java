@@ -88,14 +88,20 @@ public class ChronicleConsumer<T> implements AutoCloseable, Serializable {
 
         // Set tailer to the current offset for this group
         long offset = manager.getOffset(consumer);
-        logger.info("Fetching offset for consumer {}, offset {}", consumer, offset);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Fetching offset for consumer {}, offset {}", consumer, offset);
+        }
         // If offset -1 set to start
         if (offset == -1L) {
-            logger.info("Resetting offset for consumer {} to start", consumer);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Resetting offset for consumer {} to start", consumer);
+            }
             tailer.toStart();
         } else {
             tailer.moveToIndex(offset);
-            logger.info("Setting offset for consumer {} to {}", consumer, offset);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Setting offset for consumer {} to {}", consumer, offset);
+            }
         }
 
         currentIndex = tailer.index();

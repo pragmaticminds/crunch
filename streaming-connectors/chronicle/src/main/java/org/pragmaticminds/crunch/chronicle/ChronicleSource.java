@@ -105,11 +105,11 @@ public class ChronicleSource implements MRecordSource {
         private final String consumerName;
         private final Long acknowledgementRate;
 
-        public ChronicleConsumerFactoryImpl(String path, String consumerName) {
+        ChronicleConsumerFactoryImpl(String path, String consumerName) {
             this(path,consumerName,null);
         }
 
-        public ChronicleConsumerFactoryImpl(String path, String consumerName,Long acknowledgementRate) {
+        ChronicleConsumerFactoryImpl(String path, String consumerName,Long acknowledgementRate) {
             this.path = path;
             this.consumerName = consumerName;
             this.acknowledgementRate = acknowledgementRate;
