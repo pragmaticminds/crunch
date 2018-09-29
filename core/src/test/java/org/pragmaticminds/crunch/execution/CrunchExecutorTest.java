@@ -12,6 +12,7 @@ import org.pragmaticminds.crunch.events.EventBuilder;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 
 /**
  * "Integration" test to check {@link GraphFactory} and {@link CrunchExecutor}.
@@ -45,7 +46,7 @@ public class CrunchExecutorTest {
         // Run the executor
         crunchExecutor.run();
         // Ensure that two events have been reported
-        Mockito.verify(sink, Mockito.times(2)).handle(any());
+        Mockito.verify(sink, times(2)).handle(any());
     }
 
     private EvaluationPipeline createPipeline() {

@@ -2,6 +2,8 @@ package org.pragmaticminds.crunch.api.pipe;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.events.Event;
@@ -32,30 +34,47 @@ public class CrunchFlinkPipelineFactory implements Serializable {
     public DataStream<Event> create(DataStream<MRecord> in, EvaluationPipeline pipeline) {
         List<DataStream<Event>> results = new ArrayList<>();
         for (SubStream subStream:  pipeline.getSubStreams()) {
-            results.add(in
+            SingleOutputStreamOperator<MRecord> sortedIn = in
+                
                 // filter with SubStream.Predicate
                 .filter(createFilter(subStream.getPredicate()::validate))
                 
                 // set sort window
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(subStream.getSortWindowMs()))
                 
-                .keyBy(x -> 0)
-                
-                // sort the messages
-                .process(new SortFunction())
-                
                 // must be handled with keying
                 .keyBy(x -> 0)
                 
+                // sort the messages
+                .process(new SortFunction());
+            
+            // branch out the stream for the RecordHandlers
+            sortedIn
+                .process(RecordProcessFunction.builder().withRecordHandlers(subStream.getRecordHandlers()).build())
+                .name("handler called")
+                // pseudo sink -> makes sure all values are processed
+                .addSink(new SinkFunction<Void>() {
+                    @Override
+                    public void invoke(Void value, Context context) throws Exception {
+                        /* no op */
+                    }
+                });
+            
+            // branch out the stream for the EvaluationFunctions
+            results.add(sortedIn
+    
+                // must be handled with keying
+                .keyBy(x -> 0)
+    
                 // merge old values with new values
                 .map(new ValuesMergeFunction())
-                
+    
                 // set key to every value by source name
                 .keyBy(x -> 0)
-                
+    
                 // process the data one after an other in all EvaluationFunctions
                 .process(EvaluationProcessFunction.builder().withEvaluationFunctions(subStream.getEvalFunctions()).build())
-                
+    
                 // convert to DataStream<Event>
                 .forward());
         }

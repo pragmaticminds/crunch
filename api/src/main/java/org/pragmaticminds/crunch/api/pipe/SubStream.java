@@ -27,10 +27,11 @@ import java.util.List;
  */
 public class SubStream implements Serializable {
     
-    private final String                   identifier;
-    private final SubStreamPredicate       predicate;
+    private final String identifier;
+    private final SubStreamPredicate predicate;
     private final List<EvaluationFunction> evaluationFunctions;
-    private final long                     sortWindowMs;
+    private final List<RecordHandler> recordHandlers;
+    private final long sortWindowMs;
     
     /**
      * private constructor for the builder
@@ -42,13 +43,21 @@ public class SubStream implements Serializable {
      *                   are processed
      */
     private SubStream(
-        String identifier, SubStreamPredicate predicate, List<EvaluationFunction> evaluationFunctions, long sortWindowMs
+        String identifier, SubStreamPredicate predicate, List<EvaluationFunction> evaluationFunctions, List<RecordHandler> recordHandlers, long sortWindowMs
     ) {
         this.identifier = identifier;
         this.predicate = predicate;
         this.evaluationFunctions = new ArrayList<>();
-        for (EvaluationFunction evaluationFunction : evaluationFunctions) {
-            this.evaluationFunctions.add(ClonerUtil.clone(evaluationFunction));
+        if(evaluationFunctions != null && !evaluationFunctions.isEmpty()){
+            for (EvaluationFunction evaluationFunction : evaluationFunctions) {
+                this.evaluationFunctions.add(ClonerUtil.clone(evaluationFunction));
+            }
+        }
+        this.recordHandlers = new ArrayList<>();
+        if(recordHandlers != null && !recordHandlers.isEmpty()){
+            for(RecordHandler recordHandler : recordHandlers){
+                this.recordHandlers.add(ClonerUtil.clone(recordHandler));
+            }
         }
         this.sortWindowMs = sortWindowMs;
     }
@@ -71,6 +80,15 @@ public class SubStream implements Serializable {
         return evaluationFunctions;
     }
     
+    /**
+     * This getter returns always the same instances, that are in use and have a state!!!
+     * So be sure to clone them before reusing in an other place and that you are not affected of their states.
+     * @return the instances of the {@link RecordHandler}s of this class that are in use and have a state!!!
+     */
+    public List<RecordHandler> getRecordHandlers(){
+        return recordHandlers;
+    }
+    
     public long getSortWindowMs() {
         return sortWindowMs;
     }
@@ -86,9 +104,10 @@ public class SubStream implements Serializable {
         private SubStreamPredicate       predicate;
         private List<EvaluationFunction> evaluationFunctions;
         private long                     sortWindow;
+        private List<RecordHandler>      recordHandlers;
         
         private Builder() {}
-    
+        
         public Builder withIdentifier(String identifier) {
             this.identifier = identifier;
             return this;
@@ -98,7 +117,7 @@ public class SubStream implements Serializable {
             this.predicate = predicate;
             return this;
         }
-    
+        
         public Builder withEvaluationFunctions(List<EvaluationFunction> evaluationFunctions) {
             if(this.evaluationFunctions == null){
                 this.evaluationFunctions = evaluationFunctions;
@@ -107,12 +126,29 @@ public class SubStream implements Serializable {
             }
             return this;
         }
-    
+        
         public Builder withEvaluationFunction(EvaluationFunction evaluationFunction) {
             if(this.evaluationFunctions == null){
                 this.evaluationFunctions = new ArrayList<>();
             }
             this.evaluationFunctions.add(evaluationFunction);
+            return this;
+        }
+        
+        public Builder withRecordHandlers(List<RecordHandler> recordHandlers){
+            if(this.recordHandlers == null){
+                this.recordHandlers = recordHandlers;
+            }else{
+                this.recordHandlers.addAll(recordHandlers);
+            }
+            return this;
+        }
+        
+        public Builder withRecordHandler(RecordHandler recordHandler){
+            if(this.recordHandlers == null){
+                this.recordHandlers = new ArrayList<>();
+            }
+            this.recordHandlers.add(recordHandler);
             return this;
         }
         
@@ -129,26 +165,27 @@ public class SubStream implements Serializable {
         }
         
         public SubStream build() {
-            checkParameters(identifier, predicate, evaluationFunctions);
-            return new SubStream(identifier, predicate, evaluationFunctions, sortWindow);
+            checkParameters();
+            return new SubStream(identifier, predicate, evaluationFunctions, recordHandlers, sortWindow);
         }
-    
+        
         /**
          * Checks all given values to the Builder for consistency
-         * @param identifier should not be null
-         * @param predicate should not be null
-         * @param evaluationFunctions list of {@link EvaluationFunction}s that should not be null or empty
          */
-        private void checkParameters(
-            String identifier,
-            SubStreamPredicate predicate,
-            List<EvaluationFunction> evaluationFunctions
-        ) {
+        private void checkParameters() {
             Preconditions.checkNotNull(identifier, "identifier is not set for SubStream");
             Preconditions.checkNotNull(predicate, "predicate is not set for SubStream");
-            Preconditions.checkNotNull(evaluationFunctions, "evaluationFunctions are not set for SubStream");
-            Preconditions.checkArgument(!evaluationFunctions.isEmpty(), "evaluationFunctions list is empty in SubStream");
-            evaluationFunctions.forEach(Preconditions::checkNotNull);
+            Preconditions.checkArgument(
+                (evaluationFunctions == null || !evaluationFunctions.isEmpty())
+                && (recordHandlers == null || !recordHandlers.isEmpty()),
+                "evaluationFunctions list and recordHandlers list is empty in SubStream"
+            );
+            if(evaluationFunctions != null){
+                evaluationFunctions.forEach(Preconditions::checkNotNull);
+            }
+            if(recordHandlers != null){
+                recordHandlers.forEach(Preconditions::checkNotNull);
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ import org.influxdb.dto.Point;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
-import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
+import org.pragmaticminds.crunch.api.pipe.RecordHandler;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
@@ -22,98 +22,63 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
- *
  * @author julian
  * Created by julian on 15.08.18
  */
 public class InfluxDBSinkTest {
-
+    
     @Test
     public void callEval() throws InterruptedException {
         // Mock factory
         InfluxDB mock = Mockito.mock(InfluxDB.class);
         InfluxDBSink.InfluxFactory factory = () -> mock;
-
+        
         // Create the EvalFunction
-        EvaluationFunction sink = new InfluxDBSink(factory, "meas1");
-
+        RecordHandler sink = new InfluxDBSink(factory, "meas1");
+        
         // Perform
         sink.init();
-        sink.eval(createContext(createUntypedValues1()));
-        sink.eval(createContext(createUntypedValues2()));
-        sink.eval(createContext(createUntypedValues3()));
+        sink.apply(createUntypedValues());
+        sink.apply(createTypedValues());
         sink.close();
-
+        
         // Verify that something has been done
-        verify(mock, times(4+7+3)).write(any(Point.class));
+        verify(mock, times(6)).write(any(Point.class));
     }
-
-    private UntypedValues createUntypedValues1() {
+    
+    private UntypedValues createUntypedValues() {
         HashMap<String, Object> values = new HashMap<>();
-        values.put("M1", 34);
-        values.put("M1_0", false);
-        values.put("M1_2", false);
-        values.put("M1_3", false);
+        values.put("value1", 1L);
+        values.put("value2", "s");
+        values.put("value3", 3.0);
+        values.put("value4", true);
+        values.put("value5", new Date(Instant.now().toEpochMilli()));
         return UntypedValues.builder()
-                .source("hemaScraper")
-                .prefix("")
-                .timestamp(1537279723248L)
-                .values(values)
-                .build();
+            .source("source")
+            .prefix("")
+            .timestamp(0L)
+            .values(values)
+            .build();
     }
-
-        private UntypedValues createUntypedValues2() {
-            HashMap<String, Object> values = new HashMap<>();
-                values.put("M1", -103);
-                values.put("M1_0", true);
-            values.put("M1_1", false);
-            values.put("M1_2", false);
-                values.put("M1_3", true);
-                values.put("M1_4", true);
-                values.put("M1_5", false);
-                values.put("M1_7", true);
-
-
-                return UntypedValues.builder()
-                        .source("hemaScraper")
-                        .prefix("")
-                        .timestamp(1537279723525L)
-                        .values(values)
-                        .build();
-            }
-
-    private UntypedValues createUntypedValues3() {
-        HashMap<String, Object> values = new HashMap<>();
-
-        values.put("M1", -112);
-        values.put("M1_0", false);
-        values.put("M1_1", false);
-        values.put("M1_2", false);
-        values.put("M1_3", false);
-        values.put("M1_4", true);
-        values.put("M1_5", false);
-        values.put("M1_7", true);
-
-        return UntypedValues.builder()
-                .source("hemaScraper")
-                .prefix("")
-                .timestamp(1537279723547L)
-                .values(values)
-                .build();
+    
+    private TypedValues createTypedValues() {
+        return TypedValues.builder()
+            .source("source")
+            .timestamp(0L)
+            .values(Collections.singletonMap("value", Value.of("String")))
+            .build();
     }
-
-
-
+    
     private EvaluationContext createContext(MRecord record) {
         return new EvaluationContext() {
             @Override
             public MRecord get() {
                 return record;
             }
-
+            
             @Override
             public void collect(Event event) {
-
+            
             }
         };
     }
