@@ -3,24 +3,44 @@ package org.pragmaticminds.crunch.api.trigger;
 import com.google.common.base.Preconditions;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
+import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
-import org.pragmaticminds.crunch.api.trigger.extractor.EventExtractor;
 import org.pragmaticminds.crunch.api.trigger.filter.EventFilter;
+import org.pragmaticminds.crunch.api.trigger.handler.TriggerHandler;
 import org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategy;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * Simplifies the way to implement {@link EvaluationFunction} for typical tasks.
  * The {@link Supplier} pre evaluates the incoming data, so that the {@link TriggerStrategy} can decide
- * if further processing is required in the EventExtractor. The {@link EventExtractor} than generates Event resulting
- * from the incoming data.
+ * if further processing is required in the {@link TriggerHandler}. The {@link TriggerHandler} than generates Event
+ * resulting from the incoming data. The optional {@link EventFilter} than filters the resulting {@link Event}s before
+ * they are passed to the next processing step.
+ *
+ *  eval({@link EvaluationContext})
+ *        |
+ *        |-- {@link MRecord}
+ *        |
+ *  {@link TriggerStrategy}
+ *        |
+ *        |-- {@link MRecord}
+ *        |
+ *  ({@link TriggerHandler})
+ *        |
+ *        |-- {@link List} of {@link Event}
+ *        |
+ *  ({@link EventFilter}
+ *        |
+ *        |-- {@link List} of {@link Event}
+ *        |
+ *  {@link EvaluationContext}::collect({@link Event})
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 27.07.2018
@@ -28,27 +48,27 @@ import java.util.stream.Collectors;
 public class TriggerEvaluationFunction implements EvaluationFunction {
 
     private static final Logger logger = LoggerFactory.getLogger(TriggerEvaluationFunction.class);
-
+    
     private final TriggerStrategy triggerStrategy;
-    private final EventExtractor  eventExtractor;
-    private final EventFilter     filter;
+    private final TriggerHandler triggerHandler;
+    private final EventFilter filter;
     
     /**
      * Main constructor of this class
      * @param triggerStrategy decides on the base of the simplified {@link Supplier} result, whether to
-     *                        pass the incoming data to the {@link EventExtractor} or not
-     * @param eventExtractor When the {@link TriggerStrategy} triggered further processing this class processes and
-     *                       eventually extracts resulting {@link Event}s
+     *                        pass the incoming data to the {@link TriggerHandler} or not
+     * @param triggerHandler extracts all the necessary values from the {@link MRecord} and creates a resulting Event.
+     * @param filter filters the resulting Events after processing if set (not null)
      */
     private TriggerEvaluationFunction(
         TriggerStrategy triggerStrategy,
-        EventExtractor eventExtractor,
+        TriggerHandler triggerHandler,
         EventFilter filter
     ) {
-        Preconditions.checkNotNull(triggerStrategy, "Trigger Strategy has to be set");
-        Preconditions.checkNotNull(eventExtractor, "Event Extractor has to be set");
+        Preconditions.checkNotNull(triggerStrategy, "Trigger strategy has to be set");
+        Preconditions.checkNotNull(triggerHandler, "Trigger handler has to be set");
         this.triggerStrategy = triggerStrategy;
-        this.eventExtractor = eventExtractor;
+        this.triggerHandler = triggerHandler;
         this.filter = filter;
     }
     
@@ -62,35 +82,68 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
     public void eval(EvaluationContext ctx) {
         MRecord record = ctx.get();
 
+        // check if to be triggered
         if (triggerStrategy.isToBeTriggered(record)) {
 
+            // log if debug is active
             if (logger.isDebugEnabled()) {
                 logger.debug("Trigger Strategy Triggered for record {}", record);
             }
-
-            Collection<Event> results = eventExtractor.process(ctx);
-            if(results != null) {
-                if (filter != null) {
-                    results = results.stream()
-                            .filter(event -> filter.apply(event, record))
-                        .collect(Collectors.toList());
-                }
+    
+            // create a simple context for the triggerHandler to extract resulting Events
+            SimpleEvaluationContext simpleContext = new SimpleEvaluationContext(ctx.get());
+    
+            // extract resulting Events
+            triggerHandler.handle(simpleContext);
+            
+            // get the result Events from the simple context
+            List<Event> results = simpleContext.getEvents();
+    
+            // collect results
+            if(results != null && !results.isEmpty()) {
+                // filter results if filter set
+                results = filter(record, results);
                 results.forEach(ctx::collect);
             }
         }
     }
     
+    /**
+     * Filters the results if filter is set
+     * @param record for filtering purpose
+     * @param results for filtering purpose
+     * @return the filtered list of results if filter was set, otherwise the original list of results.
+     */
+    private List<Event> filter(MRecord record, List<Event> results) {
+        if (filter != null) {
+            return results.stream()
+                .filter(event -> filter.apply(event, record))
+                .collect(Collectors.toList());
+        }
+        return results;
+    }
+    
+    /**
+     * Creates a new instance of the {@link Builder} for this class.
+     *
+     * @return a {@link Builder} for this class.
+     */
+    public static Builder builder(){ return new Builder(); }
+    
+    /**
+     * Builder of this class.
+     */
     public static class Builder {
         private TriggerStrategy triggerStrategy;
-        private EventExtractor  eventExtractor;
-        private EventFilter     filter;
+        private TriggerHandler triggerHandler;
+        private EventFilter filter;
         
         public Builder withTriggerStrategy(TriggerStrategy triggerStrategy){
             this.triggerStrategy = triggerStrategy;
             return this;
         }
-        public Builder withEventExtractor(EventExtractor eventExtractor){
-            this.eventExtractor = eventExtractor;
+        public Builder withTriggerHandler(TriggerHandler triggerHandler){
+            this.triggerHandler = triggerHandler;
             return this;
         }
         public Builder withFilter(EventFilter filter){
@@ -98,7 +151,7 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
             return this;
         }
         public TriggerEvaluationFunction build(){
-            return new TriggerEvaluationFunction(triggerStrategy, eventExtractor, filter);
+            return new TriggerEvaluationFunction(triggerStrategy, triggerHandler, filter);
         }
     }
 }

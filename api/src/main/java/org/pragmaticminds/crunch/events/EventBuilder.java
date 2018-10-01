@@ -126,7 +126,6 @@ public final class EventBuilder {
         return this;
     }
 
-
     public Event build() {
         Preconditions.checkNotNull(timestamp, "Specify timestamp");
         Preconditions.checkNotNull(event, "Specify event type");

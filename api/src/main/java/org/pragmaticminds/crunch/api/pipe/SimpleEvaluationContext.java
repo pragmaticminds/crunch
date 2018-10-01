@@ -39,6 +39,8 @@ public class SimpleEvaluationContext extends EvaluationContext {
     /** @inheritDoc */
     @Override
     public void collect(Event event) {
-        events.add(event);
+        if(event != null){
+            events.add(event);
+        }
     }
 }

@@ -73,7 +73,7 @@ public class KafkaMRecordSource implements MRecordSource {
      */
     public KafkaMRecordSource(String kafkaUrl, String kafkaGroup, Collection<String> topics,
                               Map<String, Object> additionalProperties) {
-        initialize(kafkaUrl, kafkaGroup, topics, null, false);
+        initialize(kafkaUrl, kafkaGroup, topics, additionalProperties, false);
     }
     
     /**
@@ -120,10 +120,8 @@ public class KafkaMRecordSource implements MRecordSource {
     
         // return next record from the iterator
         ConsumerRecord<String, UntypedValues> next = recordIterator.next();
-        if (logger.isTraceEnabled()) {
-            if (next.offset() % LoggingUtil.getTraceLogReportCheckpoint() == 0) {
-                logger.trace("Offset {} @ {}", next.offset(), Instant.ofEpochMilli(next.value().getTimestamp()));
-            }
+        if (logger.isTraceEnabled() && next.offset() % LoggingUtil.getTraceLogReportCheckpoint() == 0) {
+            logger.trace("Offset {} @ {}", next.offset(), Instant.ofEpochMilli(next.value().getTimestamp()));
         }
         return next.value();
     }
