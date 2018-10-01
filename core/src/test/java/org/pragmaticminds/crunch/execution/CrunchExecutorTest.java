@@ -9,7 +9,10 @@ import org.pragmaticminds.crunch.api.pipe.SubStream;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.events.EventBuilder;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -70,6 +73,16 @@ public class CrunchExecutorTest {
                     .withTimestamp(0L)
                     .withSource("no source")
                     .build());
+        }
+    
+        /**
+         * Collects all channel identifiers, that are used for the triggering condition
+         *
+         * @return a {@link List} or {@link Collection} of all channel identifiers from triggering
+         */
+        @Override
+        public Set<String> getChannelIdentifiers() {
+            return null;
         }
     }
 }

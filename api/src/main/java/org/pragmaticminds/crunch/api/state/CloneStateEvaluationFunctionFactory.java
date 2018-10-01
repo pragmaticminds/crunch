@@ -3,6 +3,9 @@ package org.pragmaticminds.crunch.api.state;
 import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Implementation of the {@link EvaluationFunctionStateFactory}, which creates {@link EvaluationFunction} instances
  * on base of prototype original (as a blueprint) by cloning.
@@ -29,6 +32,16 @@ public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionSt
     @Override
     public EvaluationFunction create() {
         return ClonerUtil.clone(prototype);
+    }
+    
+    /**
+     * Collects all channel identifiers that are used in the inner {@link EvaluationFunction}.
+     *
+     * @return a {@link List} or {@link Collection} that contains all channel identifiers that are used.
+     */
+    @Override
+    public Collection<String> getChannelIdentifiers() {
+        return prototype.getChannelIdentifiers();
     }
     
     /**

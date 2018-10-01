@@ -3,6 +3,8 @@ package org.pragmaticminds.crunch.api.trigger.comparator;
 import org.pragmaticminds.crunch.api.records.MRecord;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This is a abstract implementation of the {@link Supplier}, where the setting of the identifier is handled.
@@ -10,9 +12,10 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 23.08.2018
  */
-public class NamedSupplier<T extends Serializable> implements Supplier<T> {
+class NamedSupplier<T extends Serializable> implements Supplier<T> {
     private String identifier;
     private SerializableFunction<MRecord, T> extractLambda;
+    private SerializableResultFunction<HashSet<String>> getIdentifiersLambda;
     
     /**
      * Main constructor with identifier
@@ -21,9 +24,14 @@ public class NamedSupplier<T extends Serializable> implements Supplier<T> {
      * @param extractLambda extracts the value of interest from the {@link MRecord}
      */
     @SuppressWarnings("unchecked") // is insured to be safe
-    public NamedSupplier(String identifier, SerializableFunction<MRecord, T> extractLambda) {
+    public NamedSupplier(
+            String identifier,
+            SerializableFunction<MRecord, T> extractLambda,
+            SerializableResultFunction<HashSet<String>> getIdentifiersLambda
+    ) {
         this.identifier = identifier;
         this.extractLambda = extractLambda;
+        this.getIdentifiersLambda = getIdentifiersLambda;
     }
     
     /**
@@ -45,5 +53,11 @@ public class NamedSupplier<T extends Serializable> implements Supplier<T> {
     @Override
     public String getIdentifier() {
         return identifier;
+    }
+    
+    /** @inheritDoc */
+    @Override
+    public Set<String> getChannelIdentifiers() {
+        return getIdentifiersLambda.get();
     }
 }

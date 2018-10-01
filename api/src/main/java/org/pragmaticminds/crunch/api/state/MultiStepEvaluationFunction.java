@@ -10,10 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This implementation of the {@link EvaluationFunction} represents a linear statemachine. All inner
@@ -124,7 +122,20 @@ public class MultiStepEvaluationFunction implements EvaluationFunction {
             resetStatemachine();
         }
     }
-
+    
+    /**
+     * Collects all channel identifiers, that are used for the triggering condition
+     *
+     * @return a {@link List} or {@link Collection} of all channel identifiers from triggering
+     */
+    @Override
+    public Set<String> getChannelIdentifiers() {
+        return stateConfigs.stream()
+            .flatMap(
+                stateConfig -> stateConfig.getFactory().getChannelIdentifiers().stream())
+                .collect(Collectors.toSet());
+    }
+    
     /**
      * sets the overall timeout (first Event timestamp + timeout in millis)
      */

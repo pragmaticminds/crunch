@@ -13,6 +13,7 @@ import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,7 +39,12 @@ public class CrunchFlinkPipelineFactory implements Serializable {
                 
                 // filter with SubStream.Predicate
                 .filter(createFilter(subStream.getPredicate()::validate))
-                
+    
+                .keyBy(x -> 0)
+    
+                // filter all messages where the channels used are not inside
+                .filter(createChannelFilter(subStream))
+    
                 // set sort window
                 .assignTimestampsAndWatermarks(new ValueEventAssigner(subStream.getSortWindowMs()))
                 
@@ -85,6 +91,25 @@ public class CrunchFlinkPipelineFactory implements Serializable {
             .reduce(DataStream::union)
             // getValue or default
             .orElse(null);
+    }
+    
+    /**
+     * Creates a filter that is looking for the availability of the channels that are used.
+     *
+     * @param subStream that delivers a {@link Collection} of channel identifiers that are used.
+     * @return a {@link FilterFunction} for the type {@link MRecord}.
+     */
+    private FilterFunction<MRecord> createChannelFilter(SubStream subStream) {
+        return record -> {
+            Collection<String> recordChannels = record.getChannels();
+            Collection<String> subStreamChannels = subStream.getChannelIdentifiers();
+            for (String recordChannel : recordChannels){
+                if(subStreamChannels.contains(recordChannel)){
+                    return true;
+                }
+            }
+            return false;
+        };
     }
     
     /**

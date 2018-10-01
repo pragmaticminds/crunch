@@ -2,6 +2,8 @@ package org.pragmaticminds.crunch.api.windowed;
 
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 
+import java.util.ArrayList;
+
 /**
  * This is a collection of {@link RecordWindow} implementations for usual use cases
  *
@@ -18,7 +20,10 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static RecordWindow bitActive(Supplier<Boolean> supplier) {
-        return values -> supplier.extract(values) != null && supplier.extract(values);
+        return new LambdaRecordWindow(
+            values -> supplier.extract(values) != null && supplier.extract(values),
+            () -> new ArrayList<>(supplier.getChannelIdentifiers())
+        );
     }
     
     
@@ -29,7 +34,10 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static RecordWindow bitNotActive(Supplier<Boolean> supplier) {
-        return record -> supplier.extract(record) != null && !supplier.extract(record);
+        return new LambdaRecordWindow(
+            record -> supplier.extract(record) != null && !supplier.extract(record),
+            () -> new ArrayList<>(supplier.getChannelIdentifiers())
+        );
     }
     
     /**
@@ -39,7 +47,10 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static <T> RecordWindow valueEquals(Supplier<T> supplier, T expected) {
-        return record -> supplier.extract(record) != null && supplier.extract(record).equals(expected);
+        return new LambdaRecordWindow(
+            record -> supplier.extract(record) != null && supplier.extract(record).equals(expected),
+            () -> new ArrayList<>(supplier.getChannelIdentifiers())
+        );
     }
     
     /**
@@ -49,6 +60,9 @@ public class Windows {
      * @return a RecordWindow that determines if a window is open.
      */
     public static <T> RecordWindow valueNotEquals(Supplier<T> supplier, T notExpected) {
-        return record -> supplier.extract(record) != null && !supplier.extract(record).equals(notExpected);
+        return new LambdaRecordWindow(
+            record -> supplier.extract(record) != null && !supplier.extract(record).equals(notExpected),
+            () -> new ArrayList<>(supplier.getChannelIdentifiers())
+        );
     }
 }

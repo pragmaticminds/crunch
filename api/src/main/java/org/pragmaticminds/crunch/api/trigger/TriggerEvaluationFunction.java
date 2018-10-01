@@ -14,7 +14,9 @@ import org.pragmaticminds.crunch.events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -120,6 +122,22 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
                 .filter(event -> filter.apply(event, record))
                 .collect(Collectors.toList());
         }
+        return results;
+    }
+
+    /**
+     * Returns all channel identifiers which are necessary for the function to do its job.
+     * It is not allowed to return null, an empty set can be returned (but why should??).
+     *
+     * @return a {@link Set} all channel identifiers that are needed by the Evaluation Function.
+     */
+    @Override
+    public Set<String> getChannelIdentifiers() {
+        Set<String> results = new HashSet<>();
+        if(filter != null){
+            results.addAll(filter.getChannelIdentifiers());
+        }
+        results.addAll(triggerStrategy.getChannelIdentifiers());
         return results;
     }
     

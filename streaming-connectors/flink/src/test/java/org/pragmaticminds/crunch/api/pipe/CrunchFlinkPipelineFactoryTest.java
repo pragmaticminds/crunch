@@ -11,10 +11,7 @@ import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.events.Event;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -44,8 +41,16 @@ public class CrunchFlinkPipelineFactoryTest {
         final AtomicInteger i = new AtomicInteger(0);
         
         // create evaluation functions
-        evaluationFunctions.add(ctx ->
-                                    ctx.collect(new Event(System.currentTimeMillis(), "" + i.addAndGet(1), "testSource"))
+        evaluationFunctions.add(
+            new LambdaEvaluationFunction(
+                ctx -> ctx.collect(
+                    new Event(
+                        System.currentTimeMillis(),
+                        "" + i.addAndGet(1), "testSource"
+                    )
+                ),
+                () -> new HashSet<>(Collections.singletonList("test"))
+            )
         );
         
         // create 3 no op record handlers
@@ -144,6 +149,16 @@ public class CrunchFlinkPipelineFactoryTest {
         @Override
         public void apply(MRecord record) {
             /* do nothing */
+        }
+    
+        /**
+         * Collects all channel identifiers that are used in the record handler
+         *
+         * @return a {@link List} or {@link Collection} of all channel identifiers
+         */
+        @Override
+        public Collection<String> getChannelIdentifiers() {
+            return Collections.emptyList();
         }
     }
 }

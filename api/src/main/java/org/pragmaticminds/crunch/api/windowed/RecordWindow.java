@@ -3,6 +3,8 @@ package org.pragmaticminds.crunch.api.windowed;
 import org.pragmaticminds.crunch.api.records.MRecord;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * This Interface checks if a record window is opened for accumulation of records or if it is closed to drop all
@@ -11,7 +13,6 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 16.08.2018
  */
-@FunctionalInterface
 public interface RecordWindow extends Serializable {
     /**
      * Checks if a processing window is open or closed.
@@ -21,4 +22,11 @@ public interface RecordWindow extends Serializable {
      * @return true if window is open, false otherwise
      */
     boolean inWindow(MRecord record);
+    
+    /**
+     * Collects all identifiers of channels that are used in here.
+     *
+     * @return a {@link List} or {@link Collection} of channel identifiers.
+     */
+    Collection<String> getChannelIdentifiers();
 }

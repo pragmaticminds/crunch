@@ -1,15 +1,19 @@
 package org.pragmaticminds.crunch.api.windowed;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.pragmaticminds.crunch.api.trigger.comparator.NamedSupplier;
+import org.pragmaticminds.crunch.api.records.MRecord;
+import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.booleanChannel;
 
 /**
@@ -18,9 +22,9 @@ import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.Channel
  */
 public class WindowsTest {
     
-    TypedValues valuesTrue;
-    TypedValues valuesFalse;
-    TypedValues valuesNull;
+    private TypedValues valuesTrue;
+    private TypedValues valuesFalse;
+    private TypedValues valuesNull;
     
     @Before
     public void setUp() throws Exception {
@@ -43,16 +47,35 @@ public class WindowsTest {
     
     @Test
     public void testBitActive() {
-        RecordWindow recordWindow = Windows.bitActive(new NamedSupplier<>("flag", values -> values.getBoolean("flag")));
+        RecordWindow recordWindow = Windows.bitActive(
+            new Supplier<Boolean>() {
+                @Override
+                public Boolean extract(MRecord values) {
+                    return values.getBoolean("flag");
+                }
+
+                @Override
+                public String getIdentifier() {
+                    return "flag";
+                }
+
+                @Override
+                public Set<String> getChannelIdentifiers() {
+                    return Collections.singleton("flag");
+                }
+            }
+        );
         
         boolean result = recordWindow.inWindow(valuesTrue);
-        Assert.assertTrue(result);
+        assertTrue(result);
     
         result = recordWindow.inWindow(valuesFalse);
-        Assert.assertFalse(result);
+        assertFalse(result);
         
         result = recordWindow.inWindow(valuesNull);
-        Assert.assertFalse(result);
+        assertFalse(result);
+    
+        assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
     }
     
     @Test
@@ -60,27 +83,31 @@ public class WindowsTest {
         RecordWindow recordWindow = Windows.bitNotActive(booleanChannel("flag"));
     
         boolean result = recordWindow.inWindow(valuesTrue);
-        Assert.assertFalse(result);
+        assertFalse(result);
     
         result = recordWindow.inWindow(valuesFalse);
-        Assert.assertTrue(result);
+        assertTrue(result);
     
         result = recordWindow.inWindow(valuesNull);
-        Assert.assertFalse(result);
+        assertFalse(result);
+    
+        assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
     }
     
     @Test
     public void testValueEquals() throws Exception {
         RecordWindow recordWindow = Windows.valueEquals(booleanChannel("flag"), true);
-    
+
         boolean result = recordWindow.inWindow(valuesTrue);
-        Assert.assertTrue(result);
+        assertTrue(result);
     
         result = recordWindow.inWindow(valuesFalse);
-        Assert.assertFalse(result);
+        assertFalse(result);
     
         result = recordWindow.inWindow(valuesNull);
-        Assert.assertFalse(result);
+        assertFalse(result);
+    
+        assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
     }
     
     @Test
@@ -88,12 +115,14 @@ public class WindowsTest {
         RecordWindow recordWindow = Windows.valueNotEquals(booleanChannel("flag"), true);
     
         boolean result = recordWindow.inWindow(valuesTrue);
-        Assert.assertFalse(result);
+        assertFalse(result);
     
         result = recordWindow.inWindow(valuesFalse);
-        Assert.assertTrue(result);
+        assertTrue(result);
     
         result = recordWindow.inWindow(valuesNull);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        
+        assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
     }
 }

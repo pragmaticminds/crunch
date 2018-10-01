@@ -11,6 +11,8 @@ import org.pragmaticminds.crunch.api.windowed.extractor.WindowExtractor;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -99,6 +101,21 @@ public class WindowedEvaluationFunction implements EvaluationFunction {
             // set last window was closed
             lastWindowOpen = false;
         }
+    }
+    
+    /**
+     * Collects all channel identifiers, that are used for the triggering condition
+     *
+     * @return a {@link Set} of all channel identifiers from triggering
+     */
+    @Override
+    public Set<String> getChannelIdentifiers() {
+        Set<String> results = new HashSet<>();
+        if(filterPrototype != null){
+            results.addAll(filterPrototype.getChannelIdentifiers());
+        }
+        results.addAll(recordWindowPrototype.getChannelIdentifiers());
+        return results;
     }
     
     /**

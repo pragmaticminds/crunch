@@ -3,7 +3,12 @@ package org.pragmaticminds.crunch.api.trigger.comparator;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.api.windowed.extractor.aggregate.AggregationUtils;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.IdentifierCombiner.combine;
 
 /**
  * This class holds factories for {@link Supplier} implementations to extract a channel value from a TypedValue
@@ -29,7 +34,11 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Boolean> booleanChannel(String name) {
-            return new NamedSupplier<>(name, values -> values.getBoolean(name));
+            return new NamedSupplier<>(
+                name,
+                values -> values.getBoolean(name),
+                    () -> new HashSet<>(Collections.singletonList(name))
+            );
         }
         
         /**
@@ -39,7 +48,11 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Double> doubleChannel(String name) {
-            return new NamedSupplier<>(name, values -> values.getDouble(name));
+            return new NamedSupplier<>(
+                name,
+                values -> values.getDouble(name),
+                    () -> new HashSet<>(Collections.singletonList(name))
+            );
         }
         
         /**
@@ -49,7 +62,11 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Long> longChannel(String name) {
-            return new NamedSupplier<>(name, values -> values.getLong(name));
+            return new NamedSupplier<>(
+                name,
+                values -> values.getLong(name),
+                    () -> new HashSet<>(Collections.singletonList(name))
+            );
         }
         
         /**
@@ -59,7 +76,11 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<Date> dateChannel(String name) {
-            return new NamedSupplier<>(name, values -> values.getDate(name));
+            return new NamedSupplier<>(
+                name,
+                values -> values.getDate(name),
+                    () -> new HashSet<>(Collections.singletonList(name))
+            );
         }
         
         /**
@@ -69,18 +90,25 @@ public class Suppliers {
          * @return the value of the channel
          */
         public static Supplier<String> stringChannel(String name) {
-            return new NamedSupplier<>(name, values -> values.getString(name));
+            return new NamedSupplier<>(
+                name,
+                values -> values.getString(name),
+                    () -> new HashSet<>(Collections.singletonList(name))
+            );
         }
 
         /**
          * Extracts a value from a channel without explicit type knowledge.
          *
          * @param name of the channel
-         * @param <T> type of value of the channel
          * @return a {@link Supplier} for the given channel
          */
         public static Supplier<Value> channel(String name) {
-            return new NamedSupplier<>(name, values -> values.getValue(name));
+            return new NamedSupplier<>(
+                name,
+                values -> values.getValue(name),
+                    () -> new HashSet<>(Collections.singletonList(name))
+            );
         }
     }
     
@@ -107,7 +135,8 @@ public class Suppliers {
                     // "and" condition
                     ? s1.extract(values) && s2.extract(values)
                     // return null if one of the suppliers delivered null
-                    : null
+                    : null,
+                () -> combine(s1, s2)
             );
         }
     
@@ -128,7 +157,8 @@ public class Suppliers {
                     // "or" condition
                     ? (s1.extract(values) || s2.extract(values))
                     // return null if one of the suppliers delivered null
-                    : null
+                    : null,
+                () -> combine(s1, s2)
             );
         }
     
@@ -147,7 +177,8 @@ public class Suppliers {
                     // "invert" the extracted value
                     ? !supplier.extract(values)
                     // return null of delivered value is null
-                    : null
+                    : null,
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
             );
         }
     }
@@ -175,7 +206,8 @@ public class Suppliers {
                     // compare expected with delivered value
                     ? expected.equals(supplier.extract(values))
                     // return null if delivered value is null
-                    : null
+                    : null,
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
             );
         }
     
@@ -196,7 +228,8 @@ public class Suppliers {
                     // compare supplied values with each other
                     ? s1.extract(values).equals(s2.extract(values))
                     // return null if one of the supplied values is null
-                    : null
+                    : null,
+                () -> combine(s1, s2)
             );
         }
     
@@ -216,7 +249,8 @@ public class Suppliers {
                     // match the supplied value to regex
                     ? supplier.extract(values).matches(regex)
                     // if supplied value was null return null
-                    : null
+                    : null,
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
             );
         }
     
@@ -236,7 +270,8 @@ public class Suppliers {
                     // check if supplied value contains the string given
                     ? supplier.extract(values).contains(string)
                     // return null if supplied value was null
-                    : null
+                    : null,
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
             );
         }
     
@@ -260,7 +295,8 @@ public class Suppliers {
                     } else {
                         return null;
                     }
-                }
+                },
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
             );
         }
     }
@@ -287,7 +323,8 @@ public class Suppliers {
                 // null check
                 supplier.extract(values) != null
                 // apply condition
-                && value.equals(supplier.extract(values))
+                && value.equals(supplier.extract(values)),
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
             );
         }
         
@@ -302,11 +339,15 @@ public class Suppliers {
         @SuppressWarnings("squid:S1201") // use of equals
         public static <T> Supplier<Boolean> equals(Supplier<T> s1, Supplier<T> s2){
             String identifier = String.format("equals(%s, %s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(identifier, values ->
-                // check for null values
-                s1.extract(values) != null && s2.extract(values) != null
-                // check the condition
-                && s1.extract(values).equals(s2.extract(values)));
+            return new NamedSupplier<>(
+                identifier,
+                values ->
+                    // check for null values
+                    s1.extract(values) != null && s2.extract(values) != null
+                    // check the condition
+                    && s1.extract(values).equals(s2.extract(values)),
+                () -> combine(s1, s2)
+            );
         }
     
         /**
@@ -322,17 +363,21 @@ public class Suppliers {
          */
         public static <T extends Comparable> Supplier<Long> compare(Supplier<T> s1, Supplier<T> s2){
             String identifier = String.format("compare(%s, %s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> {
-                // extract values
-                T v1 = s1.extract(values);
-                T v2 = s2.extract(values);
-                // null check
-                if(v1 == null || v2 == null){
-                    return null;
-                }
-                // apply comparison
-                return (long)AggregationUtils.compare(v1, v2);
-            });
+            return new NamedSupplier<>(
+                identifier,
+                values -> {
+                    // extract values
+                    T v1 = s1.extract(values);
+                    T v2 = s2.extract(values);
+                    // null check
+                    if(v1 == null || v2 == null){
+                        return null;
+                    }
+                    // apply comparison
+                    return (long)AggregationUtils.compare(v1, v2);
+                },
+                () -> combine(s1, s2)
+            );
         }
     
         /**
@@ -348,16 +393,42 @@ public class Suppliers {
          */
         public static <T extends Comparable> Supplier<Long> compare(T value, Supplier<T> supplier){
             String identifier = String.format("compare(%s, %s)", value.toString(), supplier.getIdentifier());
-            return new NamedSupplier<>(identifier, values -> {
-                // extract value
-                T value2 = supplier.extract(values);
-                // null check
-                if (value2 == null) {
-                    return null;
-                }
-                // apply comparison
-                return (long) AggregationUtils.compare(value, value2);
-            });
+            return new NamedSupplier<>(
+                identifier,
+                values -> {
+                    // extract value
+                    T value2 = supplier.extract(values);
+                    // null check
+                    if (value2 == null) {
+                        return null;
+                    }
+                    // apply comparison
+                    return (long) AggregationUtils.compare(value, value2);
+                },
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
+            );
+        }
+    }
+    
+    static class IdentifierCombiner implements Serializable {
+        /** hidden constructor **/
+        private IdentifierCombiner() {
+            throw new UnsupportedOperationException("this should never be initialized!");
+        }
+    
+        /**
+         * Combines the identifiers of two inner {@link Supplier}s
+         *
+         * @param s1 first {@link Supplier}
+         * @param s2 second {@link Supplier}
+         * @param <T> type of the {@link Supplier}s
+         * @return Set of String with all identifiers
+         */
+        @SuppressWarnings("squid:S1319") // return type is not an interface for being serializable
+        public static <T> HashSet<String> combine(Supplier<T> s1, Supplier<T> s2) {
+            HashSet<String> results = new HashSet<>(s1.getChannelIdentifiers());
+            results.addAll(s2.getChannelIdentifiers());
+            return results;
         }
     }
     

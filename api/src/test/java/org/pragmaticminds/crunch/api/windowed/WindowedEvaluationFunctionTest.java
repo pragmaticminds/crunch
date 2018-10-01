@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
+import org.pragmaticminds.crunch.api.trigger.filter.EventFilter;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.api.windowed.extractor.WindowExtractor;
@@ -14,6 +15,7 @@ import org.pragmaticminds.crunch.events.Event;
 import java.io.Serializable;
 import java.util.*;
 
+import static org.junit.Assert.assertTrue;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.booleanChannel;
 import static org.pragmaticminds.crunch.api.windowed.Windows.bitActive;
 
@@ -38,7 +40,17 @@ public class WindowedEvaluationFunctionTest implements Serializable {
             // set extractor
             .extractor(new MaxWindowExtractor())
             // set filter
-            .filter((event, record) -> true)
+            .filter(new EventFilter() {
+                @Override
+                public boolean apply(Event event, MRecord values) {
+                    return true;
+                }
+    
+                @Override
+                public Collection<String> getChannelIdentifiers() {
+                    return new ArrayList<>(Collections.singletonList("test"));
+                }
+            })
             .build();
     
         // create test processing data
@@ -101,6 +113,13 @@ public class WindowedEvaluationFunctionTest implements Serializable {
         Assert.assertEquals(1, events.size());
         Assert.assertEquals(3.0, events.get(0).getParameter("maxValue").getAsDouble(), 0.00001);
         
+    }
+    
+    @Test
+    public void getChannelIdentifiers() {
+        Collection<String> channels = function.getChannelIdentifiers();
+        assertTrue(channels.contains("flag"));
+        assertTrue(channels.contains("test"));
     }
     
     private class MaxWindowExtractor implements WindowExtractor {

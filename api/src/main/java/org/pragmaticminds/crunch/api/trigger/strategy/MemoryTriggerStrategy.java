@@ -6,6 +6,7 @@ import org.pragmaticminds.crunch.api.values.TypedValues;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * This is a helper class for the {@link TriggerStrategies} class and other implementations.
@@ -65,4 +66,15 @@ public abstract class MemoryTriggerStrategy<T extends Serializable> implements T
      * @return true if triggered, otherwise false
      */
     public abstract boolean isToBeTriggered(T decisionBase);
+
+    /**
+     * Returns all channel identifiers which are necessary for the function to do its job.
+     * It is not allowed to return null, an empty set can be returned (but why should??).
+     *
+     * @return a {@link Set} all channel identifiers that are needed by the Evaluation Function.
+     */
+    @Override
+    public Set<String> getChannelIdentifiers() {
+        return supplier.getChannelIdentifiers();
+    }
 }

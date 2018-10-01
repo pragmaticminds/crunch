@@ -1,6 +1,5 @@
 package org.pragmaticminds.crunch.api.trigger.filter;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.values.TypedValues;
@@ -9,6 +8,8 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.stringChannel;
 import static org.pragmaticminds.crunch.api.trigger.filter.EventFilters.onValueChanged;
 
@@ -42,17 +43,19 @@ public class EventFiltersTest {
         EventFilter filter = onValueChanged(stringChannel("val"));
     
         // first value receive -> false
-        Assert.assertFalse(filter.apply(null, values1));
+        assertFalse(filter.apply(null, values1));
         // first change -> true
-        Assert.assertTrue(filter.apply(null, values2));
+        assertTrue(filter.apply(null, values2));
         // value is null -> false
-        Assert.assertFalse(filter.apply(null, valuesNull));
+        assertFalse(filter.apply(null, valuesNull));
         // value change -> true
-        Assert.assertTrue(filter.apply(null, values1));
+        assertTrue(filter.apply(null, values1));
         // no change -> false
-        Assert.assertFalse(filter.apply(null, values1));
+        assertFalse(filter.apply(null, values1));
         // value is null again -> false
-        Assert.assertFalse(filter.apply(null, valuesNull));
-    
+        assertFalse(filter.apply(null, valuesNull));
+        
+        // check get ChannelIdentifiers
+        assertTrue(filter.getChannelIdentifiers().contains("val"));
     }
 }

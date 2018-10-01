@@ -5,6 +5,7 @@ import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 
 import java.io.Serializable;
+import java.util.HashSet;
 
 
 /**
@@ -22,7 +23,10 @@ public class TriggerStrategies {
      * @return true if triggered
      */
     public static TriggerStrategy onTrue(Supplier<Boolean> supplier){
-        return values -> supplier.extract(values) != null && supplier.extract(values);
+        return new LambdaTriggerStrategy(
+            values -> supplier.extract(values) != null && supplier.extract(values),
+            () -> new HashSet<>(supplier.getChannelIdentifiers())
+        );
     }
     
     /**
@@ -31,11 +35,14 @@ public class TriggerStrategies {
      * @return true if triggered, false if not or supplied value is null
      */
     public static TriggerStrategy onFalse(Supplier<Boolean> supplier){
-        return values ->
-            // null check
-            supplier.extract(values) != null
-            // on false check
-            && !supplier.extract(values);
+        return new LambdaTriggerStrategy(
+            values ->
+                // null check
+                supplier.extract(values) != null
+                // on false check
+                && !supplier.extract(values),
+            () -> new HashSet<>(supplier.getChannelIdentifiers())
+        );
     }
     
     /**
@@ -135,7 +142,10 @@ public class TriggerStrategies {
      * @return true if triggered
      */
     public static <T> TriggerStrategy onNull(Supplier<T> supplier){
-        return values -> supplier.extract(values) == null;
+        return new LambdaTriggerStrategy(
+            values -> supplier.extract(values) == null,
+            () -> new HashSet<>(supplier.getChannelIdentifiers())
+        );
     }
 
     /**
@@ -145,7 +155,10 @@ public class TriggerStrategies {
      * @return true if triggered
      */
     public static <T> TriggerStrategy onNotNull(Supplier<T> supplier){
-        return values -> supplier.extract(values) != null;
+        return new LambdaTriggerStrategy(
+            values -> supplier.extract(values) != null,
+            () -> new HashSet<>(supplier.getChannelIdentifiers())
+        );
     }
 
     /**
@@ -153,6 +166,8 @@ public class TriggerStrategies {
      * @return always true
      */
     public static TriggerStrategy always(){
-        return values -> true;
+        return new LambdaTriggerStrategy(
+            values -> true, HashSet::new
+        );
     }
 }

@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.trigger.strategy;
 import org.pragmaticminds.crunch.api.records.MRecord;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * Describes rules to trigger processing of an incoming event.
@@ -11,7 +12,6 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 26.07.2018
  */
-@FunctionalInterface
 public interface TriggerStrategy extends Serializable {
     /**
      * Decides if the event is to be triggered by the decision base typed value
@@ -19,4 +19,12 @@ public interface TriggerStrategy extends Serializable {
      * @return true if triggering was positive
      */
     boolean isToBeTriggered(MRecord values);
+
+    /**
+     * Returns all channel identifiers which are necessary for the function to do its job.
+     * It is not allowed to return null, an empty set can be returned (but why should??).
+     *
+     * @return a {@link Set} all channel identifiers that are needed by the Evaluation Function.
+     */
+    Set<String> getChannelIdentifiers();
 }

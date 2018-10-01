@@ -5,19 +5,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
+import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.extractor.Extractors;
 import org.pragmaticminds.crunch.api.trigger.extractor.MapExtractor;
+import org.pragmaticminds.crunch.api.trigger.filter.EventFilter;
 import org.pragmaticminds.crunch.api.trigger.handler.ExtractorTriggerHandler;
 import org.pragmaticminds.crunch.api.trigger.handler.TriggerHandler;
-import org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategy;
+import org.pragmaticminds.crunch.api.trigger.strategy.LambdaTriggerStrategy;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.channel;
 
 /**
@@ -43,7 +46,10 @@ public class TriggerEvaluationFunctionTest {
     @Test
     public void processElementNotTriggered() {
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
-            .withTriggerStrategy((TriggerStrategy) decisionBase -> false)
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                decisionBase -> false,
+                HashSet::new
+            ))
             .withTriggerHandler((context) -> context.collect(resultEvent))
             .build();
         
@@ -59,7 +65,7 @@ public class TriggerEvaluationFunctionTest {
             e.printStackTrace();
             return;
         }
-        Assert.assertTrue(resultEventList.isEmpty());
+        assertTrue(resultEventList.isEmpty());
     }
     
     @Test
@@ -67,7 +73,10 @@ public class TriggerEvaluationFunctionTest {
         TriggerHandler triggerHandler = Mockito.mock(TriggerHandler.class);
         
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
-            .withTriggerStrategy((TriggerStrategy) decisionBase -> true)
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                decisionBase -> true,
+                HashSet::new
+            ))
             .withTriggerHandler(triggerHandler)
             .build();
         Map<String, Value> values = new HashMap<>();
@@ -82,14 +91,17 @@ public class TriggerEvaluationFunctionTest {
             return;
         }
         Mockito.verify(triggerHandler, Mockito.times(1)).handle(Mockito.any());
-        Assert.assertTrue(resultEventList.isEmpty());
+        assertTrue(resultEventList.isEmpty());
     }
     
     @Test
     public void processElementOneResult() {
         Event resultEvent = new Event(timestamp, "testEventName", "testSource");
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
-            .withTriggerStrategy((TriggerStrategy) decisionBase -> true)
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                decisionBase -> true,
+                HashSet::new
+            ))
             .withTriggerHandler((context) -> context.collect(resultEvent))
             .build();
         Map<String, Value> values = new HashMap<>();
@@ -103,14 +115,17 @@ public class TriggerEvaluationFunctionTest {
             e.printStackTrace();
             return;
         }
-        Assert.assertEquals(1, resultEventList.size());
-        Assert.assertTrue(resultEventList.contains(resultEvent));
+        assertEquals(1, resultEventList.size());
+        assertTrue(resultEventList.contains(resultEvent));
     }
     
     @Test
     public void processElementManyResults() {
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
-            .withTriggerStrategy((TriggerStrategy) decisionBase -> true)
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                decisionBase -> true,
+                HashSet::new
+            ))
             .withTriggerHandler(context -> {
                 context.collect(resultEvent);
                 context.collect(resultEvent);
@@ -128,20 +143,33 @@ public class TriggerEvaluationFunctionTest {
             e.printStackTrace();
             return;
         }
-        Assert.assertEquals(3, resultEventList.size());
-        Assert.assertTrue(resultEventList.contains(resultEvent));
+        assertEquals(3, resultEventList.size());
+        assertTrue(resultEventList.contains(resultEvent));
     }
     
     @Test
     public void processWithResultFilter() {
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
-            .withTriggerStrategy((TriggerStrategy) decisionBase -> true)
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                decisionBase -> true,
+                HashSet::new
+            ))
             .withTriggerHandler(context -> {
                 context.collect(resultEvent);
                 context.collect(resultEvent);
                 context.collect(resultEvent);
             })
-            .withFilter((event, values) -> values.getString("val").equals("string"))
+            .withFilter(new EventFilter() {
+                @Override
+                public boolean apply(Event event, MRecord values) {
+                    return values.getString("val").equals("string");
+                }
+        
+                @Override
+                public Collection<String> getChannelIdentifiers() {
+                    return new ArrayList<>();
+                }
+            })
             .build();
         Map<String, Value> values = new HashMap<>();
         values.put("val",Value.of("string"));
@@ -155,8 +183,21 @@ public class TriggerEvaluationFunctionTest {
             e.printStackTrace();
             return;
         }
-        Assert.assertEquals(3, resultEventList.size());
-        Assert.assertTrue(resultEventList.contains(resultEvent));
+        assertEquals(3, resultEventList.size());
+        assertTrue(resultEventList.contains(resultEvent));
+    }
+    
+    @Test
+    public void getChannelIdentifier() {
+        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                record -> false,
+                () -> new HashSet<>(Collections.singletonList("test"))
+            ))
+            .withTriggerHandler(mock(TriggerHandler.class))
+            .build();
+        
+        assertTrue(function.getChannelIdentifiers().contains("test"));
     }
     
     @Test
@@ -178,7 +219,10 @@ public class TriggerEvaluationFunctionTest {
         
         // create TriggerEvaluationFunction
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
-            .withTriggerStrategy((TriggerStrategy) decisionBase -> true)
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                decisionBase -> true,
+                HashSet::new
+            ))
             .withTriggerHandler(triggerHandler)
             .build();
         

@@ -1,16 +1,20 @@
 package org.pragmaticminds.crunch.api.trigger.strategy;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.pragmaticminds.crunch.api.trigger.comparator.NamedSupplier;
+import org.pragmaticminds.crunch.api.records.MRecord;
+import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.BooleanValue;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.booleanChannel;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.stringChannel;
 import static org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategies.*;
@@ -50,76 +54,86 @@ public class TriggerStrategiesTest {
     
     @Test
     public void isToBeTriggeredOnTruePositive() {
-        TriggerStrategy strategy = onTrue(new NamedSupplier<>("true", values -> true));
+        TriggerStrategy strategy = onTrue(getSupplier(true));
         boolean result = strategy.isToBeTriggered(null);
-        Assert.assertTrue(result);
+        assertTrue(result);
         
-        strategy = onTrue(new NamedSupplier<>("null", values -> null));
+        assertTrue(strategy.getChannelIdentifiers().contains("test"));
+
+        strategy = onTrue(getSupplier());
         result = strategy.isToBeTriggered(null);
-        Assert.assertFalse(result);
+        assertFalse(result);
     }
  
     @Test
     public void isToBeTriggeredOnTrueNegative() {
-        TriggerStrategy strategy = onTrue(new NamedSupplier<>("false", values -> false));
+        TriggerStrategy strategy = onTrue(getSupplier());
         boolean result = strategy.isToBeTriggered(null);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        
+        assertTrue(strategy.getChannelIdentifiers().contains("test"));
     }
  
     @Test
     public void isToBeTriggeredOnFalsePositive() {
-        TriggerStrategy strategy = onFalse(new NamedSupplier<>("false", values -> false));
+        TriggerStrategy strategy = onFalse(getSupplier(false));
         boolean result = strategy.isToBeTriggered(null);
-        Assert.assertTrue(result);
-    
-        strategy = onFalse(new NamedSupplier<>("null", values -> null));
+        assertTrue(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("test"));
+
+        strategy = onFalse(getSupplier());
         result = strategy.isToBeTriggered(null);
-        Assert.assertFalse(result);
+        assertFalse(result);
     }
  
     @Test
     public void isToBeTriggeredOnFalseNegative() {
-        TriggerStrategy strategy = onFalse(new NamedSupplier<>("true", values -> true));
+        TriggerStrategy strategy = onFalse(getSupplier());
         boolean result = strategy.isToBeTriggered(null);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("test"));
     }
  
     @Test
     public void isToBeTriggeredOnChangePositive() {
         TriggerStrategy strategy = onChange(booleanChannel("val"));
-        
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
+    
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(trueValues);
-        Assert.assertTrue(result);
+        assertTrue(result);
     
         strategy.isToBeTriggered(trueValues);
         boolean result2 = strategy.isToBeTriggered(falseValues);
-        Assert.assertTrue(result2);
-    
-        strategy = onChange(new NamedSupplier<>("null", values -> null));
+        assertTrue(result2);
+
+        strategy = onChange(getSupplier());
         result = strategy.isToBeTriggered(nullValues);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("test"));
     }
     
     @Test
     public void isToBeTriggeredOnChangeNegative() {
         TriggerStrategy strategy = onChange(booleanChannel("val"));
-        
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
+    
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(falseValues);
-        Assert.assertFalse(result);
+        assertFalse(result);
         
         strategy.isToBeTriggered(trueValues);
         boolean result2 = strategy.isToBeTriggered(trueValues);
-        Assert.assertFalse(result2);
+        assertFalse(result2);
     }
     
     @Test
     public void isToBeTriggeredOnChangeInitialValue() {
         TriggerStrategy strategy = onChange(booleanChannel("val"), true);
-        
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
+    
         boolean result = strategy.isToBeTriggered(falseValues);
-        Assert.assertTrue(result);
+        assertTrue(result);
     }
  
     @Test
@@ -127,11 +141,13 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onBecomeTrue(booleanChannel("val"));
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(trueValues);
-        Assert.assertTrue(result);
-    
-        strategy = onBecomeTrue(new NamedSupplier<>("null", values -> null));
+        assertTrue(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
+
+        strategy = onBecomeTrue(getSupplier());
         result = strategy.isToBeTriggered(nullValues);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("test"));
     }
  
     @Test
@@ -139,15 +155,17 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onBecomeTrue(booleanChannel("val"));
         strategy.isToBeTriggered(trueValues);
         boolean result = strategy.isToBeTriggered(falseValues);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
     }
     
     @Test
     public void isToBeTriggeredOnBecomeTrueInitialValue() {
         TriggerStrategy strategy = onBecomeTrue(booleanChannel("val"), false);
-        
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
+    
         boolean result = strategy.isToBeTriggered(trueValues);
-        Assert.assertTrue(result);
+        assertTrue(result);
     }
     
     @Test
@@ -155,19 +173,22 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onBecomeFalse(booleanChannel("val"));
         strategy.isToBeTriggered(trueValues);
         boolean result = strategy.isToBeTriggered(falseValues);
-        Assert.assertTrue(result);
-    
-        strategy = onBecomeFalse(new NamedSupplier<>("null", values -> null));
+        assertTrue(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
+
+        strategy = onBecomeFalse(getSupplier());
         result = strategy.isToBeTriggered(nullValues);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("test"));
     }
- 
+
     @Test
     public void isToBeTriggeredOnBecomeFalseNegative() {
         TriggerStrategy strategy = onBecomeFalse(booleanChannel("val"));
         strategy.isToBeTriggered(falseValues);
         boolean result = strategy.isToBeTriggered(trueValues);
-        Assert.assertFalse(result);
+        assertFalse(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
     }
     
     @Test
@@ -175,7 +196,8 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onBecomeFalse(booleanChannel("val"), true);
         
         boolean result = strategy.isToBeTriggered(falseValues);
-        Assert.assertTrue(result);
+        assertTrue(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
     }
     
     @Test
@@ -183,7 +205,8 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onNull(stringChannel("null"));
         strategy.isToBeTriggered(trueValues);
         boolean result = strategy.isToBeTriggered(trueValues);
-        Assert.assertTrue(result);
+        assertTrue(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("null"));
     }
     
     @Test
@@ -191,13 +214,38 @@ public class TriggerStrategiesTest {
         TriggerStrategy strategy = onNotNull(booleanChannel("val"));
         strategy.isToBeTriggered(trueValues);
         boolean result = strategy.isToBeTriggered(trueValues);
-        Assert.assertTrue(result);
+        assertTrue(result);
+        assertTrue(strategy.getChannelIdentifiers().contains("val"));
     }
  
     @Test
     public void isToBeTriggeredAllways() {
         TriggerStrategy strategy = always();
         boolean result = strategy.isToBeTriggered(falseValues);
-        Assert.assertTrue(result);
+        assertTrue(result);
+        assertTrue(strategy.getChannelIdentifiers().isEmpty());
+    }
+    
+    private Supplier<Boolean> getSupplier() {
+        return getSupplier(null);
+    }
+    
+    private Supplier<Boolean> getSupplier(Boolean value) {
+        return new Supplier<Boolean>() {
+            @Override
+            public Boolean extract(MRecord values) {
+                return value;
+            }
+            
+            @Override
+            public String getIdentifier() {
+                return "null";
+            }
+            
+            @Override
+            public Set<String> getChannelIdentifiers() {
+                return Collections.singleton("test");
+            }
+        };
     }
 }

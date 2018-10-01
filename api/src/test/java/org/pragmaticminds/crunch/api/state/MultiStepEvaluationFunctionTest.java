@@ -1,17 +1,17 @@
 package org.pragmaticminds.crunch.api.state;
 
 import org.junit.Test;
-import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
+import org.pragmaticminds.crunch.api.pipe.LambdaEvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.events.Event;
 import org.pragmaticminds.crunch.events.EventBuilder;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 /** *
  * @author Erwin Wagasow
@@ -38,8 +38,22 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
     public void evalDefaultTimeOut_noTimeOutOccurs() { // -> processing should be successful with no timers set
         // create instance of the MultiStepEvaluationFunction with parameters for this test
         MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
-            .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success1", 10)
-            .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success2", 10)
+            .addEvaluationFunction(
+                new LambdaEvaluationFunction(
+                    ctx -> ctx.collect(successEvent),
+                        () -> new HashSet<>(Arrays.asList("string"))
+                ),
+                "success1",
+                10
+            )
+            .addEvaluationFunction(
+                new LambdaEvaluationFunction(
+                    ctx -> ctx.collect(successEvent),
+                        () -> new HashSet<>(Arrays.asList("string"))
+                ),
+                "success2",
+                10
+            )
             .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
             .withErrorExtractor(errorExtractor)
             .build();
@@ -70,8 +84,21 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
         MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
                 .withErrorExtractor(errorExtractor)
                 .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
-                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success", 10)
-                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout")
+                .addEvaluationFunction(
+                    new LambdaEvaluationFunction(
+                        ctx -> ctx.collect(successEvent),
+                            () -> new HashSet<>(Arrays.asList("string"))
+                    ),
+                    "success",
+                    10
+                )
+                .addEvaluationFunction(
+                    new LambdaEvaluationFunction(
+                        ctx -> { /* do nothing */ },
+                            () -> new HashSet<>(Arrays.asList("string"))
+                    ),
+                    "timeout"
+                )
                 .build();
 
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
@@ -90,9 +117,27 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
                 .withErrorExtractor(errorExtractor)
                 .withOverallTimeoutMs(10)
                 .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
-                .addEvaluationFunction((EvaluationFunction) ctx -> ctx.collect(successEvent), "success1")
-                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout1")
-                .addEvaluationFunction((EvaluationFunction) ctx -> { }, "timeout2")
+                .addEvaluationFunction(
+                    new LambdaEvaluationFunction(
+                        ctx -> ctx.collect(successEvent),
+                            () -> new HashSet<>(Arrays.asList("string"))
+                    ),
+                    "success1"
+                )
+                .addEvaluationFunction(
+                    new LambdaEvaluationFunction(
+                        ctx -> { /* do nothing */ },
+                            () -> new HashSet<>(Arrays.asList("string"))
+                    ),
+                    "timeout1"
+                )
+                .addEvaluationFunction(
+                    new LambdaEvaluationFunction(
+                        ctx -> { /* do nothing */ },
+                            () -> new HashSet<>(Arrays.asList("string"))
+                    ),
+                    "timeout2"
+                )
                 .build();
         SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
         stateMachine.eval(context);
@@ -109,15 +154,59 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
     @Test
     public void test_builder() {
         MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
-                .withErrorExtractor((ErrorExtractor) (events, ex, context) -> { })
-                .withEvaluationCompleteExtractor((EvaluationCompleteExtractor) (events, context) -> { })
-                .withOverallTimeoutMs(0L)
-                .addEvaluationFunction((EvaluationFunction) ctx -> {}, "")
-                .addEvaluationFunction((EvaluationFunction) ctx -> {}, "", 0L)
-                .addEvaluationFunctionFactory((EvaluationFunctionStateFactory) () -> null, "")
-                .addEvaluationFunctionFactory((EvaluationFunctionStateFactory) () -> null, "", 0L);
+            .withErrorExtractor((ErrorExtractor) (events, ex, context) -> { })
+            .withEvaluationCompleteExtractor((EvaluationCompleteExtractor) (events, context) -> { })
+            .withOverallTimeoutMs(0L)
+            .addEvaluationFunction(new LambdaEvaluationFunction(
+                    ctx -> { /* do nothing */ },
+                    () -> new HashSet<>(Arrays.asList("string"))
+                ),""
+            ).addEvaluationFunction(new LambdaEvaluationFunction(
+                    ctx -> { /* do nothing */ },
+                        () -> new HashSet<>(Arrays.asList("string"))
+                ),"",0L
+            ).addEvaluationFunctionFactory(
+                CloneStateEvaluationFunctionFactory.builder()
+                    .withPrototype(new LambdaEvaluationFunction(
+                        ctx -> { /* do nothing */ },
+                            () -> new HashSet<>(Arrays.asList("string"))
+                    )).build(),
+                ""
+            ).addEvaluationFunctionFactory(
+                CloneStateEvaluationFunctionFactory.builder()
+                    .withPrototype(new LambdaEvaluationFunction(
+                        ctx -> { /* do nothing */ },
+                            () -> new HashSet<>(Arrays.asList("string"))
+                    )).build(),
+                "",
+                0L
+            );
 
         builder.build();
     }
-
+    
+    @Test
+    public void getChannelIdentifiers() {
+        MultiStepEvaluationFunction function = MultiStepEvaluationFunction.builder()
+            .withErrorExtractor(mock(ErrorExtractor.class))
+            .withEvaluationCompleteExtractor(mock(EvaluationCompleteExtractor.class))
+            .withOverallTimeoutMs(0L)
+            .addEvaluationFunction(new LambdaEvaluationFunction(
+                context -> {},
+                    () -> new HashSet<>(Arrays.asList("1", "2", "3"))
+            ), "step1")
+            .addEvaluationFunction(new LambdaEvaluationFunction(
+                context -> {},
+                    () -> new HashSet<>(Arrays.asList("3", "4", "5"))
+            ), "step2")
+            .build();
+    
+        List<String> channelIdentifiers = new ArrayList<>(function.getChannelIdentifiers());
+        assertEquals(5, channelIdentifiers.size());
+        assertTrue(channelIdentifiers.contains("1"));
+        assertTrue(channelIdentifiers.contains("2"));
+        assertTrue(channelIdentifiers.contains("3"));
+        assertTrue(channelIdentifiers.contains("4"));
+        assertTrue(channelIdentifiers.contains("5"));
+    }
 }

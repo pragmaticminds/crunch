@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.BooleanOperators.*;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.*;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.StringOperators.*;
@@ -42,6 +43,8 @@ public class SuppliersTest {
         Boolean extract = supplier.extract(values);
         assertEquals(true, extract);
         
+        assertTrue(supplier.getChannelIdentifiers().contains("boolean"));
+        
         // null test
         Supplier<Boolean> nullSupplier = booleanChannel("null");
         extract = nullSupplier.extract(values);
@@ -55,6 +58,8 @@ public class SuppliersTest {
         Double extract = supplier.extract(values);
         assertEquals(0.1f, extract, 0.001);
     
+        assertTrue(supplier.getChannelIdentifiers().contains("double"));
+        
         // null test
         Supplier<Double> nullSupplier = doubleChannel("null");
         extract = nullSupplier.extract(values);
@@ -67,6 +72,8 @@ public class SuppliersTest {
         Supplier<Long> supplier = longChannel("long");
         Long extract = supplier.extract(values);
         assertEquals(123L, (long)extract);
+        
+        assertTrue(supplier.getChannelIdentifiers().contains("long"));
     
         // null test
         Supplier<Long> nullSupplier = longChannel("null");
@@ -81,6 +88,8 @@ public class SuppliersTest {
         Date extract = supplier.extract(values);
         Assert.assertNotNull(extract);
     
+        assertTrue(supplier.getChannelIdentifiers().contains("date"));
+
         // null test
         Supplier<Date> nullSupplier = dateChannel("null");
         extract = nullSupplier.extract(values);
@@ -94,6 +103,8 @@ public class SuppliersTest {
         String extract = supplier.extract(values);
         assertEquals("string", extract);
     
+        assertTrue(supplier.getChannelIdentifiers().contains("string"));
+    
         // null test
         Supplier<String> nullSupplier = stringChannel("null");
         extract = nullSupplier.extract(values);
@@ -105,7 +116,9 @@ public class SuppliersTest {
         Supplier<Value> supplier = channel("string");
         String extract = supplier.extract(values).getAsString();
         assertEquals("string", extract);
-
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("string"));
+    
         Supplier<Value> supplier1 = channel("long");
         Long extract1 = supplier1.extract(values).getAsLong();
         assertEquals(123L, (long) extract1);
@@ -116,7 +129,9 @@ public class SuppliersTest {
         // value test
         Supplier<Boolean> supplier = and(booleanChannel("boolean"), booleanChannel("boolean"));
         Boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("boolean"));
     
         // null test
         Supplier<Boolean> nullSupplier = and(booleanChannel("null"), booleanChannel("boolean"));
@@ -130,6 +145,9 @@ public class SuppliersTest {
         Supplier<Boolean> supplier = and(booleanChannel("boolean"), booleanChannel("booleanFalse"));
         Boolean extract = supplier.extract(values);
         Assert.assertFalse(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("boolean"));
+        assertTrue(supplier.getChannelIdentifiers().contains("booleanFalse"));
     }
     
     @Test
@@ -137,7 +155,10 @@ public class SuppliersTest {
         // value test
         Supplier<Boolean> supplier = or(booleanChannel("boolean"), booleanChannel("booleanFalse"));
         Boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("boolean"));
+        assertTrue(supplier.getChannelIdentifiers().contains("booleanFalse"));
     
         // null test
         Supplier<Boolean> nullSupplier = or(booleanChannel("null"), booleanChannel("boolean"));
@@ -151,6 +172,8 @@ public class SuppliersTest {
         Supplier<Boolean> supplier = or(booleanChannel("booleanFalse"), booleanChannel("booleanFalse"));
         Boolean extract = supplier.extract(values);
         Assert.assertFalse(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("booleanFalse"));
     }
     
     @Test
@@ -158,7 +181,9 @@ public class SuppliersTest {
         // value test
         Supplier<Boolean> supplier = not(booleanChannel("booleanFalse"));
         Boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("booleanFalse"));
     
         // null test
         Supplier<Boolean> nullSupplier = not(booleanChannel("null"));
@@ -171,12 +196,16 @@ public class SuppliersTest {
         // value test
         Supplier<Boolean> supplier = equal("string", stringChannel("string"));
         Boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("string"));
     
         // null test
         Supplier<Boolean> nullSupplier = equal("string", stringChannel("null"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        assertTrue(nullSupplier.getChannelIdentifiers().contains("null"));
     }
     
     @Test
@@ -184,12 +213,17 @@ public class SuppliersTest {
         // value test
         Supplier<Boolean> supplier = equal(stringChannel("string"), stringChannel("string"));
         Boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("string"));
     
         // null test
         Supplier<Boolean> nullSupplier = equal(stringChannel("null"), stringChannel("string"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        assertTrue(nullSupplier.getChannelIdentifiers().contains("string"));
+        assertTrue(nullSupplier.getChannelIdentifiers().contains("null"));
     }
     
     @Test
@@ -197,7 +231,9 @@ public class SuppliersTest {
         // value test
         Supplier<Boolean> supplier = match("s.*g", stringChannel("string"));
         Boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("string"));
     
         // null test
         Supplier<Boolean> nullSupplier = match("s.*g", stringChannel("null"));
@@ -210,7 +246,9 @@ public class SuppliersTest {
         // value test
         Supplier<Boolean> supplier = contains("str", stringChannel("string"));
         Boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("string"));
     
         // null test
         Supplier<Boolean> nullSupplier = contains("str", stringChannel("null"));
@@ -225,6 +263,8 @@ public class SuppliersTest {
         Long extract = supplier.extract(values);
         assertEquals(6L, (long)extract);
     
+        assertTrue(supplier.getChannelIdentifiers().contains("string"));
+    
         // null test
         Supplier<Long> nullSupplier = length(stringChannel("null"));
         extract = nullSupplier.extract(values);
@@ -235,14 +275,18 @@ public class SuppliersTest {
     public void comparatorEquals() {
         Supplier<Boolean> supplier = Suppliers.Comparators.equals(0.1D, doubleChannel("double"));
         boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("double"));
     }
     
     @Test
     public void comparatorEquals2() {
         Supplier<Boolean> supplier = Suppliers.Comparators.equals(doubleChannel("double"), doubleChannel("double"));
         boolean extract = supplier.extract(values);
-        Assert.assertTrue(extract);
+        assertTrue(extract);
+    
+        assertTrue(supplier.getChannelIdentifiers().contains("double"));
     }
     
     @Test
@@ -250,6 +294,8 @@ public class SuppliersTest {
         Supplier<Long> supplier = Suppliers.Comparators.compare(0.1D, doubleChannel("double"));
         Long extract = supplier.extract(values);
         assertEquals(0L, (long)extract);
+        
+        assertTrue(supplier.getChannelIdentifiers().contains("double"));
     }
     
     @Test
@@ -257,5 +303,7 @@ public class SuppliersTest {
         Supplier<Long> supplier = Suppliers.Comparators.compare(doubleChannel("double"), doubleChannel("double"));
         Long extract = supplier.extract(values);
         assertEquals(0L, (long)extract);
+        
+        assertTrue(supplier.getChannelIdentifiers().contains("double"));
     }
 }

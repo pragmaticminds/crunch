@@ -6,7 +6,9 @@ import org.pragmaticminds.crunch.api.values.UntypedValues;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This is a meta class. It describes the stream of a {@link EvaluationPipeline}.
@@ -92,6 +94,18 @@ public class SubStream implements Serializable {
     public long getSortWindowMs() {
         return sortWindowMs;
     }
+    
+    /**
+     * Collect all channel identifiers that are used in the {@link EvaluationFunction}s.
+     *
+     * @return a {@link List} or {@link Collection} of all channel identifiers that are used in this {@link SubStream}.
+     */
+    public Collection<String> getChannelIdentifiers(){
+        return evaluationFunctions.stream()
+            .flatMap(evaluationFunction -> evaluationFunction.getChannelIdentifiers().stream())
+            .collect(Collectors.toList());
+    }
+    
     
     public static Builder builder() { return new Builder(); }
     

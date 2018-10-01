@@ -13,9 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -91,6 +89,17 @@ public class InfluxDBSink extends AbstractRecordHandler {
             }
             lastValues.put(entry.getKey(), entry.getValue());
         }
+    }
+    
+    /**
+     * Collects all channel identifiers, that are used for the triggering condition.
+     * In this case no identifiers can be returned.
+     *
+     * @return a {@link List} or {@link Collection} of all channel identifiers from triggering
+     */
+    @Override
+    public Collection<String> getChannelIdentifiers() {
+        return Collections.emptyList();
     }
     
     @FunctionalInterface

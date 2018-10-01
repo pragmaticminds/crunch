@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,6 +45,7 @@ public class InfluxDBSinkTest {
         
         // Verify that something has been done
         verify(mock, times(6)).write(any(Point.class));
+        assertTrue(sink.getChannelIdentifiers().isEmpty());
     }
     
     private UntypedValues createUntypedValues() {

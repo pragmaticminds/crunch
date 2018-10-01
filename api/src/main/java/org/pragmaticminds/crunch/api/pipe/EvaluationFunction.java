@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.pipe;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * The general interface of all EvaluationFunctions.
@@ -16,12 +17,9 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * created by Erwin Wagasow on 03.08.2018
  */
-@FunctionalInterface
 public interface EvaluationFunction extends Serializable {
 
-    /**
-     * Is called before start of evaluation.
-     */
+    /** Is called before start of evaluation. */
     default void init() { /* Does nothing by default. */ }
 
     /**
@@ -31,10 +29,14 @@ public interface EvaluationFunction extends Serializable {
      */
     void eval(EvaluationContext ctx);
     
-    /**
-     * Is called after last value is evaluated (if ever).
-     */
+    /** Is called after last value is evaluated (if ever). */
     default void close() { /* Does nothing by default. */ }
-
-
+    
+    /**
+     * Returns all channel identifiers which are necessary for the function to do its job.
+     * It is not allowed to return null, an empty set can be returned (but why should??).
+     *
+     * @return a {@link Set} all channel identifiers that are needed by the Evaluation Function.
+     */
+    Set<String> getChannelIdentifiers();
 }

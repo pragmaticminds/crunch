@@ -5,6 +5,7 @@ import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * This is a collection of filters for usual use cases
@@ -44,6 +45,11 @@ public class EventFilters {
                 }
                 lastValue = value;
                 return keep;
+            }
+    
+            @Override
+            public Collection<String> getChannelIdentifiers() {
+                return supplier.getChannelIdentifiers();
             }
         };
     }
