@@ -2,7 +2,6 @@ package org.pragmaticminds.crunch.api.trigger.filter;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.TriggerEvaluationFunction;
-import org.pragmaticminds.crunch.events.Event;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -15,7 +14,7 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 14.08.2018
  */
-public interface EventFilter extends Serializable {
+public interface EventFilter<T extends Serializable> extends Serializable {
     
     /**
      * Checks if a filtration is to be applied to the given parameters
@@ -23,7 +22,7 @@ public interface EventFilter extends Serializable {
      * @param values the processed values
      * @return true if filter is to be applied, else false
      */
-    boolean apply(Event event, MRecord values);
+    boolean apply(T event, MRecord values);
     
     /**
      * Collects all channel identifiers that are used to filter.

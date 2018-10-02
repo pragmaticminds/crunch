@@ -1,8 +1,8 @@
 package org.pragmaticminds.crunch.api;
 
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Map;
 @SuppressWarnings("squid:S1612") // Use Lambdas for Handler, no method references
 public class EvalFunctionTestTool {
 
-    private EventHandler eventHandler;
+    private GenericEventHandler eventHandler;
     private EvaluationTestToolEvents events;
     private EvalFunction evalFunction;
 
@@ -80,14 +80,14 @@ public class EvalFunctionTestTool {
      * A list of results and a list of outputs.
      */
     public static class EvaluationTestToolEvents {
-        private List<Event> events = new ArrayList<>();
+        private List<GenericEvent> events = new ArrayList<>();
         private List<Object> outputs = new ArrayList<>();
 
-        public List<Event> getEvents() {
+        public List<GenericEvent> getEvents() {
             return events;
         }
 
-        public void setEvents(List<Event> events) {
+        public void setEvents(List<GenericEvent> events) {
             this.events = events;
         }
 
@@ -99,11 +99,11 @@ public class EvalFunctionTestTool {
             this.outputs = outputs;
         }
 
-        void addEvent(Event event) {
+        void addEvent(GenericEvent event) {
             this.events.add(event);
         }
 
-        public void addEvents(List<Event> events) {
+        public void addEvents(List<GenericEvent> events) {
             this.events.addAll(events);
         }
 
@@ -127,7 +127,7 @@ public class EvalFunctionTestTool {
                 stringBuilder.append(o).append("\n");
             }
             stringBuilder.append("function events: \n");
-            for (Event event : this.getEvents()) {
+            for (GenericEvent event : this.getEvents()) {
                 stringBuilder.append(event);
             }
 

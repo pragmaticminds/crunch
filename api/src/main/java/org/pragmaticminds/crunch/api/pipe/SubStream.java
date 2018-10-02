@@ -27,11 +27,11 @@ import java.util.stream.Collectors;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 01.08.2018
  */
-public class SubStream implements Serializable {
+public class SubStream<T extends Serializable> implements Serializable {
     
     private final String identifier;
     private final SubStreamPredicate predicate;
-    private final List<EvaluationFunction> evaluationFunctions;
+    private final List<EvaluationFunction<T>> evaluationFunctions;
     private final List<RecordHandler> recordHandlers;
     private final long sortWindowMs;
     
@@ -44,8 +44,13 @@ public class SubStream implements Serializable {
      * @param sortWindowMs describes a time window in which incoming {@link UntypedValues} can be sorted before they
      *                   are processed
      */
+    @SuppressWarnings("unchecked") // is manually checked
     private SubStream(
-        String identifier, SubStreamPredicate predicate, List<EvaluationFunction> evaluationFunctions, List<RecordHandler> recordHandlers, long sortWindowMs
+        String identifier,
+        SubStreamPredicate predicate,
+        List<EvaluationFunction<T>> evaluationFunctions,
+        List<RecordHandler> recordHandlers,
+        long sortWindowMs
     ) {
         this.identifier = identifier;
         this.predicate = predicate;
@@ -78,7 +83,7 @@ public class SubStream implements Serializable {
      * So be sure to clone them before reusing in an other place and that you are not affected of their states.
      * @return the instances of the {@link EvaluationFunction}s of this class that are in use and have a state!!!
      */
-    public List<EvaluationFunction> getEvalFunctions() {
+    public List<EvaluationFunction<T>> getEvalFunctions() {
         return evaluationFunctions;
     }
     
@@ -107,32 +112,32 @@ public class SubStream implements Serializable {
     }
     
     
-    public static Builder builder() { return new Builder(); }
+    public static <T extends Serializable> Builder<T> builder() { return new Builder<>(); }
     
     /**
      * Creates new instances of the {@link SubStream} class.
      * Also Checks if all necessary values are set.
      */
-    public static final class Builder implements Serializable {
-        private String                   identifier;
-        private SubStreamPredicate       predicate;
-        private List<EvaluationFunction> evaluationFunctions;
-        private long                     sortWindow;
-        private List<RecordHandler>      recordHandlers;
+    public static final class Builder<R extends Serializable> implements Serializable {
+        private String identifier;
+        private SubStreamPredicate predicate;
+        private List<EvaluationFunction<R>> evaluationFunctions;
+        private long sortWindow;
+        private List<RecordHandler> recordHandlers;
         
         private Builder() {}
-        
-        public Builder withIdentifier(String identifier) {
+
+        public Builder<R> withIdentifier(String identifier) {
             this.identifier = identifier;
             return this;
         }
-        
-        public Builder withPredicate(SubStreamPredicate predicate) {
+
+        public Builder<R> withPredicate(SubStreamPredicate predicate) {
             this.predicate = predicate;
             return this;
         }
-        
-        public Builder withEvaluationFunctions(List<EvaluationFunction> evaluationFunctions) {
+
+        public Builder<R> withEvaluationFunctions(List<EvaluationFunction<R>> evaluationFunctions) {
             if(this.evaluationFunctions == null){
                 this.evaluationFunctions = evaluationFunctions;
             }else{
@@ -140,16 +145,16 @@ public class SubStream implements Serializable {
             }
             return this;
         }
-        
-        public Builder withEvaluationFunction(EvaluationFunction evaluationFunction) {
+
+        public Builder<R> withEvaluationFunction(EvaluationFunction<R> evaluationFunction) {
             if(this.evaluationFunctions == null){
                 this.evaluationFunctions = new ArrayList<>();
             }
             this.evaluationFunctions.add(evaluationFunction);
             return this;
         }
-        
-        public Builder withRecordHandlers(List<RecordHandler> recordHandlers){
+
+        public Builder<R> withRecordHandlers(List<RecordHandler> recordHandlers) {
             if(this.recordHandlers == null){
                 this.recordHandlers = recordHandlers;
             }else{
@@ -157,28 +162,30 @@ public class SubStream implements Serializable {
             }
             return this;
         }
-        
-        public Builder withRecordHandler(RecordHandler recordHandler){
+
+        public Builder<R> withRecordHandler(RecordHandler recordHandler) {
             if(this.recordHandlers == null){
                 this.recordHandlers = new ArrayList<>();
             }
             this.recordHandlers.add(recordHandler);
             return this;
         }
-        
-        public Builder withSortWindow(long sortWindow) {
+
+        public Builder<R> withSortWindow(long sortWindow) {
             this.sortWindow = sortWindow;
             return this;
         }
         
-        public Builder but() {
-            return builder().withIdentifier(identifier)
+        @SuppressWarnings("unchecked") // is manually checked
+        public Builder<R> but() {
+            return new Builder<R>().withIdentifier(identifier)
                 .withPredicate(predicate)
                 .withEvaluationFunctions(evaluationFunctions)
                 .withSortWindow(sortWindow);
         }
         
-        public SubStream build() {
+        @SuppressWarnings("unchecked") // is manually checked
+        public SubStream<R> build() {
             checkParameters();
             return new SubStream(identifier, predicate, evaluationFunctions, recordHandlers, sortWindow);
         }

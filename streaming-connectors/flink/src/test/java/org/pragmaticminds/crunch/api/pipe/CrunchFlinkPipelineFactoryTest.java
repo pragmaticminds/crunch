@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,20 +22,21 @@ public class CrunchFlinkPipelineFactoryTest {
     
     /**
      * Tests if two mostly identical SubStreams are processing 100 {@link UntypedValues} correctly and produce
-     * 200 {@link Event}s
+     * 200 {@link GenericEvent}s
      *
      * @throws Exception some exception
      */
     @Test
+    @SuppressWarnings("unchecked") // is manually checked
     public void create() throws Exception {
         // implement this
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
         
-        List<SubStream> subStreams = new ArrayList<>();
+        List<SubStream<GenericEvent>> subStreams = new ArrayList<>();
         
         // create sub streams
-        List<EvaluationFunction> evaluationFunctions = new ArrayList<>();
+        List<EvaluationFunction<GenericEvent>> evaluationFunctions = new ArrayList<>();
         List<RecordHandler> recordHandlers = new ArrayList<>();
         
         final AtomicInteger i = new AtomicInteger(0);
@@ -44,9 +45,10 @@ public class CrunchFlinkPipelineFactoryTest {
         evaluationFunctions.add(
             new LambdaEvaluationFunction(
                 ctx -> ctx.collect(
-                    new Event(
+                    new GenericEvent(
                         System.currentTimeMillis(),
-                        "" + i.addAndGet(1), "testSource"
+                        "test" + i.addAndGet(1),
+                        "testSource"
                     )
                 ),
                 () -> new HashSet<>(Collections.singletonList("test"))
@@ -59,7 +61,7 @@ public class CrunchFlinkPipelineFactoryTest {
         recordHandlers.add(new NoopRecordHandler());
         
         subStreams.add(
-            SubStream.builder()
+                SubStream.<GenericEvent>builder()
                 .withIdentifier("testSubStream1")
                 .withSortWindow(100L)
                 .withPredicate(values -> true)
@@ -69,7 +71,7 @@ public class CrunchFlinkPipelineFactoryTest {
         );
         
         subStreams.add(
-            SubStream.builder()
+                SubStream.<GenericEvent>builder()
                 .withIdentifier("testSubStream2")
                 .withSortWindow(100L)
                 .withPredicate(values -> true)
@@ -79,7 +81,7 @@ public class CrunchFlinkPipelineFactoryTest {
         );
         
         // Create a Pipeline
-        EvaluationPipeline pipeline = EvaluationPipeline.builder()
+        EvaluationPipeline<GenericEvent> pipeline = EvaluationPipeline.<GenericEvent>builder()
             .withIdentifier("testPipe")
             .withSubStreams(subStreams)
             .build();
@@ -89,14 +91,89 @@ public class CrunchFlinkPipelineFactoryTest {
         
         in.print();
         
-        DataStream<Event> outEventDataStream = new CrunchFlinkPipelineFactory().create(in, pipeline);
-        CollectSink collectSink = new CollectSink();
+        DataStream<GenericEvent> outEventDataStream = new CrunchFlinkPipelineFactory<GenericEvent>()
+            .create(in, pipeline, GenericEvent.class);
+        GenericEventCollectSink collectSink = new GenericEventCollectSink();
         outEventDataStream.addSink(collectSink);
         
         // Has a side effect (CollectSink)
         env.execute("testJob");
         
-        Assert.assertEquals(200, CollectSink.values.size());
+        Assert.assertEquals(200, GenericEventCollectSink.values.size());
+    }
+    
+    /**
+     * Tests if two mostly identical SubStreams are processing 100 {@link UntypedValues} correctly and produce
+     * 200 {@link GenericEvent}s
+     *
+     * @throws Exception some exception
+     */
+    @Test
+    @SuppressWarnings("unchecked") // is manually checked
+    public void createWithStringResult() throws Exception {
+        // implement this
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        env.setParallelism(1);
+        
+        List<SubStream<String>> subStreams = new ArrayList<>();
+        
+        // create sub streams
+        List<EvaluationFunction<String>> evaluationFunctions = new ArrayList<>();
+        List<RecordHandler> recordHandlers = new ArrayList<>();
+        
+        final AtomicInteger i = new AtomicInteger(0);
+        
+        // create evaluation functions
+        evaluationFunctions.add(new LambdaEvaluationFunction(
+            ctx -> ctx.collect("I am the result"),
+            () -> new HashSet<>(Collections.singleton("test"))
+        ));
+        
+        // create 3 no op record handlers
+        recordHandlers.add(new NoopRecordHandler());
+        recordHandlers.add(new NoopRecordHandler());
+        recordHandlers.add(new NoopRecordHandler());
+        
+        subStreams.add(
+                SubStream.<String>builder()
+                .withIdentifier("testSubStream1")
+                .withSortWindow(100L)
+                .withPredicate(values -> true)
+                .withRecordHandlers(recordHandlers)
+                .withEvaluationFunctions(evaluationFunctions)
+                .build()
+        );
+        
+        subStreams.add(
+                SubStream.<String>builder()
+                .withIdentifier("testSubStream2")
+                .withSortWindow(100L)
+                .withPredicate(values -> true)
+                .withRecordHandlers(recordHandlers)
+                .withEvaluationFunctions(evaluationFunctions)
+                .build()
+        );
+        
+        // Create a Pipeline
+        EvaluationPipeline<String> pipeline = EvaluationPipeline.<String>builder()
+            .withIdentifier("testPipe")
+            .withSubStreams(subStreams)
+            .build();
+        
+        // Convert to Flink Pipeline
+        DataStream<MRecord> in = createDataStream(env);
+        
+        in.print();
+        
+        DataStream<String> outEventDataStream = new CrunchFlinkPipelineFactory()
+            .create(in, pipeline, String.class);
+        StringCollectSink collectSink = new StringCollectSink();
+        outEventDataStream.addSink(collectSink);
+        
+        // Has a side effect (CollectSink)
+        env.execute("testJob");
+        
+        Assert.assertEquals(200, StringCollectSink.values.size());
     }
     
     private DataStream<MRecord> createDataStream(StreamExecutionEnvironment env) {
@@ -129,12 +206,21 @@ public class CrunchFlinkPipelineFactoryTest {
     }
     
     // create a testing sink
-    private static class CollectSink implements SinkFunction<Event> {
-        // must be static
-        protected static final List<Event> values = new ArrayList<>();
+    private static class GenericEventCollectSink implements SinkFunction<GenericEvent> {
+        protected static final List<GenericEvent> values = new ArrayList<>();
         
         @Override
-        public synchronized void invoke(Event event, Context ctx) {
+        public synchronized void invoke(GenericEvent event, Context ctx) {
+            values.add(event);
+        }
+    }
+    
+    // create a testing sink
+    private static class StringCollectSink implements SinkFunction<String> {
+        protected static final List<String> values = new ArrayList<>();
+        
+        @Override
+        public synchronized void invoke(String event, Context ctx) {
             values.add(event);
         }
     }

@@ -11,14 +11,14 @@ import org.pragmaticminds.crunch.api.EvalFunction;
 import org.pragmaticminds.crunch.api.EvalFunctionCall;
 import org.pragmaticminds.crunch.api.EvalFunctionFactory;
 import org.pragmaticminds.crunch.api.annotations.ChannelValue;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
 import org.pragmaticminds.crunch.api.holder.Holder;
 import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
 
 import java.io.Serializable;
@@ -46,7 +46,7 @@ public class EvalFunctionWrapperOnKeyedIT {
         // configure your test environment
         env.setParallelism(1);
 
-        // Event Time Processing
+        // GenericEvent Time Processing
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.enableCheckpointing(10);
         env.setRestartStrategy(new RestartStrategies.NoRestartStrategyConfiguration());
@@ -82,22 +82,22 @@ public class EvalFunctionWrapperOnKeyedIT {
 
 //        // Assert that the last emitted event contains all 1000 keys send in
         // Assert that the last 10 Entries contain value 10 (right state).
-        List<Event> subList = CollectSink.values.subList(90, CollectSink.values.size());
+        List<GenericEvent> subList = CollectSink.values.subList(90, CollectSink.values.size());
 
         // Assert that they all have value 10
-        for (Event event : subList) {
+        for (GenericEvent event : subList) {
             assertEquals(10L, (long) event.getParameter("count").getAsLong());
         }
     }
 
     // create a testing sink
-    private static class CollectSink implements SinkFunction<Event> {
+    private static class CollectSink implements SinkFunction<GenericEvent> {
 
         // must be static
-        protected static final List<Event> values = new ArrayList<>();
+        protected static final List<GenericEvent> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(Event value, Context ctx) {
+        public synchronized void invoke(GenericEvent value, Context ctx) {
             values.add(value);
         }
     }
@@ -116,7 +116,7 @@ public class EvalFunctionWrapperOnKeyedIT {
         }
 
         @Override
-        public void setup(Map literals, EventHandler eventHandler) {
+        public void setup(Map literals, GenericEventHandler eventHandler) {
             count = 0;
             setEventHandler(eventHandler);
         }
@@ -124,7 +124,7 @@ public class EvalFunctionWrapperOnKeyedIT {
         @Override
         public Void eval(long time, Map channels) {
             count++;
-            EventHandler handler = getEventHandler();
+            GenericEventHandler handler = getEventHandler();
             handler.fire(handler.getBuilder()
                     .withTimestamp(Instant.now().toEpochMilli())
                     .withSource("")

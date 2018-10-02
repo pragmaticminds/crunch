@@ -1,7 +1,7 @@
 package org.pragmaticminds.crunch.api.evaluations;
 
 import org.pragmaticminds.crunch.api.EvalFunction;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
 import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
@@ -60,7 +60,7 @@ public class RegexFind extends EvalFunction<String> {
      * @param eventHandler the interface to fire results into the system
      */
     @Override
-    public void setup(Map<String, Value> literals, EventHandler eventHandler) {
+    public void setup(Map<String, Value> literals, GenericEventHandler eventHandler) {
         String regexString = literals.get("regex").getAsString();
         setEventHandler(eventHandler);
         pattern = Pattern.compile(regexString);
@@ -76,7 +76,7 @@ public class RegexFind extends EvalFunction<String> {
     public String eval(long timestamp, Map<String, Value> channels) {
         String value = channels.get("value").getAsString();
         Matcher matcher = pattern.matcher(value);
-        EventHandler handler = getEventHandler();
+        GenericEventHandler handler = getEventHandler();
         if (matcher.find()) {
             handler.fire(
                     handler.getBuilder()

@@ -1,7 +1,7 @@
 package org.pragmaticminds.crunch.api.state;
 
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -13,17 +13,17 @@ import java.util.Map;
  * Created by Erwin Wagasow on 07.08.2018
  */
 @FunctionalInterface
-public interface ErrorExtractor extends Serializable {
+public interface ErrorExtractor<T extends Serializable> extends Serializable {
     
     /**
      * If any states of the {@link MultiStepEvaluationFunction} produce an Exception or a timeout exception is raised,
      * this method is called.
      * This processes the so far generated result events and the occurred exception to generate final outgoing
-     * {@link Event}s
+     * {@link GenericEvent}s
      *
-     * @param events incoming values to generate a final resulting {@link Event}
+     * @param events incoming values to generate a final resulting events
      * @param ex {@link Exception} of the error situation
-     * @param context has a collect method for the outgoing {@link Event}s
+     * @param context has a collect method for the outgoing T events
      */
-    void process(Map<String, Event> events, Exception ex, EvaluationContext context);
+    void process(Map<String, T> events, Exception ex, EvaluationContext<T> context);
 }

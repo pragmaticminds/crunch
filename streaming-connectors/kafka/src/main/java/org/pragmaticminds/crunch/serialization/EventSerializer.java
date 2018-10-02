@@ -3,7 +3,7 @@ package org.pragmaticminds.crunch.serialization;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Serializer;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.events.UntypedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Own serializer for {@link UntypedEvent}s
  */
-public class EventSerializer implements Serializer<Event> {
+public class EventSerializer implements Serializer<GenericEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(EventSerializer.class);
 
@@ -23,12 +23,12 @@ public class EventSerializer implements Serializer<Event> {
     public void configure(Map<String, ?> map, boolean b) { /* do nothing */}
 
     @Override
-    public byte[] serialize(String topic, Event event) {
+    public byte[] serialize(String topic, GenericEvent event) {
         try {
             UntypedEvent untypedEvent = UntypedEvent.fromEvent(event);
             return objectMapper.writeValueAsBytes(untypedEvent);
         } catch (JsonProcessingException e) {
-            logger.error("could not deserialize Event", e);
+            logger.error("could not deserialize GenericEvent", e);
             return new byte[0];
         }
     }

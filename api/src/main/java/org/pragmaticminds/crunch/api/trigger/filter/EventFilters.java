@@ -14,7 +14,10 @@ import java.util.Collection;
  * Created by Erwin Wagasow on 14.08.2018
  */
 public class EventFilters {
-    private EventFilters(){ /* hide constructor */ }
+    /** hidden constructor */
+    private EventFilters(){
+        throw new UnsupportedOperationException("this constructor should never be calles!");
+    }
     
     /**
      * This EventFilter checks if a particular value in the {@link MRecord} has changed since the last processing
@@ -22,8 +25,8 @@ public class EventFilters {
      * @param supplier extracts the value of interest out of the {@link MRecord}
      * @return true if the value of interest has been changed since the last processing
      */
-    public static <T extends Serializable> EventFilter onValueChanged(Supplier<T> supplier){
-        return new EventFilter() {
+    public static <T extends Serializable> EventFilter<T> onValueChanged(Supplier<T> supplier) {
+        return new EventFilter<T>() {
             private T lastValue;
     
             /**
@@ -34,7 +37,7 @@ public class EventFilters {
              * @return true if this {@link Event} is to be filtered out, otherwise false
              */
             @Override
-            public boolean apply(Event event, MRecord values) {
+            public boolean apply(T event, MRecord values) {
                 boolean keep = false; // filter by default
                 T value = supplier.extract(values);
                 if(value == null){

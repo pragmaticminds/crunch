@@ -3,7 +3,7 @@ package org.pragmaticminds.crunch.api;
 import org.pragmaticminds.crunch.api.annotations.AnnotationUtils;
 import org.pragmaticminds.crunch.api.annotations.ChannelValue;
 import org.pragmaticminds.crunch.api.annotations.ParameterValue;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.holder.Holder;
 import org.pragmaticminds.crunch.api.records.DataType;
 
@@ -39,7 +39,7 @@ public class AnnotatedEvalFunctionTestTool {
     public AnnotatedEvalFunctionTestTool(Class<? extends AnnotatedEvalFunction> annotatedEvalFunctionClass) throws IllegalAccessException,
             InstantiationException {
         @SuppressWarnings("squid:S1612") //cannot make this a lambda
-                EventHandler eventHandler = event -> events.addEvent(event);
+            GenericEventHandler eventHandler = event -> events.addEvent(event);
 
         // create instance of the evaluation class
         annotatedEvalFunction = annotatedEvalFunctionClass.newInstance();

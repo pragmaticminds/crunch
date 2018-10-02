@@ -1,7 +1,7 @@
 package org.pragmaticminds.crunch.api.annotations;
 
 import org.pragmaticminds.crunch.api.AnnotatedEvalFunction;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,14 +61,14 @@ public class AnnotationUtils {
     }
 
     /**
-     * Injects the {@link EventHandler} object into an {@link AnnotatedEvalFunction}
+     * Injects the {@link GenericEventHandler} object into an {@link AnnotatedEvalFunction}
      *
-     * @param object       the target object where to the {@link EventHandler} is to be injected
+     * @param object       the target object where to the {@link GenericEventHandler} is to be injected
      * @param eventHandler the one that is to be injected into the target object
      */
-    public static void injectEventStream(Object object, EventHandler eventHandler) {
+    public static void injectEventStream(Object object, GenericEventHandler eventHandler) {
         for (Field field : object.getClass().getDeclaredFields()) {
-            if (field.getType().equals(EventHandler.class)) {
+            if (field.getType().equals(GenericEventHandler.class)) {
                 field.setAccessible(true);
                 try {
                     field.set(object, eventHandler);

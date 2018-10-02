@@ -14,7 +14,7 @@ import org.pragmaticminds.crunch.api.EvalFunctionCall;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.runtime.merge.ValuesMergeFunctionIT;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class EvalFunctionWrapperRestartIT {
         // configure your test environment
         environment.setParallelism(1);
 
-        // Event Time Processing
+        // GenericEvent Time Processing
         environment.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         environment.enableCheckpointing(10);
 
@@ -73,7 +73,7 @@ public class EvalFunctionWrapperRestartIT {
         stream.print();
 
         // Eval Function 1
-        SingleOutputStreamOperator<Event> stream1 = stream
+        SingleOutputStreamOperator<GenericEvent> stream1 = stream
                 .keyBy(untypedValues -> 1L)
                 .process(new EvalFunctionWrapper(evalFunctionCall));
 
@@ -141,13 +141,13 @@ public class EvalFunctionWrapperRestartIT {
     }
 
     // create a testing sink
-    private static class CollectSink implements SinkFunction<Event> {
+    private static class CollectSink implements SinkFunction<GenericEvent> {
 
         // must be static
-        public static final List<Event> values = new ArrayList<>();
+        public static final List<GenericEvent> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(Event value) {
+        public synchronized void invoke(GenericEvent value) {
             values.add(value);
         }
     }

@@ -1,8 +1,8 @@
 package org.pragmaticminds.crunch.api.pipe;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.events.Event;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +12,11 @@ import java.util.List;
  * @author Erwin Wagasow
  * created by Erwin Wagasow on 03.08.2018
  */
-public class SimpleEvaluationContext extends EvaluationContext {
-    
-    private final MRecord          values;
-    private       ArrayList<Event> events;
-    
+public class SimpleEvaluationContext<T extends Serializable> extends EvaluationContext<T> {
+
+    private final MRecord values;
+    private ArrayList<T> events;
+
     /**
      * Simple constructor, getting the values to be processed by a {@link EvaluationFunction}
      * @param values to be processed
@@ -31,14 +31,14 @@ public class SimpleEvaluationContext extends EvaluationContext {
     public MRecord get() {
         return values;
     }
-    
-    public List<Event> getEvents(){
+
+    public List<T> getEvents() {
         return this.events;
     }
 
     /** @inheritDoc */
     @Override
-    public void collect(Event event) {
+    public void collect(T event) {
         if(event != null){
             events.add(event);
         }

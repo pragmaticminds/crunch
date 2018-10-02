@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.util.Map;
 
@@ -18,7 +18,7 @@ public class StateEvaluationContextTest {
     
     private StateEvaluationContext stateEvaluationContext;
     private TypedValues mockValues;
-    private Event event = new Event();
+    private GenericEvent event = new GenericEvent();
     
     @Before
     public void setUp() throws Exception {
@@ -34,7 +34,7 @@ public class StateEvaluationContextTest {
     @Test
     public void getEvents() {
         stateEvaluationContext.collect("test", event);
-        Map<String, Event> events = stateEvaluationContext.getEvents();
+        Map<String, GenericEvent> events = stateEvaluationContext.getEvents();
         Assert.assertNotNull(events);
         Assert.assertNotEquals(0, events.size());
         Assert.assertEquals(event, events.get("test"));

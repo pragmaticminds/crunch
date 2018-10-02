@@ -1,4 +1,4 @@
-package org.pragmaticminds.crunch.api.state;
+package org.pragmaticminds.crunch.api.exceptions;
 
 /**
  * This exception is thrown when the timeout in a state of the ChainedEvalFunction is reached

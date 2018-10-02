@@ -1,4 +1,6 @@
-package org.pragmaticminds.crunch.api.records;
+package org.pragmaticminds.crunch.api.exceptions;
+
+import org.pragmaticminds.crunch.api.records.MRecord;
 
 /**
  * Is thrown by getters of {@link MRecord} when they getValue a reqiuest for an unknown channel.

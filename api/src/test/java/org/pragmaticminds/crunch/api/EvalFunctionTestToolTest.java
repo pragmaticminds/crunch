@@ -2,11 +2,11 @@ package org.pragmaticminds.crunch.api;
 
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.annotations.*;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.holder.Holder;
 import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +60,8 @@ public class EvalFunctionTestToolTest {
         assertEquals(1, events.getEvents().size());
 
         //check the machine cycles
-        List<Event> eventList = events.getEvents();
-        for (Event event : eventList) {
+        List<GenericEvent> eventList = events.getEvents();
+        for (GenericEvent event : eventList) {
             // assertTrue((event.getParameter(Parameters.MACHINE_CYCLE_START).getAsLong() < event.getParameter(Parameters.MACHINE_CYCLE_END).getAsLong()));
             // assertTrue(event.getParameter(Parameters.MACHINE_CYCLE_TIME_ACTUAL).getAsLong() > 0);
             // assertEquals(event.getTimestamp(), event.getParameter(Parameters.MACHINE_CYCLE_START).getAsLong());
@@ -77,7 +77,7 @@ public class EvalFunctionTestToolTest {
         private static final Logger logger = LoggerFactory.getLogger(MultipleLiteralsAndChannels.class);
 
         @ResultTypes(resultTypes = @ResultType(name = "test", dataType = DataType.STRING))
-        private transient EventHandler eventHandler;
+        private transient GenericEventHandler eventHandler;
 
         @TimeValue
         private Holder<Long> time;

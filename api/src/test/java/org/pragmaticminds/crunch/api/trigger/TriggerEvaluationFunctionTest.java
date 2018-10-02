@@ -9,12 +9,12 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.extractor.Extractors;
 import org.pragmaticminds.crunch.api.trigger.extractor.MapExtractor;
 import org.pragmaticminds.crunch.api.trigger.filter.EventFilter;
-import org.pragmaticminds.crunch.api.trigger.handler.ExtractorTriggerHandler;
+import org.pragmaticminds.crunch.api.trigger.handler.GenericExtractorTriggerHandler;
 import org.pragmaticminds.crunch.api.trigger.handler.TriggerHandler;
 import org.pragmaticminds.crunch.api.trigger.strategy.LambdaTriggerStrategy;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.util.*;
 
@@ -30,12 +30,7 @@ import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.Channel
 public class TriggerEvaluationFunctionTest {
     private long timestamp = 123L;
     private Map<String, Value> valueMap = new HashMap<>();
-    private Event resultEvent = new Event(
-        timestamp,
-        "testEventName",
-        "testSource",
-        valueMap
-    );
+    private GenericEvent resultEvent = new GenericEvent(timestamp, "testEventName", "testSource", valueMap);
     
     @Before
     public void setUp() throws Exception {
@@ -55,7 +50,7 @@ public class TriggerEvaluationFunctionTest {
         
         Map<String, Value> values = new HashMap<>();
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
-        List<Event> resultEventList;
+        List<GenericEvent> resultEventList;
         
         try {
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
@@ -81,7 +76,7 @@ public class TriggerEvaluationFunctionTest {
             .build();
         Map<String, Value> values = new HashMap<>();
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
-        List<Event> resultEventList;
+        List<GenericEvent> resultEventList;
         try {
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
             resultEventList = context.getEvents();
@@ -96,7 +91,7 @@ public class TriggerEvaluationFunctionTest {
     
     @Test
     public void processElementOneResult() {
-        Event resultEvent = new Event(timestamp, "testEventName", "testSource");
+        GenericEvent resultEvent = new GenericEvent(timestamp, "testEventName", "testSource");
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 decisionBase -> true,
@@ -106,7 +101,7 @@ public class TriggerEvaluationFunctionTest {
             .build();
         Map<String, Value> values = new HashMap<>();
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
-        List<Event> resultEventList;
+        List<GenericEvent> resultEventList;
         try {
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
             resultEventList = context.getEvents();
@@ -134,7 +129,7 @@ public class TriggerEvaluationFunctionTest {
             .build();
         Map<String, Value> values = new HashMap<>();
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
-        List<Event> resultEventList;
+        List<GenericEvent> resultEventList;
         try {
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
             resultEventList = context.getEvents();
@@ -159,9 +154,9 @@ public class TriggerEvaluationFunctionTest {
                 context.collect(resultEvent);
                 context.collect(resultEvent);
             })
-            .withFilter(new EventFilter() {
+            .withFilter(new EventFilter<GenericEvent>() {
                 @Override
-                public boolean apply(Event event, MRecord values) {
+                public boolean apply(GenericEvent event, MRecord values) {
                     return values.getString("val").equals("string");
                 }
         
@@ -174,7 +169,7 @@ public class TriggerEvaluationFunctionTest {
         Map<String, Value> values = new HashMap<>();
         values.put("val",Value.of("string"));
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
-        List<Event> resultEventList;
+        List<GenericEvent> resultEventList;
         try {
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
             resultEventList = context.getEvents();
@@ -215,7 +210,7 @@ public class TriggerEvaluationFunctionTest {
         );
         
         // create TriggerHandler
-        TriggerHandler triggerHandler = new ExtractorTriggerHandler("resultEvent", extractor1, extractor2);
+        TriggerHandler triggerHandler = new GenericExtractorTriggerHandler("resultEvent", extractor1, extractor2);
         
         // create TriggerEvaluationFunction
         TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
@@ -243,13 +238,13 @@ public class TriggerEvaluationFunctionTest {
         /*
          * Check results
          */
-        List<Event>resultEventList = context.getEvents();
+        List<GenericEvent>resultEventList = context.getEvents();
         
         // check size
         Assert.assertEquals(1, resultEventList.size());
     
         // check contents
-        Event event = resultEventList.get(0);
+        GenericEvent event = resultEventList.get(0);
         Assert.assertEquals(1L, (long)event.getParameter("test1").getAsLong());
         Assert.assertEquals(2L, (long)event.getParameter("test2").getAsLong());
     }

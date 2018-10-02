@@ -7,7 +7,7 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
 import org.pragmaticminds.crunch.api.pipe.SubStream;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
-import org.pragmaticminds.crunch.events.EventBuilder;
+import org.pragmaticminds.crunch.events.GenericEventBuilder;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -68,7 +68,7 @@ public class CrunchExecutorTest {
     private static class MyEvaluationFunction implements EvaluationFunction {
         @Override
         public void eval(EvaluationContext ctx) {
-            ctx.collect(EventBuilder.anEvent()
+            ctx.collect(GenericEventBuilder.anEvent()
                     .withEvent("success")
                     .withTimestamp(0L)
                     .withSource("no source")

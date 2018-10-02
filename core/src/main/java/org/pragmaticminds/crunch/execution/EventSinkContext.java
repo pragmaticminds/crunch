@@ -4,6 +4,8 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
 
+import java.io.Serializable;
+
 /**
  * This is an {@link EvaluationContext} which forwards all the {@link Event}s it receives to a
  * {@link EventSink} callback.
@@ -13,12 +15,12 @@ import org.pragmaticminds.crunch.events.Event;
  * @author julian
  * Created by julian on 15.08.18
  */
-class EventSinkContext extends EvaluationContext {
+public class EventSinkContext<T extends Serializable> extends EvaluationContext<T> {
 
-    private final EventSink sink;
+    private final EventSink<T> sink;
     private MRecord current;
 
-    public EventSinkContext(EventSink sink) {
+    public EventSinkContext(EventSink<T> sink) {
         this.sink = sink;
     }
 
@@ -38,7 +40,7 @@ class EventSinkContext extends EvaluationContext {
     }
 
     @Override
-    public void collect(Event event) {
+    public void collect(T event) {
         sink.handle(event);
     }
 }

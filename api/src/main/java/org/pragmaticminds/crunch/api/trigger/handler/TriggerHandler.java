@@ -14,7 +14,7 @@ import java.io.Serializable;
  * Created by Erwin Wagasow on 19.09.2018
  */
 @FunctionalInterface
-public interface TriggerHandler extends Serializable {
+public interface TriggerHandler<T extends Serializable> extends Serializable {
     
     /**
      * When a {@link TriggerEvaluationFunction} is triggered, it calls this method to generate a proper result.
@@ -22,5 +22,5 @@ public interface TriggerHandler extends Serializable {
      * @param context of the current processing. It holds the current MRecord and it takes the resulting {@link Event}
      *                objects.
      */
-    void handle(EvaluationContext context);
+    void handle(EvaluationContext<T> context);
 }

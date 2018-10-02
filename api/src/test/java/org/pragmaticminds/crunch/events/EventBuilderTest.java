@@ -11,7 +11,7 @@ import java.util.Map;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Tests the functionality of the EventBuilder
+ * Tests the functionality of the GenericEventBuilder
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 21.11.2017
@@ -20,13 +20,13 @@ public class EventBuilderTest {
 
     @Test(expected = NullPointerException.class)
     public void withTimestamp() {
-        Event event = EventBuilder.anEvent().withTimestamp(1L).build();
+        GenericEvent event = GenericEventBuilder.anEvent().withTimestamp(1L).build();
         assertNotNull(event);
     }
 
     @Test(expected = NullPointerException.class)
     public void withEvent() {
-        Event event = EventBuilder.anEvent().withTimestamp(1L).withEvent("test0815").build();
+        GenericEvent event = GenericEventBuilder.anEvent().withTimestamp(1L).withEvent("test0815").build();
         assertNotNull(event);
     }
 
@@ -34,7 +34,7 @@ public class EventBuilderTest {
     public void withParameters() {
         Map<String, Value> parameters = new HashMap<>();
         parameters.put("test", Value.of("test"));
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
                 .withSource("")
@@ -45,7 +45,7 @@ public class EventBuilderTest {
 
     @Test
     public void withParameterString() {
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
                 .withSource("")
@@ -56,7 +56,7 @@ public class EventBuilderTest {
 
     @Test
     public void withParameterDouble() {
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
                 .withSource("")
@@ -67,7 +67,7 @@ public class EventBuilderTest {
 
     @Test
     public void withParameterLong() {
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
                 .withSource("")
@@ -78,7 +78,7 @@ public class EventBuilderTest {
 
     @Test
     public void withParameterDate() {
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
                 .withSource("")
@@ -89,7 +89,7 @@ public class EventBuilderTest {
 
     @Test
     public void withParameterBoolean() {
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
                 .withSource("")
@@ -100,7 +100,7 @@ public class EventBuilderTest {
 
     @Test
     public void withParameterValue() {
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withEvent("test0815")
                 .withSource("")

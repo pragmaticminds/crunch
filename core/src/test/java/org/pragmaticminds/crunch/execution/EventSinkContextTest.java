@@ -5,7 +5,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,7 +28,7 @@ public class EventSinkContextTest {
         assertEquals(current, record);
 
         // Call collect
-        Event event = new Event();
+        GenericEvent event = new GenericEvent();
         context.collect(event);
 
         // Assert that it is called.

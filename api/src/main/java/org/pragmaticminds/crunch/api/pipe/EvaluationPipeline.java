@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 01.08.2018
  */
-public class EvaluationPipeline implements Serializable {
-    private final String          identifier;
-    private final List<SubStream> subStreams;
+public class EvaluationPipeline<T extends Serializable> implements Serializable {
+    private final String identifier;
+    private final List<SubStream<T>> subStreams;
     
     /**
      * private constructor for the builder
@@ -27,7 +27,7 @@ public class EvaluationPipeline implements Serializable {
      * @param subStreams of the {@link EvaluationPipeline}, containing all {@link EvaluationFunction}s of the
      *                   pipeline to process
      */
-    private EvaluationPipeline(String identifier, List<SubStream> subStreams) {
+    private EvaluationPipeline(String identifier, List<SubStream<T>> subStreams) {
         this.identifier = identifier;
         this.subStreams = subStreams;
     }
@@ -36,7 +36,7 @@ public class EvaluationPipeline implements Serializable {
     public String getIdentifier() {
         return identifier;
     }
-    public List<SubStream> getSubStreams() {
+    public List<SubStream<T>> getSubStreams() {
         return subStreams;
     }
     
@@ -44,14 +44,14 @@ public class EvaluationPipeline implements Serializable {
      * Creates a builder for this class
      * @return a builder
      */
-    public static Builder builder() { return new Builder(); }
+    public static <T extends Serializable> Builder<T> builder() { return new Builder<>(); }
     
     /**
      * this Builder creates new instances of {@link EvaluationPipeline} class
      */
-    public static final class Builder implements Serializable {
-        private String          identifier;
-        private List<SubStream> subStreams;
+    public static final class Builder<T extends Serializable> implements Serializable {
+        private String identifier;
+        private List<SubStream<T>> subStreams;
         
         private Builder() {}
     
@@ -60,12 +60,12 @@ public class EvaluationPipeline implements Serializable {
          * @param identifier
          * @return
          */
-        public Builder withIdentifier(String identifier) {
+        public Builder<T> withIdentifier(String identifier) {
             this.identifier = identifier;
             return this;
         }
-        
-        public Builder withSubStreams(List<SubStream> subStreams) {
+
+        public Builder<T> withSubStreams(List<SubStream<T>> subStreams) {
             if(this.subStreams == null){
                 this.subStreams = subStreams;
             }else{
@@ -73,22 +73,22 @@ public class EvaluationPipeline implements Serializable {
             }
             return this;
         }
-        
-        public Builder withSubStream(SubStream subStream){
+
+        public Builder<T> withSubStream(SubStream<T> subStream) {
             if(this.subStreams == null){
                 this.subStreams = new ArrayList<>();
             }
             this.subStreams.add(subStream);
             return this;
         }
-        
-        public Builder but() {
-            return builder().withIdentifier(identifier).withSubStreams(subStreams);
+
+        public Builder<T> but() {
+            return new Builder<T>().withIdentifier(identifier).withSubStreams(subStreams);
         }
-        
-        public EvaluationPipeline build(){
+
+        public EvaluationPipeline<T> build() {
             checkConstructorParameters(identifier, subStreams);
-            return new EvaluationPipeline(identifier, subStreams);
+            return new EvaluationPipeline<T>(identifier, subStreams);
         }
     
         /**
@@ -96,9 +96,9 @@ public class EvaluationPipeline implements Serializable {
          * Checks if the identifier of the {@link EvaluationPipeline} is not null
          * @param identifier of the {@link EvaluationPipeline}
          * @param subStreams list of {@link SubStream}s of the {@link EvaluationPipeline}
-         * @throws IdentifierAlreadyExistsException
+         * @throws IdentifierAlreadyExistsException as it says
          */
-        private void checkConstructorParameters(String identifier, List<SubStream> subStreams) {
+        private void checkConstructorParameters(String identifier, List<SubStream<T>> subStreams) {
             Preconditions.checkNotNull(identifier, "the identifier of the EvaluationPipeline is not set");
             Preconditions.checkNotNull(subStreams, "the SubStreams of the EvaluationPipeline are not set");
             Preconditions.checkArgument(!subStreams.isEmpty(), "the SubStream of the EvaluationPipeline is empty");

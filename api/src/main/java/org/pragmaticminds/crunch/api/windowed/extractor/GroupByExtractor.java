@@ -8,7 +8,7 @@ import org.pragmaticminds.crunch.api.trigger.Tuple2;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.windowed.WindowedEvaluationFunction;
 import org.pragmaticminds.crunch.api.windowed.extractor.aggregate.Aggregation;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
  * This class implements {@link WindowExtractor}. It has aggregators which are holding values of all last
  * values, where the window flag in the {@link WindowedEvaluationFunction} was open. The {@link Aggregation}s accumulate
  * specific values like sums etc. All aggregated values are passed optionally to a {@link GroupAggregationFinalizer},
- * which creates the resulting {@link Event}s. Is the {@link GroupAggregationFinalizer} not set all aggregated values
- * are put into an resulting {@link Event}.
+ * which creates the resulting {@link GenericEvent}s. Is the {@link GroupAggregationFinalizer} not set all aggregated values
+ * are put into an resulting {@link GenericEvent}.
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 16.08.2018
@@ -69,11 +69,11 @@ public class GroupByExtractor implements WindowExtractor {
     }
     
     /**
-     * Generates resulting {@link Event}s from the applied {@link MRecord}s and calls the contexts collect method on the
+     * Generates resulting {@link GenericEvent}s from the applied {@link MRecord}s and calls the contexts collect method on the
      * results.
      *
      * @param context of the current eval call to the parent {@link EvaluationFunction}. also collects the resulting
-     *                {@link Event}s
+     *                {@link GenericEvent}s
      */
     @Override
     public void finish(EvaluationContext context) {

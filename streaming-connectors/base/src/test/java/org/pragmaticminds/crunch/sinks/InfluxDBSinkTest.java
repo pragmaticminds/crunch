@@ -10,7 +10,7 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -72,14 +72,14 @@ public class InfluxDBSinkTest {
     }
     
     private EvaluationContext createContext(MRecord record) {
-        return new EvaluationContext() {
+        return new EvaluationContext<GenericEvent>() {
             @Override
             public MRecord get() {
                 return record;
             }
             
             @Override
-            public void collect(Event event) {
+            public void collect(GenericEvent event) {
             
             }
         };

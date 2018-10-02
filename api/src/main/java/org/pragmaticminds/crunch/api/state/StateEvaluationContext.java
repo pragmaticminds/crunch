@@ -4,7 +4,10 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.events.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +18,10 @@ import java.util.Map;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
-public class StateEvaluationContext extends EvaluationContext {
-    private final HashMap<String, Event>  events;
+public class StateEvaluationContext<T extends Serializable> extends EvaluationContext<T> {
+    private static final Logger logger = LoggerFactory.getLogger(StateEvaluationContext.class);
+    
+    private final HashMap<String, T>  events;
     private MRecord values;
     private String alias;
     
@@ -31,7 +36,7 @@ public class StateEvaluationContext extends EvaluationContext {
     }
     
     // getter
-    public Map<String, Event> getEvents() {
+    public Map<String, T> getEvents() {
         return events;
     }
     
@@ -64,24 +69,24 @@ public class StateEvaluationContext extends EvaluationContext {
     
     // methods
     /**
-     * collects the resulting {@link Event} of processing with it's key
+     * collects the resulting T event of processing with it's key
      * @param key should be unique, else it overrides the last value
      * @param event to be stored
      */
-    public void collect(String key, Event event) {
+    public void collect(String key, T event) {
         this.events.put(key, event);
     }
     
     /**
      * collects the resulting {@link Event} of processing
      * !! do not use the simple collect Method in the {@link MultiStepEvaluationFunction} !!
-     * @param event result of the processing of an {@link EvaluationFunction}
+     * @param event T result of the processing of an {@link EvaluationFunction}
      * @deprecated this collect method is not to be used in the case of this class, instead collect(key, event) is to
      * be used.
      */
     @Override
     @SuppressWarnings("squid:S1133") // no reminder to remove the deprecated method needed
-    public void collect(Event event) {
+    public void collect(T event) {
         this.events.put(alias, event);
     }
 }

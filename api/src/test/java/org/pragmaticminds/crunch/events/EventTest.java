@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * - Create an Event as Example
+ * - Create an GenericEvent as Example
  *
  * @author julian
  * Created by julian on 12.11.17
@@ -14,13 +14,13 @@ public class EventTest {
 
     @Test
     public void builder_createEvent() {
-        Event event = createEvent();
+        GenericEvent event = createEvent();
 
         assertEquals("LHL1", event.getSource());
     }
 
-    private Event createEvent() {
-        return EventBuilder.anEvent()
+    private GenericEvent createEvent() {
+        return GenericEventBuilder.anEvent()
                 .withTimestamp(1L)
                 .withSource("LHL1")
                 .withEvent("EVENT_NAME")
@@ -29,8 +29,8 @@ public class EventTest {
 
     @Test
     public void copyConstructor() {
-        Event event = createEvent();
-        Event event1 = new Event(event);
+        GenericEvent event = createEvent();
+        GenericEvent event1 = new GenericEvent(event);
         assertEquals(event, event1);
     }
 }

@@ -1,7 +1,7 @@
 package org.pragmaticminds.crunch.api;
 
 import org.pragmaticminds.crunch.api.annotations.*;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
 import org.pragmaticminds.crunch.api.holder.Holder;
 import org.pragmaticminds.crunch.api.records.DataType;
@@ -142,7 +142,7 @@ public class AnnotatedEvalFunctionWrapper<T> extends EvalFunction<T> {
      * @param eventHandler Handles the messaging of results of the {@link EvalFunction}
      */
     @Override
-    public void setup(Map<String, Value> literals, EventHandler eventHandler) {
+    public void setup(Map<String, Value> literals, GenericEventHandler eventHandler) {
 
         // inject result handler into the function
         AnnotationUtils.injectEventStream(annotatedEvalFunctionInstance, eventHandler);

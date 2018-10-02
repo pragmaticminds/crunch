@@ -3,16 +3,16 @@ package org.pragmaticminds.crunch.serialization;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.serialization.SerializationSchema;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.events.UntypedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * a schema that serializes an Event datatype
+ * a schema that serializes an GenericEvent datatype
  * Created by timbo on 24.11.17
  */
-public class EventSerializationSchema implements SerializationSchema<Event> {
+public class EventSerializationSchema implements SerializationSchema<GenericEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(EventSerializationSchema.class);
 
@@ -23,17 +23,17 @@ public class EventSerializationSchema implements SerializationSchema<Event> {
     }
 
     /**
-     * serializes an Event to a byte array
+     * serializes an GenericEvent to a byte array
      *
-     * @param element the Event that shall be serialized
+     * @param element the GenericEvent that shall be serialized
      * @return the equivalent serialized byte array
      */
-    static byte[] serializeEvent(Event element) {
+    static byte[] serializeEvent(GenericEvent element) {
         try {
             UntypedEvent untypedEvent = UntypedEvent.fromEvent(element);
             return objectMapper.writeValueAsBytes(untypedEvent);
         } catch (JsonProcessingException e) {
-            logger.error("could not deserialize Event", e);
+            logger.error("could not deserialize GenericEvent", e);
             return new byte[0];
         }
     }
@@ -45,7 +45,7 @@ public class EventSerializationSchema implements SerializationSchema<Event> {
      * @return The serialized element.
      */
     @Override
-    public byte[] serialize(Event element) {
+    public byte[] serialize(GenericEvent element) {
         return EventSerializationSchema.serializeEvent(element);
     }
 }

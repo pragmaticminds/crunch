@@ -3,7 +3,7 @@ package org.pragmaticminds.crunch.serialization;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.api.common.serialization.AbstractDeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.events.UntypedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * defines the Deserialization schema for Event-Datatype based on {@link EventDeserializer} for usage with Kafka
+ * defines the Deserialization schema for GenericEvent-Datatype based on {@link EventDeserializer} for usage with Kafka
  * Created by timbo on 24.11.17
  */
-public class EventDeserializerSchema extends AbstractDeserializationSchema<Event> {
+public class EventDeserializerSchema extends AbstractDeserializationSchema<GenericEvent> {
     private static final Logger logger = LoggerFactory.getLogger(EventDeserializerSchema.class);
 
     private final ObjectMapper objectMapper;
@@ -33,7 +33,7 @@ public class EventDeserializerSchema extends AbstractDeserializationSchema<Event
      * @return The de-serialized message as an object.
      */
     @Override
-    public Event deserialize(byte[] message) {
+    public GenericEvent deserialize(byte[] message) {
         UntypedEvent event;
         try {
             event = objectMapper.readValue(message, UntypedEvent.class);
@@ -51,7 +51,7 @@ public class EventDeserializerSchema extends AbstractDeserializationSchema<Event
      * @return type information of deserialized data
      */
     @Override
-    public TypeInformation<Event> getProducedType() {
-        return TypeInformation.of(Event.class);
+    public TypeInformation<GenericEvent> getProducedType() {
+        return TypeInformation.of(GenericEvent.class);
     }
 }

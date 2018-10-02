@@ -3,19 +3,21 @@ package org.pragmaticminds.crunch.api.pipe;
 import com.google.common.base.Preconditions;
 import org.apache.flink.util.Collector;
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
+
+import java.io.Serializable;
 
 /**
- * This implementation of the EvaluationContext binds to a Flink {@link Collector}, so all collected {@link Event}s are
+ * This implementation of the EvaluationContext binds to a Flink {@link Collector}, so all collected {@link GenericEvent}s are
  * automatically in the output stream of Flink.
  * This class is created before a processing of {@link EvaluationFunction}s can be started.
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 03.08.2018
  */
-public class CollectorEvaluationContext extends EvaluationContext {
+public class CollectorEvaluationContext<T extends Serializable> extends EvaluationContext<T> {
     private final MRecord value;
-    private final transient Collector<Event> out;
+    private final transient Collector<T> out;
 
     /**
      * private constructor for the inner {@link Builder} class.
@@ -23,7 +25,7 @@ public class CollectorEvaluationContext extends EvaluationContext {
      * @param out the outgoing result {@link Collector} of Flink
      */
     private CollectorEvaluationContext(
-            MRecord value, Collector<Event> out) {
+            MRecord value, Collector<T> out) {
         this.value = value;
         this.out = out;
     }
@@ -39,12 +41,12 @@ public class CollectorEvaluationContext extends EvaluationContext {
     }
     
     /**
-     * collects the resulting {@link Event}s of processing
+     * collects the resulting Ts of processing
      *
      * @param event result of the processing of an {@link EvaluationFunction}
      */
     @Override
-    public void collect(Event event) {
+    public void collect(T event) {
         out.collect(event);
     }
     
@@ -52,14 +54,14 @@ public class CollectorEvaluationContext extends EvaluationContext {
      * Creates a builder for this class {@link CollectorEvaluationContext}
      * @return a builder for this class {@link CollectorEvaluationContext}
      */
-    public static Builder builder() { return new Builder(); }
+    public static <T extends Serializable> Builder<T> builder() { return new Builder<>(); }
     
     /**
      * Creates instances of the type {@link CollectorEvaluationContext}
      */
-    public static final class Builder {
+    public static final class Builder<T extends Serializable> {
         private MRecord value;
-        private Collector<Event> out;
+        private Collector<T> out;
 
         private Builder() {}
         
@@ -68,16 +70,17 @@ public class CollectorEvaluationContext extends EvaluationContext {
             return this;
         }
         
-        public Builder withOut(Collector<Event> out) {
+        public Builder withOut(Collector<T> out) {
             this.out = out;
             return this;
         }
-        
+    
+        @SuppressWarnings("unchecked") // manually checked
         public Builder but() { return builder().withValue(value).withOut(out); }
         
         public CollectorEvaluationContext build() {
             checkParameters();
-            return new CollectorEvaluationContext(value, out);
+            return new CollectorEvaluationContext<T>(value, out);
         }
     
         private void checkParameters() {

@@ -5,8 +5,8 @@ import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.events.Event;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,25 +15,17 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 03.08.2018
  */
-public class EvaluationProcessFunction extends ProcessFunction<MRecord, Event> {
+public class EvaluationProcessFunction<T extends Serializable> extends ProcessFunction<MRecord, T> {
 
-    private List<EvaluationFunction> evaluationFunctions;
+    private List<EvaluationFunction<T>> evaluationFunctions;
     
     /**
      * private constructor for the {@link Builder}
      * @param evaluationFunctions a list of {@link EvaluationFunction}s, that are to be integrated into
      *                            the processing of this class.
      */
-    private EvaluationProcessFunction(List<EvaluationFunction> evaluationFunctions) {
+    private EvaluationProcessFunction(List<EvaluationFunction<T>> evaluationFunctions) {
         this.evaluationFunctions = evaluationFunctions;
-    }
-    
-    /**
-     * Creates a new instance of the {@link Builder}
-     * @return a new instance of the {@link Builder}
-     */
-    public static Builder builder() {
-        return new Builder();
     }
     
     /**
@@ -51,7 +43,8 @@ public class EvaluationProcessFunction extends ProcessFunction<MRecord, Event> {
      *                   to fail and may trigger recovery.
      */
     @Override
-    public void processElement(MRecord value, Context ctx, Collector<Event> out) throws Exception {
+    @SuppressWarnings("unchecked") // is manually checked
+    public void processElement(MRecord value, Context ctx, Collector<T> out) throws Exception {
         // create evaluation context
         EvaluationContext evaluationContext = CollectorEvaluationContext.builder()
             .withValue(value)
@@ -59,34 +52,44 @@ public class EvaluationProcessFunction extends ProcessFunction<MRecord, Event> {
             .build();
         
         // process the incoming values with the cloned evaluation functions
-        for (EvaluationFunction evalFunction : this.evaluationFunctions) {
+        for (EvaluationFunction<T> evalFunction : this.evaluationFunctions) {
             evalFunction.eval(evaluationContext);
         }
         
-        // all output events are already passed to the "out" Collector<Event>
+        // all output events are already passed to the "out" Collector<GenericEvent>
+    }
+    
+    /**
+     * Creates a new instance of the {@link Builder}
+     * @return a new instance of the {@link Builder}
+     */
+    public static <R extends Serializable> Builder<R> builder() {
+        return new Builder<>();
     }
     
     /**
      * Creates instances of the {@link EvaluationProcessFunction} and checks ingoing parameters
      */
-    public static final class Builder {
-        private List<EvaluationFunction> evaluationFunctions;
+    public static final class Builder<T extends Serializable> {
+        private List<EvaluationFunction<T>> evaluationFunctions;
     
         private Builder() {}
         
-        public Builder withEvaluationFunctions(List<EvaluationFunction> evaluationFunctions) {
+        public Builder withEvaluationFunctions(List<EvaluationFunction<T>> evaluationFunctions) {
             this.evaluationFunctions = evaluationFunctions;
             return this;
         }
         
-        public Builder but() { return builder().withEvaluationFunctions(evaluationFunctions); }
+        public Builder but() {
+            return new Builder<T>().withEvaluationFunctions(evaluationFunctions);
+        }
         
         public EvaluationProcessFunction build() {
             checkParameter(evaluationFunctions);
-            return new EvaluationProcessFunction(evaluationFunctions);
+            return new EvaluationProcessFunction<>(evaluationFunctions);
         }
     
-        private void checkParameter(List<EvaluationFunction> evaluationFunctions) {
+        private void checkParameter(List<EvaluationFunction<T>> evaluationFunctions) {
             Preconditions.checkNotNull(evaluationFunctions);
             Preconditions.checkArgument(!evaluationFunctions.isEmpty());
         }

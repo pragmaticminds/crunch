@@ -13,14 +13,14 @@ import org.pragmaticminds.crunch.api.EvalFunction;
 import org.pragmaticminds.crunch.api.EvalFunctionCall;
 import org.pragmaticminds.crunch.api.annotations.ChannelValue;
 import org.pragmaticminds.crunch.api.evaluations.annotated.RegexFind2;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.function.def.*;
 import org.pragmaticminds.crunch.api.holder.Holder;
 import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.runtime.merge.ValuesMergeFunctionIT;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
 
@@ -51,7 +51,7 @@ public class EvalFunctionWrapperIT {
         // configure your test environment
         env.setParallelism(1);
 
-        // Event Time Processing
+        // GenericEvent Time Processing
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.enableCheckpointing(10);
         env.setRestartStrategy(new RestartStrategies.NoRestartStrategyConfiguration());
@@ -113,7 +113,7 @@ public class EvalFunctionWrapperIT {
         // configure your test environment
         environment.setParallelism(1);
 
-        // Event Time Processing
+        // GenericEvent Time Processing
         environment.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         environment.enableCheckpointing(10);
 
@@ -143,7 +143,7 @@ public class EvalFunctionWrapperIT {
         stream.print();
 
         // Eval Function 1
-        SingleOutputStreamOperator<Event> stream1 = stream
+        SingleOutputStreamOperator<GenericEvent> stream1 = stream
                 .keyBy(unMRecord -> 1L)
                 .process(new EvalFunctionWrapper(evalFunctionCall));
 
@@ -160,13 +160,13 @@ public class EvalFunctionWrapperIT {
     }
 
     // create a testing sink
-    private static class CollectSink implements SinkFunction<Event> {
+    private static class CollectSink implements SinkFunction<GenericEvent> {
 
         // must be static
-        public static final List<Event> values = new ArrayList<>();
+        public static final List<GenericEvent> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(Event value) {
+        public synchronized void invoke(GenericEvent value) {
             values.add(value);
         }
     }
@@ -186,7 +186,7 @@ public class EvalFunctionWrapperIT {
         }
 
         @Override
-        public void setup(Map literals, EventHandler eventHandler) {
+        public void setup(Map literals, GenericEventHandler eventHandler) {
             count = 0;
             setEventHandler(eventHandler);
         }
@@ -194,7 +194,7 @@ public class EvalFunctionWrapperIT {
         @Override
         public Void eval(long time, Map channels) {
             count++;
-            EventHandler handler = getEventHandler();
+            GenericEventHandler handler = getEventHandler();
             handler.fire(handler.getBuilder()
                     .withTimestamp(Instant.now().toEpochMilli())
                     .withParameter("count", Value.of(count))

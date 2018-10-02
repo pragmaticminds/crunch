@@ -8,8 +8,8 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.api.windowed.extractor.aggregate.Aggregations;
-import org.pragmaticminds.crunch.events.Event;
-import org.pragmaticminds.crunch.events.EventBuilder;
+import org.pragmaticminds.crunch.events.GenericEvent;
+import org.pragmaticminds.crunch.events.GenericEventBuilder;
 
 import java.util.*;
 
@@ -37,7 +37,7 @@ public class GroupByExtractorTest {
             .aggregate(Aggregations.min(), doubleChannel("x"), myMin)
             .finalizer((aggregatedValues, context) ->
                     context.collect(
-                        EventBuilder.anEvent()
+                        GenericEventBuilder.anEvent()
                             .withEvent("test")
                             .withSource("test")
                             .withTimestamp(System.currentTimeMillis())
@@ -76,10 +76,10 @@ public class GroupByExtractorTest {
         
         records.forEach(record -> extractor.apply(record));
         extractor.finish(context);
-        List<Event> results = context.getEvents();
+        List<GenericEvent> results = context.getEvents();
         Assert.assertNotNull(results);
         Assert.assertEquals(1, results.size());
-        Event event = results.get(0);
+        GenericEvent event = results.get(0);
         Assert.assertNotNull(event);
         Assert.assertEquals(10D, event.getParameter("max.x").getAsDouble(), 0.0001);
         Assert.assertEquals(10D, event.getParameter("max.x$0").getAsDouble(), 0.0001);
@@ -92,10 +92,10 @@ public class GroupByExtractorTest {
     
         records.forEach(record -> extractor2.apply(record));
         extractor2.finish(context);
-        List<Event> results = context.getEvents();
+        List<GenericEvent> results = context.getEvents();
         Assert.assertNotNull(results);
         Assert.assertEquals(1, results.size());
-        Event event = results.get(0);
+        GenericEvent event = results.get(0);
         Assert.assertNotNull(event);
         Assert.assertEquals(10D, event.getParameter("max.x").getAsDouble(), 0.0001);
         Assert.assertEquals(1D, event.getParameter(myMin).getAsDouble(), 0.0001);

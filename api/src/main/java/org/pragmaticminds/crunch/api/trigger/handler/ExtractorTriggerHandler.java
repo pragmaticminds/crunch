@@ -8,11 +8,8 @@ import org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategy;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,10 +21,10 @@ import java.util.stream.Collectors;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 19.09.2018
  */
-public class ExtractorTriggerHandler implements TriggerHandler {
+public abstract class ExtractorTriggerHandler<T extends Serializable> implements TriggerHandler<T> {
     private String eventName;
     private ArrayList<MapExtractor> extractors = null;
-    
+
     /**
      * Constructor with array of {@link MapExtractor}s.
      *
@@ -40,7 +37,7 @@ public class ExtractorTriggerHandler implements TriggerHandler {
             this.extractors = new ArrayList<>(Arrays.asList(extractors));
         }
     }
-    
+
     /**
      * Constructor with {@link Collection}/{@link List} of {@link MapExtractor}s.
      *
@@ -55,7 +52,7 @@ public class ExtractorTriggerHandler implements TriggerHandler {
         }
         this.extractors = new ArrayList<>(extractors);
     }
-    
+
     /**
      * When a {@link TriggerEvaluationFunction} is triggered, it calls this method to generate a proper result.
      *
@@ -63,12 +60,12 @@ public class ExtractorTriggerHandler implements TriggerHandler {
      *                objects.
      */
     @Override
-    public void handle(EvaluationContext context) {
+    public void handle(EvaluationContext<T> context) {
         // when nothing is set -> no results
         if(extractors == null || extractors.isEmpty()){
             return;
         }
-        
+
         // merge the results of all extractors into one map
         Map<String, Value> results = extractors.stream()
             // let all extractors extract their result data
@@ -81,22 +78,17 @@ public class ExtractorTriggerHandler implements TriggerHandler {
             )
             // combine all maps into one
             .collect(
-                    Collectors.toMap(
-                        Map.Entry<String, Value>::getKey,
-                        Map.Entry<String, Value>::getValue
-                    )
+                Collectors.toMap(
+                    Map.Entry<String, Value>::getKey,
+                    Map.Entry<String, Value>::getValue
+                )
             );
-        
+
         // collect the resulting Event with the context
         context.collect(
-            // create the resulting Event
-            context.getEventBuilder()
-                .withEvent(eventName)
-                .withSource(context.get().getSource())
-                .withTimestamp(context.get().getTimestamp())
-                // set the resulting String Value Map from the extractors
-                .withParameters(results)
-                .build()
+            createEvent(eventName, context, results)
         );
     }
+    
+    protected abstract T createEvent(String eventName, EvaluationContext<T> context, Map<String, Value> results);
 }

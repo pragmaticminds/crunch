@@ -1,4 +1,6 @@
-package org.pragmaticminds.crunch.api.records;
+package org.pragmaticminds.crunch.api.exceptions;
+
+import org.pragmaticminds.crunch.api.records.MRecord;
 
 /**
  * Is thrown by type safe getters of {@link MRecord} when the requested channel exists and cannot be casted

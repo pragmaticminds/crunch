@@ -1,8 +1,6 @@
 package org.pragmaticminds.crunch.api.pipe;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.events.Event;
-import org.pragmaticminds.crunch.events.EventBuilder;
 
 import java.io.Serializable;
 
@@ -14,7 +12,7 @@ import java.io.Serializable;
  * created by Erwin Wagasow on 03.08.2018
  */
 @SuppressWarnings("squid:S1610") // not converting into an interface
-public abstract class EvaluationContext implements Serializable {
+public abstract class EvaluationContext<T extends Serializable> implements Serializable {
     /**
      * delivers the next {@link MRecord} data to be processed
      * @return the next record to be processed
@@ -22,16 +20,8 @@ public abstract class EvaluationContext implements Serializable {
     public abstract MRecord get();
 
     /**
-     * collects the resulting {@link Event}s of processing
+     * collects the resulting Event object of processing
      * @param event result of the processing of an {@link EvaluationFunction}
      */
-    public abstract void collect(Event event);
-    
-    /**
-     * Getter for an {@link EventBuilder}
-     * @return the Builder for {@link Event}s
-     */
-    public EventBuilder getEventBuilder(){
-        return EventBuilder.anEvent();
-    }
+    public abstract void collect(T event);
 }

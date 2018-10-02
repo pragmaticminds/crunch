@@ -6,7 +6,7 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.runtime.merge.ValuesMergeFunction;
 import org.pragmaticminds.crunch.runtime.sort.SortFunction;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
@@ -22,23 +22,25 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 01.08.2018
  */
-public class CrunchFlinkPipelineFactory implements Serializable {
+public class CrunchFlinkPipelineFactory<T extends Serializable> implements Serializable {
     
     /**
      * This is the factories create method. It creates internally a Flink pipeline and returns its output {@link DataStream}
-     * of {@link Event}s. It implements {@link DataStream} processing routes in a {@link java.util.stream.Stream} manner.
+     * of {@link GenericEvent}s. It implements {@link DataStream} processing routes in a {@link java.util.stream.Stream} manner.
      *
      * @param in the in going {@link DataStream} of {@link UntypedValues} as Source for processing
      * @param pipeline this describes the pipelines in a {@link EvaluationPipeline} way
-     * @return outgoing {@link DataStream} of {@link Event}s as output of the created Flink pipeline
+     * @param clazz type of T
+     * @return outgoing {@link DataStream} of T as output of the created Flink pipeline
      */
-    public DataStream<Event> create(DataStream<MRecord> in, EvaluationPipeline pipeline) {
-        List<DataStream<Event>> results = new ArrayList<>();
-        for (SubStream subStream:  pipeline.getSubStreams()) {
+    @SuppressWarnings("unchecked") // is manually checked
+    public DataStream<T> create(DataStream<MRecord> in, EvaluationPipeline<T> pipeline, Class<T> clazz) {
+        List<DataStream<T>> results = new ArrayList<>();
+        for (SubStream<T> subStream:  pipeline.getSubStreams()) {
             SingleOutputStreamOperator<MRecord> sortedIn = in
                 
                 // filter with SubStream.Predicate
-                .filter(createFilter(subStream.getPredicate()::validate))
+                .filter(createFilter(subStream.getPredicate()))
     
                 .keyBy(x -> 0)
     
@@ -55,34 +57,48 @@ public class CrunchFlinkPipelineFactory implements Serializable {
                 .process(new SortFunction());
             
             // branch out the stream for the RecordHandlers
-            sortedIn
-                .process(RecordProcessFunction.builder().withRecordHandlers(subStream.getRecordHandlers()).build())
-                .name("handler called")
-                // pseudo sink -> makes sure all values are processed
-                .addSink(new SinkFunction<Void>() {
-                    @Override
-                    public void invoke(Void value, Context context) throws Exception {
-                        /* no op */
-                    }
-                });
+            if (subStream.getRecordHandlers() != null && !subStream.getRecordHandlers().isEmpty()) {
+                sortedIn
+                        .process(
+                                RecordProcessFunction.builder()
+                                        .withRecordHandlers(
+                                                subStream.getRecordHandlers()
+                                        )
+                                        .build()
+                        )
+                        .name("handler called")
+                        // pseudo sink -> makes sure all values are processed
+                        .addSink(new SinkFunction<Void>() {
+                            @Override
+                            public void invoke(Void value, Context context) throws Exception {
+                                /* no op */
+                            }
+                        });
+            }
             
             // branch out the stream for the EvaluationFunctions
-            results.add(sortedIn
-    
-                // must be handled with keying
+            DataStream<T> dataStream = sortedIn
+                //// must be handled with keying
                 .keyBy(x -> 0)
-    
+
                 // merge old values with new values
                 .map(new ValuesMergeFunction())
-    
+        
                 // set key to every value by source name
                 .keyBy(x -> 0)
-    
+        
                 // process the data one after an other in all EvaluationFunctions
-                .process(EvaluationProcessFunction.builder().withEvaluationFunctions(subStream.getEvalFunctions()).build())
-    
-                // convert to DataStream<Event>
-                .forward());
+                .process(
+                    EvaluationProcessFunction.<T>builder()
+                        .withEvaluationFunctions(subStream.getEvalFunctions())
+                        .build()
+                )
+                .returns(clazz)
+        
+                // convert to DataStream<GenericEvent>
+                .forward();
+            
+            results.add(dataStream);
         }
         
         // combine the resulting DataStreams of all created SubStreams and return it

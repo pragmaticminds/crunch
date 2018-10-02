@@ -77,7 +77,7 @@ public class SortFunction extends ProcessFunction<MRecord, MRecord> {
             queueState.update(queue);
             timerService.registerEventTimeTimer(event.getTimestamp());
         } else {
-            logger.warn("Event with old timestamp is discarded {}", event);
+            logger.warn("GenericEvent with old timestamp is discarded {}", event);
         }
     }
 

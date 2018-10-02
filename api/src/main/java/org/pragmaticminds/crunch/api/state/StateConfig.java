@@ -12,13 +12,13 @@ import java.util.Objects;
  * @author julian
  * Created by julian on 05.09.18
  */
-public class StateConfig implements Serializable {
+public class StateConfig<T extends Serializable> implements Serializable {
 
     private final String stateAlias;
-    private final EvaluationFunctionStateFactory factory;
+    private final EvaluationFunctionStateFactory<T> factory;
     private final long stateTimeout;
 
-    public StateConfig(String stateAlias, EvaluationFunctionStateFactory factory, long stateTimeout) {
+    public StateConfig(String stateAlias, EvaluationFunctionStateFactory<T> factory, long stateTimeout) {
         this.stateAlias = stateAlias;
         this.factory = factory;
         this.stateTimeout = stateTimeout;
@@ -29,7 +29,7 @@ public class StateConfig implements Serializable {
      *
      * @return New Instance
      */
-    public EvaluationFunction create() {
+    public EvaluationFunction<T> create() {
         return getFactory().create();
     }
 
@@ -37,7 +37,7 @@ public class StateConfig implements Serializable {
         return stateAlias;
     }
 
-    public EvaluationFunctionStateFactory getFactory() {
+    public EvaluationFunctionStateFactory<T> getFactory() {
         return factory;
     }
 

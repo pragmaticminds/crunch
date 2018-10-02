@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 /**
- * Same as {@link Event}, but {@link Object} instead of {@link Value}
+ * Same as {@link GenericEvent}, but {@link Object} instead of {@link Value}
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 17.11.2017
@@ -24,7 +24,7 @@ import java.util.HashMap;
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @SuppressWarnings("squid:S1319") // HashMap is needed to make it serializable, Map isn't.
-public class UntypedEvent implements Serializable {
+public class UntypedEvent implements Event, Serializable {
 
     private String eventName;
     private String eventSource;
@@ -33,7 +33,7 @@ public class UntypedEvent implements Serializable {
 
     public UntypedEvent() { /* for JPA */ }
 
-    public UntypedEvent(Event other) {
+    public UntypedEvent(GenericEvent other) {
         this.eventName = other.getEventName();
         this.eventSource = other.getSource();
         this.timestamp = other.getTimestamp();
@@ -48,19 +48,19 @@ public class UntypedEvent implements Serializable {
     }
 
     /**
-     * conversion from {@link Event} to {@link UntypedEvent}
+     * conversion from {@link GenericEvent} to {@link UntypedEvent}
      *
      * @param event to be converted to {@link UntypedEvent}
      * @return the result of the conversion
      */
-    public static UntypedEvent fromEvent(Event event) {
+    public static UntypedEvent fromEvent(GenericEvent event) {
         return new UntypedEvent(event);
     }
 
     public Object getParameter(String parameter) {
         if (!parameters.containsKey(parameter)) {
             throw new InvalidKeyException(String.format(
-                    "No parameter with name \"%s\" present in the Event.",
+                    "No parameter with name \"%s\" present in the GenericEvent.",
                     parameter
             ));
         }
@@ -68,14 +68,14 @@ public class UntypedEvent implements Serializable {
     }
 
     /**
-     * converts this object to am {@link Event}
+     * converts this object to am {@link GenericEvent}
      *
      * @return result of the conversion
      */
-    public Event asEvent() {
-        return new Event(this);
+    public GenericEvent asEvent() {
+        return new GenericEvent(this);
     }
-
+    
     /**
      * Helper class for serialization and deserialization
      */

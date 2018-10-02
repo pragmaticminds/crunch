@@ -17,7 +17,7 @@ import java.util.Set;
  * @author Erwin Wagasow
  * created by Erwin Wagasow on 03.08.2018
  */
-public interface EvaluationFunction extends Serializable {
+public interface EvaluationFunction<T extends Serializable> extends Serializable {
 
     /** Is called before start of evaluation. */
     default void init() { /* Does nothing by default. */ }
@@ -27,7 +27,7 @@ public interface EvaluationFunction extends Serializable {
      * back to the collect method of the context
      * @param ctx contains incoming data and a collector for the outgoing data
      */
-    void eval(EvaluationContext ctx);
+    void eval(EvaluationContext<T> ctx);
     
     /** Is called after last value is evaluated (if ever). */
     default void close() { /* Does nothing by default. */ }

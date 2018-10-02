@@ -3,8 +3,8 @@ package org.pragmaticminds.crunch.sinks;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.pragmaticminds.crunch.events.Event;
-import org.pragmaticminds.crunch.events.EventBuilder;
+import org.pragmaticminds.crunch.events.GenericEvent;
+import org.pragmaticminds.crunch.events.GenericEventBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +53,8 @@ public class PostgreSqlSinkIT {
     
     public void connectAndQueryAllEvents() {
         try (PostgreSqlSink sink = new PostgreSqlSink(url, user, pass)) {
-            List<Event> results = sink.executeQuery("SELECT * FROM events");
-            for (Event event : results){
+            List<GenericEvent> results = sink.executeQuery("SELECT * FROM events");
+            for (GenericEvent event : results){
                 logger.debug("event: {}", event);
             }
         }
@@ -62,10 +62,10 @@ public class PostgreSqlSinkIT {
     
     public void connectAndCreateEvents() {
         try (PostgreSqlSink sink = new PostgreSqlSink(url, user, pass)) {
-            List<Event> events = new ArrayList<>();
+            List<GenericEvent> events = new ArrayList<>();
             for (int i = 0; i < 10; i++) {
                 events.add(
-                    EventBuilder.anEvent()
+                    GenericEventBuilder.anEvent()
                         .withTimestamp(System.currentTimeMillis() + i)
                         .withEvent("TestEvent")
                         .withSource("TestSource")

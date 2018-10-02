@@ -16,6 +16,7 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 
+import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -28,7 +29,7 @@ import java.util.concurrent.CompletionStage;
  * <ul>
  * <li>A source of records</li>
  * <li>An evaluation pipeline</li>
- * <li>An Event Sink.</li>
+ * <li>An GenericEvent Sink.</li>
  * </ul>
  * <p>
  * This is a pretty technical class.
@@ -38,7 +39,7 @@ import java.util.concurrent.CompletionStage;
  * @author julian
  * Created by julian on 15.08.18
  */
-public class GraphFactory {
+class GraphFactory<T extends Serializable> {
 
     /**
      * Creates a {@link RunnableGraph} from Akka Streams.
@@ -48,7 +49,7 @@ public class GraphFactory {
      * @param pipeline Pipeline to use
      * @return RunnableGraph for Materialization.
      */
-    public RunnableGraph<CompletionStage<Done>> create(MRecordSource source, EvaluationPipeline pipeline, EventSink sink) {
+    RunnableGraph<CompletionStage<Done>> create(MRecordSource source, EvaluationPipeline<T> pipeline, EventSink<T> sink) {
         // Source from the MRecordSourceWrapper
         Source<MRecord, NotUsed> streamSource = Source.fromGraph(new MRecordSourceWrapper(source));
         // The Sink is only for the MRecords, thus ignores them
@@ -68,37 +69,43 @@ public class GraphFactory {
      *
      * @param streamSource Source
      * @param pipeline     EvaluationPipeline to evaluate
-     * @param sink
+     * @param sink         result output
      * @return Suitable parameter for {@link GraphDSL#create(Function)} method
      */
-    private Function2<GraphDSL.Builder<CompletionStage<Done>>, SinkShape<Object>, ClosedShape> buildGraph(Source<MRecord, NotUsed> streamSource, EvaluationPipeline pipeline, EventSink sink) {
-        return new Function2<GraphDSL.Builder<CompletionStage<Done>>, SinkShape<Object>, ClosedShape>() {
-            @Override
-            public ClosedShape apply(GraphDSL.Builder<CompletionStage<Done>> builder, SinkShape<Object> out) throws Exception {  // variables: builder (GraphDSL.Builder) and out (SinkShape)
-                final Outlet<MRecord> builderSource = builder.add(streamSource).out();
+    @SuppressWarnings("unchecked") // manually checked
+    private Function2<GraphDSL.Builder<CompletionStage<Done>>, SinkShape<Object>, ClosedShape> buildGraph(
+        Source<MRecord, NotUsed> streamSource,
+        EvaluationPipeline<T> pipeline,
+        EventSink<T> sink
+    ) {
+        return (builder, out) -> {  // variables: builder (GraphDSL.Builder) and out (SinkShape)
+            final Outlet<MRecord> builderSource = builder.add(streamSource).out();
 
-                GraphDSL.Builder.ForwardOps stream = builder.from(builderSource);
-                for (SubStream subStream : pipeline.getSubStreams()) {
-                    // Generate a Flow from the Evaluation Functions
-                    List<EvaluationFunction> evalFunctions = subStream.getEvalFunctions();
-                    // Initialize the eval function
-                    evalFunctions.forEach(EvaluationFunction::init);
-                    // Prepare the sream
-                    stream = stream
-                            .via(builder.add(
-                                    Flow.of(MRecord.class)
-                                            // Filter substream
-                                            .filter(record -> subStream.getPredicate().validate(record))
-                                            .map(new MergeFunction())
-                                    )
-                            )
-                            .via(builder.add(GraphFactory.this.toFlow(evalFunctions, sink)));
-                }
-                // Ignore this sink
-                stream.to(out);
-
-                return ClosedShape.getInstance();
+            GraphDSL.Builder.ForwardOps stream = builder.from(builderSource);
+            for (SubStream<T> subStream : pipeline.getSubStreams()) {
+                // Generate a Flow from the Evaluation Functions
+                List<EvaluationFunction<T>> evalFunctions = subStream.getEvalFunctions();
+                // Initialize the eval function
+                evalFunctions.forEach(EvaluationFunction::init);
+                // Prepare the sream
+                stream = stream
+                    .via(builder.add(
+                        Flow.of(MRecord.class)
+                            // Filter substream
+                            .filter(record -> subStream.getPredicate().validate(record))
+                            .map(new MergeFunction())
+                        )
+                    )
+                    .via(
+                        builder.add(
+                            GraphFactory.this.toFlow(evalFunctions, sink)
+                        )
+                    );
             }
+            // Ignore this sink
+            stream.to(out);
+
+            return ClosedShape.getInstance();
         };
     }
 
@@ -110,17 +117,14 @@ public class GraphFactory {
      * @param sink      Sink to forward results to
      * @return Flow for usage in {@link #buildGraph(Source, EvaluationPipeline, EventSink)} method
      */
-    private Flow<MRecord, MRecord, NotUsed> toFlow(List<EvaluationFunction> functions, EventSink sink) {
-        return Flow.of(MRecord.class).map(new Function<MRecord, MRecord>() {
-            @Override
-            public MRecord apply(MRecord param) throws Exception {
-                EvaluationContext context = new EventSinkContext(sink);
-                ((EventSinkContext) context).setCurrent(param);
-                for (EvaluationFunction function : functions) {
-                    function.eval(context);
-                }
-                return param;
+    private Flow<MRecord, MRecord, NotUsed> toFlow(List<EvaluationFunction<T>> functions, EventSink<T> sink) {
+        return Flow.of(MRecord.class).map((Function<MRecord, MRecord>) param -> {
+            EvaluationContext<T> context = new EventSinkContext<>(sink);
+            ((EventSinkContext) context).setCurrent(param);
+            for (EvaluationFunction<T> function : functions) {
+                function.eval(context);
             }
+            return param;
         });
     }
 

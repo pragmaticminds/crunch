@@ -13,8 +13,11 @@ import java.util.HashMap;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 02.08.2018
  */
-public class ClonerUtil {
-    private ClonerUtil() { /* for sonar */ }
+public final class ClonerUtil {
+    /** hidden constructor */
+    private ClonerUtil() {
+        throw new UnsupportedOperationException("this class should never be initialized!");
+    }
 
     /**
      * Clones the given serializable object using Java serialization.

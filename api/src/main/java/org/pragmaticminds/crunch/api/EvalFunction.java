@@ -1,6 +1,6 @@
 package org.pragmaticminds.crunch.api;
 
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.function.def.FunctionDef;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
@@ -18,13 +18,13 @@ import java.util.Map;
 @Deprecated
 public abstract class EvalFunction<T> implements Serializable {
 
-    private transient EventHandler eventHandler;
+    private transient GenericEventHandler eventHandler;
 
-    public EventHandler getEventHandler() {
+    public GenericEventHandler getEventHandler() {
         return eventHandler;
     }
 
-    public void setEventHandler(EventHandler eventHandler) {
+    public void setEventHandler(GenericEventHandler eventHandler) {
         this.eventHandler = eventHandler;
     }
 
@@ -39,7 +39,7 @@ public abstract class EvalFunction<T> implements Serializable {
      * @param literals     the constant in values
      * @param eventHandler the interface to fire results into the system
      */
-    public abstract void setup(Map<String, Value> literals, EventHandler eventHandler);
+    public abstract void setup(Map<String, Value> literals, GenericEventHandler eventHandler);
 
     /**
      * processes single record values

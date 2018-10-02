@@ -8,8 +8,9 @@ import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.filter.EventFilter;
 import org.pragmaticminds.crunch.api.windowed.extractor.WindowExtractor;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,27 +22,27 @@ import java.util.stream.Collectors;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 16.08.2018
  */
-public class WindowedEvaluationFunction implements EvaluationFunction {
+public class WindowedEvaluationFunction<T extends Serializable> implements EvaluationFunction<T> {
     private RecordWindow    recordWindowPrototype;
-    private WindowExtractor extractorPrototype;
-    private EventFilter     filterPrototype;
+    private WindowExtractor<T> extractorPrototype;
+    private EventFilter<T> filterPrototype;
     private RecordWindow    recordWindow;
-    private WindowExtractor extractor;
-    private EventFilter     filter;
+    private WindowExtractor<T> extractor;
+    private EventFilter<T> filter;
     private boolean         lastWindowOpen = false;
     
     /**
      * Private Constructor for the Builder of this class.
      *
      * @param recordWindow determines whether a window is open or closed.
-     * @param extractor extracts resulting {@link Event} {@link java.util.Collection} when the window is closing.
-     * @param filter (optional) filters the resulting {@link Event} {@link Collection}, so only relevant {@link Event}s
+     * @param extractor extracts resulting {@link GenericEvent} {@link java.util.Collection} when the window is closing.
+     * @param filter (optional) filters the resulting {@link GenericEvent} {@link Collection}, so only relevant {@link GenericEvent}s
      *               are passed further.
      */
     private WindowedEvaluationFunction(
-        RecordWindow recordWindow,
-        WindowExtractor extractor,
-        EventFilter filter
+            RecordWindow recordWindow,
+            WindowExtractor<T> extractor,
+            EventFilter<T> filter
     ) {
         this.recordWindowPrototype = recordWindow;
         this.extractorPrototype = extractor;
@@ -65,6 +66,15 @@ public class WindowedEvaluationFunction implements EvaluationFunction {
             filter = ClonerUtil.clone(filterPrototype);
         }
     }
+
+    /**
+     * Creates a builder for this class
+     *
+     * @return a builder for this class
+     */
+    public static <B extends Serializable> Builder<B> builder() {
+        return new Builder<>();
+    }
     
     /**
      * evaluates the incoming {@link MRecord} from the {@link EvaluationContext} and passes the results
@@ -76,7 +86,7 @@ public class WindowedEvaluationFunction implements EvaluationFunction {
      * @param context contains incoming data and a collector for the outgoing data
      */
     @Override
-    public void eval(EvaluationContext context) {
+    public void eval(EvaluationContext<T> context) {
         // as long as the window is open -> collect all records
         if(recordWindow.inWindow(context.get())){
             lastWindowOpen = true;
@@ -86,18 +96,18 @@ public class WindowedEvaluationFunction implements EvaluationFunction {
             if (!lastWindowOpen) {
                 return;
             }
-    
+
             SimpleEvaluationContext simpleContext = new SimpleEvaluationContext(context.get());
-    
+
             // extract the resulting events
             extractor.finish(simpleContext);
-            
+
             // filter results and call collect on each
             collectResults(context, simpleContext.getEvents());
-            
+
             // recreate local instances to set everything on the start conditions
             makeLocalInstances();
-            
+
             // set last window was closed
             lastWindowOpen = false;
         }
@@ -125,7 +135,7 @@ public class WindowedEvaluationFunction implements EvaluationFunction {
      * @param context that collects the final results
      * @param results to be filtered and collected
      */
-    private void collectResults(EvaluationContext context, Collection<Event> results) {
+    private void collectResults(EvaluationContext<T> context, Collection<T> results) {
         if(results != null){
             if(filter != null){
                 applyFilter(results, context.get())
@@ -141,51 +151,45 @@ public class WindowedEvaluationFunction implements EvaluationFunction {
      * @param results to be filtered
      * @return the filtered results
      */
-    private Collection<Event> applyFilter(Collection<Event> results, MRecord record) {
+    private Collection<T> applyFilter(Collection<T> results, MRecord record) {
         return results.stream()
             .filter(event -> filter.apply(event, record))
             .collect(Collectors.toList());
     }
     
     /**
-     * Creates a builder for this class
-     * @return a builder for this class
-     */
-    public static Builder builder() { return new Builder(); }
-    
-    /**
      * Builder for this class
      */
-    public static final class Builder {
+    public static final class Builder<T extends Serializable> {
         RecordWindow    recordWindow;
-        WindowExtractor extractor;
-        EventFilter     filter;
+        WindowExtractor<T> extractor;
+        EventFilter<T> filter;
         
         private Builder() {}
-        
-        public Builder recordWindow(RecordWindow recordWindow) {
+
+        public Builder<T> recordWindow(RecordWindow recordWindow) {
             this.recordWindow = recordWindow;
             return this;
         }
-        
-        public Builder extractor(WindowExtractor extractor) {
+
+        public Builder<T> extractor(WindowExtractor<T> extractor) {
             this.extractor = extractor;
             return this;
         }
-        
-        public Builder filter(EventFilter filter) {
+
+        public Builder<T> filter(EventFilter<T> filter) {
             this.filter = filter;
             return this;
         }
-        
-        public Builder but() {
-            return builder().recordWindow(recordWindow)
+
+        public Builder<T> but() {
+            return (new Builder<T>()).recordWindow(recordWindow)
                 .extractor(extractor)
                 .filter(filter);
         }
-        
-        public WindowedEvaluationFunction build() {
-            return new WindowedEvaluationFunction(recordWindow, extractor, filter);
+
+        public WindowedEvaluationFunction<T> build() {
+            return new WindowedEvaluationFunction<>(recordWindow, extractor, filter);
         }
     }
 }

@@ -8,11 +8,11 @@ import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 import org.pragmaticminds.crunch.api.EvalFunction;
 import org.pragmaticminds.crunch.api.EvalFunctionCall;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,18 +31,19 @@ import java.util.stream.Collectors;
  * For each new Value the EvalFunction is evaluated and if a Event is given, it is returned downstream.
  * <p>
  * Uses a {@link java.util.concurrent.BlockingQueue} internally to "flush" all the Events that are received through
- * the {@link EventHandler} interfaces fire method on the next call of the processElement call.
+ * the {@link GenericEventHandler} interfaces fire method on the next call of the processElement call.
  *
  * @author julian
  * Created by julian on 05.11.17
  */
-public class EvalFunctionWrapper extends ProcessFunction<MRecord, Event> implements EventHandler, Serializable {
+public class EvalFunctionWrapper extends ProcessFunction<MRecord, GenericEvent>
+    implements GenericEventHandler, Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(EvalFunctionWrapper.class);
 
     private final HashMap<String, DataType> channelsAndTypes;
     private EvalFunctionCall call;
-    private LinkedBlockingQueue<Event> eventBuffer;
+    private LinkedBlockingQueue<GenericEvent> eventBuffer;
 
     // Flink State
     private transient ValueState<EvalFunction> valueState;
@@ -67,7 +68,7 @@ public class EvalFunctionWrapper extends ProcessFunction<MRecord, Event> impleme
     }
 
     @Override
-    public void processElement(MRecord value, Context ctx, Collector<Event> out) throws Exception {
+    public void processElement(MRecord value, Context ctx, Collector<GenericEvent> out) throws Exception {
         // Do the eval
 
         // Assemble the right "parameter array"
@@ -100,7 +101,7 @@ public class EvalFunctionWrapper extends ProcessFunction<MRecord, Event> impleme
 
             // Return elements if some are in the buffer
             while (!eventBuffer.isEmpty()) {
-                Event event = eventBuffer.poll();
+                GenericEvent event = eventBuffer.poll();
                 // Set the source of the current value as the events source. This is allowed as the stream is always keyed on this.
                 event.setEventSource(value.getSource());
                 out.collect(event);
@@ -134,7 +135,7 @@ public class EvalFunctionWrapper extends ProcessFunction<MRecord, Event> impleme
     }
 
     @Override
-    public void fire(Event event) {
+    public void fire(GenericEvent event) {
         eventBuffer.add(event);
     }
 }

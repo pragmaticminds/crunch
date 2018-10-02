@@ -2,7 +2,7 @@ package org.pragmaticminds.crunch.api.evaluations.annotated;
 
 import org.pragmaticminds.crunch.api.AnnotatedEvalFunction;
 import org.pragmaticminds.crunch.api.annotations.*;
-import org.pragmaticminds.crunch.api.events.EventHandler;
+import org.pragmaticminds.crunch.api.events.GenericEventHandler;
 import org.pragmaticminds.crunch.api.holder.Holder;
 import org.pragmaticminds.crunch.api.records.DataType;
 import org.pragmaticminds.crunch.api.values.dates.Value;
@@ -28,7 +28,7 @@ public class RegexFind2 implements AnnotatedEvalFunction<String>, Serializable {
     private static final Logger logger = LoggerFactory.getLogger(RegexFind2.class);
 
     @ResultTypes(resultTypes = @ResultType(name = "match", dataType = DataType.STRING))
-    private transient EventHandler eventHandler;
+    private transient GenericEventHandler eventHandler;
 
     @TimeValue
     private Holder<Long> time;

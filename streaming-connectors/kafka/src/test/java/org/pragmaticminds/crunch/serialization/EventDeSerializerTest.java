@@ -3,8 +3,8 @@ package org.pragmaticminds.crunch.serialization;
 import org.junit.Assert;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
-import org.pragmaticminds.crunch.events.EventBuilder;
+import org.pragmaticminds.crunch.events.GenericEvent;
+import org.pragmaticminds.crunch.events.GenericEventBuilder;
 
 /**
  *
@@ -16,7 +16,7 @@ public class EventDeSerializerTest {
 
     @Test
     public void deSerializeEvent() {
-        Event event = EventBuilder.anEvent()
+        GenericEvent event = GenericEventBuilder.anEvent()
                 .withEvent("Type")
                 .withTimestamp(1L)
                 .withSource("me")
@@ -24,7 +24,7 @@ public class EventDeSerializerTest {
                 .withParameter("b", Value.of("String"))
                 .build();
 
-        Event event1;
+        GenericEvent event1;
         try (EventSerializer ser = new EventSerializer()) {
             try (EventDeserializer deSer = new EventDeserializer()) {
 

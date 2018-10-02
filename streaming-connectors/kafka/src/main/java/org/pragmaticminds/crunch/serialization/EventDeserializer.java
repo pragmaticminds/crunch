@@ -2,7 +2,7 @@ package org.pragmaticminds.crunch.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.events.UntypedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Own deserializer for {@link UntypedEvent}s
  */
-public class EventDeserializer implements Deserializer<Event> {
+public class EventDeserializer implements Deserializer<GenericEvent> {
     private static final Logger logger = LoggerFactory.getLogger(EventDeserializer.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -22,7 +22,7 @@ public class EventDeserializer implements Deserializer<Event> {
     public void configure(Map<String, ?> map, boolean b) { /* do nothing */}
 
     @Override
-    public Event deserialize(String topic, byte[] data) {
+    public GenericEvent deserialize(String topic, byte[] data) {
         UntypedEvent event = null;
         try {
             event = objectMapper.readValue(data, UntypedEvent.class);

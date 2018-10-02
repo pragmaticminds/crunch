@@ -1,11 +1,13 @@
 package org.pragmaticminds.crunch.api.state;
 
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.exceptions.OverallTimeoutException;
+import org.pragmaticminds.crunch.api.exceptions.StepTimeoutException;
 import org.pragmaticminds.crunch.api.pipe.LambdaEvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.values.TypedValues;
-import org.pragmaticminds.crunch.events.Event;
-import org.pragmaticminds.crunch.events.EventBuilder;
+import org.pragmaticminds.crunch.events.GenericEvent;
+import org.pragmaticminds.crunch.events.GenericEventBuilder;
 
 import java.io.Serializable;
 import java.util.*;
@@ -20,13 +22,14 @@ import static org.mockito.Mockito.mock;
  */
 public class MultiStepEvaluationFunctionTest implements Serializable {
 
-    private ErrorExtractor errorExtractor = (ErrorExtractor) (events, ex, context) -> context.collect(new Event(0L, ex.getClass().getName(), ""));
-    private EvaluationCompleteExtractor evaluationCompleteExtractor = (EvaluationCompleteExtractor) (events, context) -> {
-        for (Map.Entry<String, Event> stringEventEntry : events.entrySet()) {
-            context.collect(stringEventEntry.getValue());
+    private ErrorExtractor<GenericEvent> errorExtractor = (ErrorExtractor<GenericEvent>) (events, ex, context) -> context.collect(new GenericEvent(0L, ex.getClass().getName(), ""));
+    private EvaluationCompleteExtractor<GenericEvent> evaluationCompleteExtractor = (EvaluationCompleteExtractor<GenericEvent>) (events, context) -> {
+        for (Map.Entry<String, GenericEvent> stringEventEntry : events.entrySet()) {
+            Map.Entry<String, GenericEvent> entry = stringEventEntry;
+            context.collect(entry.getValue());
         }
     };
-    private Event successEvent = EventBuilder.anEvent()
+    private GenericEvent successEvent = GenericEventBuilder.anEvent()
             .withTimestamp(System.currentTimeMillis())
             .withSource("test")
             .withEvent("success")
@@ -57,13 +60,13 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
             .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
             .withErrorExtractor(errorExtractor)
             .build();
-    
-        SimpleEvaluationContext context;
-        context = new SimpleEvaluationContext(typedValues);
+
+        SimpleEvaluationContext<GenericEvent> context;
+        context = new SimpleEvaluationContext<>(typedValues);
         
         stateMachine.eval(context);
-    
-        context = new SimpleEvaluationContext(
+
+        context = new SimpleEvaluationContext<>(
             new TypedValues(
                 "",
                 typedValues.getTimestamp() + 9,
@@ -74,14 +77,14 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
         
         assertNotNull(context.getEvents());
         assertEquals(2, context.getEvents().size());
-        for (Event event : context.getEvents()) {
+        for (GenericEvent event : context.getEvents()) {
             assertEquals(successEvent, event);
         }
     }
 
     @Test
     public void eval_withStepTimeout() { // -> a state timeout should be raised
-        MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
+        MultiStepEvaluationFunction<GenericEvent> stateMachine = MultiStepEvaluationFunction.<GenericEvent>builder()
                 .withErrorExtractor(errorExtractor)
                 .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
                 .addEvaluationFunction(
@@ -104,7 +107,7 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
             SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
             stateMachine.eval(context); // second time, so that error can be passed
             // now the second call should trigger a state timeout because it's timestamp is 100 but can be 10 at maximum
-            SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+100, typedValues.getValues()));
+        SimpleEvaluationContext<GenericEvent> context2 = new SimpleEvaluationContext<>(new TypedValues("", typedValues.getTimestamp() + 100, typedValues.getValues()));
             stateMachine.eval(context2);
             assertTrue(context.getEvents().isEmpty());
             assertEquals(1, context2.getEvents().size());
@@ -113,7 +116,7 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
 
     @Test
     public void eval_withOverallTimeout() { // -> a overall timeout should be raised
-        MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
+        MultiStepEvaluationFunction<GenericEvent> stateMachine = MultiStepEvaluationFunction.<GenericEvent>builder()
                 .withErrorExtractor(errorExtractor)
                 .withOverallTimeoutMs(10)
                 .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
@@ -143,7 +146,7 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
         stateMachine.eval(context);
         SimpleEvaluationContext context2 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+5, typedValues.getValues()));
         stateMachine.eval(context2);
-        SimpleEvaluationContext context3 = new SimpleEvaluationContext(new TypedValues("", typedValues.getTimestamp()+11, typedValues.getValues()));
+        SimpleEvaluationContext<GenericEvent> context3 = new SimpleEvaluationContext<>(new TypedValues("", typedValues.getTimestamp() + 11, typedValues.getValues()));
         stateMachine.eval(context3);
         assertTrue(context.getEvents().isEmpty());
         assertTrue(context2.getEvents().isEmpty());

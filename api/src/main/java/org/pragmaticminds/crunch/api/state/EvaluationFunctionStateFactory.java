@@ -12,7 +12,7 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
-public interface EvaluationFunctionStateFactory extends Serializable {
+public interface EvaluationFunctionStateFactory<T extends Serializable> extends Serializable {
     
     /**
      * Creates or resets an instance of a {@link EvaluationFunction} to be used in the
@@ -20,7 +20,7 @@ public interface EvaluationFunctionStateFactory extends Serializable {
      *
      * @return an instance of {@link EvaluationFunction}
      */
-    EvaluationFunction create();
+    EvaluationFunction<T> create();
     
     /**
      * Collects all channel identifiers that are used in the inner {@link EvaluationFunction}.

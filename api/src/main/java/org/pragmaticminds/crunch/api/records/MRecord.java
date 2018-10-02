@@ -1,5 +1,7 @@
 package org.pragmaticminds.crunch.api.records;
 
+import org.pragmaticminds.crunch.api.exceptions.RecordItemConversionException;
+import org.pragmaticminds.crunch.api.exceptions.UnknownRecordItemException;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.util.Collection;

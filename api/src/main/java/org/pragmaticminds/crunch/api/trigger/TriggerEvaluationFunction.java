@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 27.07.2018
  */
-public class TriggerEvaluationFunction implements EvaluationFunction {
+public class TriggerEvaluationFunction<T extends Serializable> implements EvaluationFunction<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(TriggerEvaluationFunction.class);
     
@@ -81,7 +82,7 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
      * @param ctx contains incoming data and a collector for the outgoing data
      */
     @Override
-    public void eval(EvaluationContext ctx) {
+    public void eval(EvaluationContext<T> ctx) {
         MRecord record = ctx.get();
 
         // check if to be triggered
@@ -99,7 +100,7 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
             triggerHandler.handle(simpleContext);
             
             // get the result Events from the simple context
-            List<Event> results = simpleContext.getEvents();
+            List<T> results = simpleContext.getEvents();
     
             // collect results
             if(results != null && !results.isEmpty()) {
@@ -116,7 +117,7 @@ public class TriggerEvaluationFunction implements EvaluationFunction {
      * @param results for filtering purpose
      * @return the filtered list of results if filter was set, otherwise the original list of results.
      */
-    private List<Event> filter(MRecord record, List<Event> results) {
+    private List<T> filter(MRecord record, List<T> results) {
         if (filter != null) {
             return results.stream()
                 .filter(event -> filter.apply(event, record))

@@ -33,7 +33,7 @@ public class SortFunctionIT {
         // configure your test environment
         env.setParallelism(1);
 
-        // Event Time Processing
+        // GenericEvent Time Processing
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // results are collected in a static variable
@@ -71,7 +71,7 @@ public class SortFunctionIT {
         // configure your test environment
         env.setParallelism(1);
 
-        // Event Time Processing
+        // GenericEvent Time Processing
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // results are collected in a static variable

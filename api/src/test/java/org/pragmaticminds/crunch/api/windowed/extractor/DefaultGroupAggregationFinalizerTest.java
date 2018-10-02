@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,11 +53,11 @@ public class DefaultGroupAggregationFinalizerTest {
     public void onFinalize() {
         // call method
         finalizer.onFinalize(aggregatedValues, context);
-        List<Event> events = context.getEvents();
+        List<GenericEvent> events = context.getEvents();
         
         // check amount of events
         Assert.assertEquals(1, events.size());
-        Event event = events.get(0);
+        GenericEvent event = events.get(0);
         
         // check the group naming is set right
         Assert.assertTrue(event.getEventName().startsWith("GROUP_"));

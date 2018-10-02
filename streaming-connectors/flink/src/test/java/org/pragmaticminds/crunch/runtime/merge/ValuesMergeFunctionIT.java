@@ -115,7 +115,7 @@ public class ValuesMergeFunctionIT {
         // configure your test environment
         env.setParallelism(1);
 
-        // Event Time Processing
+        // GenericEvent Time Processing
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         env.enableCheckpointing(10);
 
@@ -155,7 +155,7 @@ public class ValuesMergeFunctionIT {
         // verify your results
         MRecord lastEvent = CollectSink.values.get(CollectSink.values.size() - 1);
 
-        // If the last Event contains 10 keys than all state is merged of all 10 events.
+        // If the last GenericEvent contains 10 keys than all state is merged of all 10 events.
         assertEquals(10, lastEvent.getChannels().size());
     }
 

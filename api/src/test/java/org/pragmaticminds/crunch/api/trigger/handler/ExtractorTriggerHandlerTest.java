@@ -8,7 +8,7 @@ import org.pragmaticminds.crunch.api.trigger.extractor.Extractors;
 import org.pragmaticminds.crunch.api.trigger.extractor.MapExtractor;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
-import org.pragmaticminds.crunch.events.Event;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,7 +50,7 @@ public class ExtractorTriggerHandlerTest {
     
     @Test
     public void withArrayConstructor() {
-        ExtractorTriggerHandler handler = new ExtractorTriggerHandler(
+        ExtractorTriggerHandler handler = new GenericExtractorTriggerHandler(
             EVENT_NAME,
             extractor1,
             extractor2
@@ -61,7 +61,7 @@ public class ExtractorTriggerHandlerTest {
     
     @Test
     public void withListConstructor() {
-        ExtractorTriggerHandler handler = new ExtractorTriggerHandler(
+        ExtractorTriggerHandler handler = new GenericExtractorTriggerHandler(
             EVENT_NAME,
             Arrays.asList(extractor1,extractor2)
         );
@@ -71,9 +71,9 @@ public class ExtractorTriggerHandlerTest {
     
     private void executeAndCheckResults(ExtractorTriggerHandler handler) {
         handler.handle(context);
-        List<Event> events = context.getEvents();
+        List<GenericEvent> events = context.getEvents();
         assertEquals(1, events.size());
-        Event event = events.get(0);
+        GenericEvent event = events.get(0);
         assertEquals(1L, (long)event.getParameter(CHANNEL_1).getAsLong());
         assertEquals(2L, (long)event.getParameter(CHANNEL_2).getAsLong());
     }

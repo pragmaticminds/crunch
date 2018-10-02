@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Tests the conversions from and to {@link UntypedEvent} and {@link Event}
+ * Tests the conversions from and to {@link UntypedEvent} and {@link GenericEvent}
  *
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 17.11.2017
@@ -26,7 +26,7 @@ public class UntypedEventTest {
     private final Value testLong = Value.of(1L);
     private final Value testDate = Value.of(Date.from(Instant.now()));
     private final Value testBoolean = Value.of(true);
-    private Event event;
+    private GenericEvent event;
     private Map<String, Value> parameters;
 
     @Before
@@ -37,14 +37,14 @@ public class UntypedEventTest {
         parameters.put("long", testLong);
         parameters.put("date", testDate);
         parameters.put("boolean", testBoolean);
-        event = new Event(1L, "testEvent", "testSource", parameters);
+        event = new GenericEvent(1L, "testEvent", "testSource", parameters);
     }
 
     @Test
     public void fromEventAndAsEvent() {
         UntypedEvent untypedEvent = UntypedEvent.fromEvent(event);
 
-        Event resultEvent = untypedEvent.asEvent();
+        GenericEvent resultEvent = untypedEvent.asEvent();
 
         assertEquals(event, resultEvent);
     }
