@@ -130,7 +130,7 @@ node('linux') {
         }
     }
 
-    if (env.BRANCH_NAME == 'master') {
+    if (env.BRANCH_NAME == 'develop') {
         withMaven(
                 // Maven installation declared in the Jenkins "Global Tool Configuration"
                 maven: 'M3',
