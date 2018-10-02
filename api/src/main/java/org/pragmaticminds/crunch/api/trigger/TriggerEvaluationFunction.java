@@ -14,8 +14,8 @@ import org.pragmaticminds.crunch.events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,8 +53,8 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
     private static final Logger logger = LoggerFactory.getLogger(TriggerEvaluationFunction.class);
     
     private final TriggerStrategy triggerStrategy;
-    private final TriggerHandler triggerHandler;
-    private final EventFilter filter;
+    private final TriggerHandler<T> triggerHandler;
+    private final EventFilter<T> filter;
     
     /**
      * Main constructor of this class
@@ -64,15 +64,56 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
      * @param filter filters the resulting Events after processing if set (not null)
      */
     private TriggerEvaluationFunction(
-        TriggerStrategy triggerStrategy,
-        TriggerHandler triggerHandler,
-        EventFilter filter
+            TriggerStrategy triggerStrategy,
+            TriggerHandler<T> triggerHandler,
+            EventFilter<T> filter
     ) {
         Preconditions.checkNotNull(triggerStrategy, "Trigger strategy has to be set");
         Preconditions.checkNotNull(triggerHandler, "Trigger handler has to be set");
         this.triggerStrategy = triggerStrategy;
         this.triggerHandler = triggerHandler;
         this.filter = filter;
+    }
+
+    /**
+     * Creates a new instance of the {@link Builder} for this class.
+     *
+     * @return a {@link Builder} for this class.
+     */
+    public static <T extends Serializable> Builder<T> builder() {
+        return new Builder<>();
+    }
+
+    /**
+     * Filters the results if filter is set
+     *
+     * @param record  for filtering purpose
+     * @param results for filtering purpose
+     * @return the filtered list of results if filter was set, otherwise the original list of results.
+     */
+    private List<T> filter(MRecord record, List<T> results) {
+        if (filter != null) {
+            return results.stream()
+                    .filter(event -> filter.apply(event, record))
+                    .collect(Collectors.toList());
+        }
+        return results;
+    }
+
+    /**
+     * Returns all channel identifiers which are necessary for the function to do its job.
+     * It is not allowed to return null, an empty set can be returned (but why should??).
+     *
+     * @return a {@link Set} all channel identifiers that are needed by the Evaluation Function.
+     */
+    @Override
+    public Set<String> getChannelIdentifiers() {
+        Set<String> results = new HashSet<>();
+        if (filter != null) {
+            results.addAll(filter.getChannelIdentifiers());
+        }
+        results.addAll(triggerStrategy.getChannelIdentifiers());
+        return results;
     }
     
     /**
@@ -92,16 +133,16 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
             if (logger.isDebugEnabled()) {
                 logger.debug("Trigger Strategy Triggered for record {}", record);
             }
-    
+
             // create a simple context for the triggerHandler to extract resulting Events
-            SimpleEvaluationContext simpleContext = new SimpleEvaluationContext(ctx.get());
-    
+            SimpleEvaluationContext<T> simpleContext = new SimpleEvaluationContext<>(ctx.get());
+
             // extract resulting Events
             triggerHandler.handle(simpleContext);
-            
+
             // get the result Events from the simple context
             List<T> results = simpleContext.getEvents();
-    
+
             // collect results
             if(results != null && !results.isEmpty()) {
                 // filter results if filter set
@@ -112,65 +153,29 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
     }
     
     /**
-     * Filters the results if filter is set
-     * @param record for filtering purpose
-     * @param results for filtering purpose
-     * @return the filtered list of results if filter was set, otherwise the original list of results.
-     */
-    private List<T> filter(MRecord record, List<T> results) {
-        if (filter != null) {
-            return results.stream()
-                .filter(event -> filter.apply(event, record))
-                .collect(Collectors.toList());
-        }
-        return results;
-    }
-
-    /**
-     * Returns all channel identifiers which are necessary for the function to do its job.
-     * It is not allowed to return null, an empty set can be returned (but why should??).
-     *
-     * @return a {@link Set} all channel identifiers that are needed by the Evaluation Function.
-     */
-    @Override
-    public Set<String> getChannelIdentifiers() {
-        Set<String> results = new HashSet<>();
-        if(filter != null){
-            results.addAll(filter.getChannelIdentifiers());
-        }
-        results.addAll(triggerStrategy.getChannelIdentifiers());
-        return results;
-    }
-    
-    /**
-     * Creates a new instance of the {@link Builder} for this class.
-     *
-     * @return a {@link Builder} for this class.
-     */
-    public static Builder builder(){ return new Builder(); }
-    
-    /**
      * Builder of this class.
      */
-    public static class Builder {
+    public static class Builder<T extends Serializable> {
         private TriggerStrategy triggerStrategy;
-        private TriggerHandler triggerHandler;
-        private EventFilter filter;
-        
-        public Builder withTriggerStrategy(TriggerStrategy triggerStrategy){
+        private TriggerHandler<T> triggerHandler;
+        private EventFilter<T> filter;
+
+        public Builder<T> withTriggerStrategy(TriggerStrategy triggerStrategy){
             this.triggerStrategy = triggerStrategy;
             return this;
         }
-        public Builder withTriggerHandler(TriggerHandler triggerHandler){
+
+        public Builder<T> withTriggerHandler(TriggerHandler<T> triggerHandler){
             this.triggerHandler = triggerHandler;
             return this;
         }
-        public Builder withFilter(EventFilter filter){
+
+        public Builder<T> withFilter(EventFilter<T> filter){
             this.filter = filter;
             return this;
         }
-        public TriggerEvaluationFunction build(){
-            return new TriggerEvaluationFunction(triggerStrategy, triggerHandler, filter);
+        public TriggerEvaluationFunction build() {
+            return new TriggerEvaluationFunction<>(triggerStrategy, triggerHandler, filter);
         }
     }
 }
