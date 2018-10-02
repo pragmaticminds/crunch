@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 16.08.2018
  */
-public interface Aggregation<T extends Serializable, R extends Serializable> extends Serializable {
+public interface Aggregation<T extends Serializable> extends Serializable {
     /**
      * getter for identifier
      * @return the identifier of this implementation
@@ -23,7 +23,7 @@ public interface Aggregation<T extends Serializable, R extends Serializable> ext
     public void aggregate(T value);
     
     /** @return the aggregated value of all values that have been aggregated by the aggregate method. */
-    public abstract R getAggregated();
+    public abstract Double getAggregated();
     
     /** cleans up the accumulated values */
     public void reset();

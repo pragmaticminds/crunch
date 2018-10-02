@@ -13,67 +13,88 @@ public class AggregationUtils implements Serializable {
     
     /**
      * Compares most common types with a int value as difference result
+     *
      * @param o1 the first candidate for comparison
      * @param o2 the second candidate for comparison
      * @param <T> is the type of both comparison candidates
      * @return 0 if both are equal, a positive int value if o1 is bigger than o2 and a negative int value otherwise
      */
     @SuppressWarnings("unchecked") // both types are the same and extends from Comparable
-    public static <T extends Comparable> int compare(T o1, T o2){
-        return o1.compareTo(o2);
+    public static <T extends Comparable, I extends Comparable> int compare(T o1, I o2){
+        if(o1.getClass() == o2.getClass()){
+            return o1.compareTo(o2);
+        }else if(Number.class.isAssignableFrom(o1.getClass()) && Number.class.isAssignableFrom(o2.getClass())) {
+            return Double.compare(((Number) o1).doubleValue(), ((Number) o2).doubleValue());
+        }else if(String.class.isAssignableFrom(o1.getClass()) || String.class.isAssignableFrom(o2.getClass())){
+            return o1.toString().compareTo(o2.toString());
+        }else{
+            throw new UnsupportedOperationException(
+                String.format("Could not compare %s with %s!",o1.getClass(),o2.getClass())
+            );
+        }
     }
     
     /**
      * This method sums up common number values.
-     * @param o1 first addend
-     * @param o2 second addend
-     * @param <T> type of both addends
+     * @param o1 first operand
+     * @param o2 second operand
+     * @param <T> type of operand 1
+     * @param <I> type of operand 2
      * @return the sum of both addends in their common type
      */
     @SuppressWarnings("unchecked") // manually checked type security
-    public static <T> T sum(T o1, T o2){
-        // Integer
-        if(o1.getClass().isAssignableFrom(Integer.class)){
-            return (T) Integer.valueOf(((Integer)o1) + ((Integer)o2));
-        // Long
-        } else if(o1.getClass().isAssignableFrom(Long.class)){
-            return (T) Long.valueOf(((Long)o1) + ((Long)o2));
-        // Float
-        } else if(o1.getClass().isAssignableFrom(Float.class)){
-            return (T) Float.valueOf(((Float)o1) + ((Float)o2));
-        // Double
-        } else if(o1.getClass().isAssignableFrom(Double.class)){
-            return (T) Double.valueOf(((Double)o1) + ((Double)o2));
-        // Error unknown type -> throw exception
-        } else {
-            throw new UnsupportedOperationException();
+    public static <T extends Number, I extends Number> Double add(T o1, I o2){
+        if(o1 == null || o2 == null){
+            return null;
         }
+        return o1.doubleValue() + o2.doubleValue();
+    }
+    
+    /**
+     * This method subtracts common number values.
+     * @param o1 the one to be subtracted from
+     * @param o2 the one that is subtracted from o1
+     * @param <T> type of o1
+     * @param <I> type of o2
+     * @return the subtraction of o2 from o1 in their common type
+     */
+    @SuppressWarnings("unchecked") // manually checked type security
+    public static <T extends Number, I extends Number> Double subtract(T o1, I o2){
+        if(o1 == null || o2 == null){
+            return null;
+        }
+        return o1.doubleValue() - o2.doubleValue();
+    }
+    
+    /**
+     * This method multiplies two common number values.
+     * @param m1 first operand
+     * @param m1 second operand
+     * @param <T> type of m1
+     * @param <I> type of m2
+     * @return the result of the multiplication
+     */
+    @SuppressWarnings("unchecked") // manually checked type security
+    public static <T extends Number, I extends Number> Double multiply(T m1, I m2){
+        if(m1 == null || m2 == null){
+            return null;
+        }
+        return m1.doubleValue() * m2.doubleValue();
     }
     
     /**
      * This method divides two common number values.
      * @param divided the divided
      * @param divider the divider
-     * @param <T> type of both parameters
-     * @return the result of the devision
+     * @param <T> type of divided
+     * @param <I> type of divider
+     * @return the result of the division
      */
     @SuppressWarnings("unchecked") // manually checked type security
-    public static <T> Double divide(T divided, int divider){
-        // Integer
-        if(divided.getClass().isAssignableFrom(Integer.class)){
-            return ((Integer) divided) / (double) divider;
-        // Long
-        } else if(divided.getClass().isAssignableFrom(Long.class)){
-            return ((Long)divided) / (double) divider;
-        // Float
-        } else if(divided.getClass().isAssignableFrom(Float.class)){
-            return ((Float)divided) / (double) divider;
-        // Double
-        } else if(divided.getClass().isAssignableFrom(Double.class)){
-            return ((Double)divided) / divider;
-        // Error unknown type -> throw exception
-        } else {
-            throw new UnsupportedOperationException();
+    public static <T extends Number, I extends Number> Double divide(T divided, I divider){
+        if(divided == null || divider == null){
+            return null;
         }
+        return divided.doubleValue()/divider.doubleValue();
     }
 }

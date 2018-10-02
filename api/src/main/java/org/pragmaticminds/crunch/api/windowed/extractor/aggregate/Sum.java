@@ -1,7 +1,5 @@
 package org.pragmaticminds.crunch.api.windowed.extractor.aggregate;
 
-import java.io.Serializable;
-
 /**
  * Aggregates the sum of all aggregated values
  * @param <T> type of values
@@ -9,8 +7,8 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * craeted by Erwin Wagasow on 23.08.2018
  */
-class Sum<T extends Serializable> implements Aggregation<T, T> {
-    protected T sumValue;
+class Sum<T extends Number> implements Aggregation<T> {
+    protected Double sumValue;
 
     /**
      * @return default identifier
@@ -29,15 +27,15 @@ class Sum<T extends Serializable> implements Aggregation<T, T> {
             return;
         }
         if(sumValue == null){
-            sumValue = value;
+            sumValue = value.doubleValue();
         }else{
-            sumValue = AggregationUtils.sum(sumValue, value);
+            sumValue = AggregationUtils.add(sumValue, value);
         }
     }
 
     /** @return the Aggregation result */
     @Override
-    public T getAggregated() {
+    public Double getAggregated() {
         return sumValue;
     }
 

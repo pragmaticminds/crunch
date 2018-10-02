@@ -4,8 +4,7 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.api.windowed.extractor.aggregate.AggregationUtils;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Date;
+import java.util.*;
 import java.util.HashSet;
 
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.IdentifierCombiner.combine;
@@ -16,16 +15,23 @@ import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.Identif
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 13.08.2018
  */
-public class Suppliers {
+public final class Suppliers {
     private Suppliers() {
-        throw new UnsupportedOperationException("this constructor should not be used!");
+        throwUnsupportedOperationException();
+    }
+    
+    private static void throwUnsupportedOperationException(){
+        throw new UnsupportedOperationException("this should never be initialized!");
     }
     
     /**
      * Holds all the channel extraction {@link Supplier}s
      */
     public static class ChannelExtractors {
-        private ChannelExtractors(){ /* do nothing */}
+        /** hidden constructor */
+        private ChannelExtractors(){
+            throwUnsupportedOperationException();
+        }
         
         /**
          * extracts a {@link Boolean} value from the values
@@ -116,7 +122,10 @@ public class Suppliers {
      * Holds all boolean combination operator {@link Supplier}s
      */
     public static class BooleanOperators{
-        private BooleanOperators() { /* do nothing */ }
+        /** hidden constructor */
+        private BooleanOperators() {
+            throwUnsupportedOperationException();
+        }
     
         /**
          * Creates an AND Operation on two {@link Supplier}s
@@ -126,17 +135,11 @@ public class Suppliers {
          * delivered null.
          */
         public static Supplier<Boolean> and(Supplier<Boolean> s1, Supplier<Boolean> s2){
-            String identifier = String.format("and(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(
-                identifier,
-                values ->
-                    // null check
-                    s1.extract(values) != null && s2.extract(values) != null
-                    // "and" condition
-                    ? s1.extract(values) && s2.extract(values)
-                    // return null if one of the suppliers delivered null
-                    : null,
-                () -> combine(s1, s2)
+            return createSupplier(
+                s1,
+                s2,
+                String.format("and(%s,%s)", s1.getIdentifier(), s2.getIdentifier()),
+                (SupplierLambda<Boolean, Boolean, Boolean>) (v1, v2) -> v1 && v2
             );
         }
     
@@ -148,17 +151,11 @@ public class Suppliers {
          * delivered null.
          */
         public static Supplier<Boolean> or(Supplier<Boolean> s1, Supplier<Boolean> s2){
-            String identifier = String.format("or(%s,%s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(
-                identifier,
-                values ->
-                    // null check
-                    s1.extract(values) != null && s2.extract(values) != null
-                    // "or" condition
-                    ? (s1.extract(values) || s2.extract(values))
-                    // return null if one of the suppliers delivered null
-                    : null,
-                () -> combine(s1, s2)
+            return createSupplier(
+                s1,
+                s2,
+                String.format("or(%s,%s)", s1.getIdentifier(), s2.getIdentifier()),
+                (SupplierLambda<Boolean, Boolean, Boolean>) (v1, v2) -> v1 || v2
             );
         }
     
@@ -187,7 +184,10 @@ public class Suppliers {
      * Holds all {@link String} operator {@link Supplier}s
      */
     public static class StringOperators{
-        private StringOperators() { /* do nothing */ }
+        /** hidden constructor */
+        private StringOperators() {
+            throwUnsupportedOperationException();
+        }
     
         /**
          * Compares the expected string with the extracted value of the {@link Supplier}
@@ -306,7 +306,9 @@ public class Suppliers {
      */
     public static class Comparators{
         /** hidden constructor */
-        private Comparators() { throw new UnsupportedOperationException("this class should not be instantiated!"); }
+        private Comparators() {
+            throwUnsupportedOperationException();
+        }
     
         /**
          * Compares given value with the supplied value for equality.
@@ -337,16 +339,12 @@ public class Suppliers {
          * @return an equality check {@link Supplier}
          */
         @SuppressWarnings("squid:S1201") // use of equals
-        public static <T> Supplier<Boolean> equals(Supplier<T> s1, Supplier<T> s2){
-            String identifier = String.format("equals(%s, %s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(
-                identifier,
-                values ->
-                    // check for null values
-                    s1.extract(values) != null && s2.extract(values) != null
-                    // check the condition
-                    && s1.extract(values).equals(s2.extract(values)),
-                () -> combine(s1, s2)
+        public static <T extends Comparable & Serializable, I extends Comparable & Serializable> Supplier<Boolean> equals(Supplier<T> s1, Supplier<I> s2){
+            return createSupplier(
+                s1,
+                s2,
+                String.format("equals(%s, %s)", s1.getIdentifier(), s2.getIdentifier()),
+                (ComparableSupplierLambda<T,I,Boolean>) (v1, v2) -> 0 == AggregationUtils.compare(v1, v2)
             );
         }
     
@@ -361,22 +359,12 @@ public class Suppliers {
          * @param <T> type of compared values
          * @return a difference comparison {@link Supplier}
          */
-        public static <T extends Comparable> Supplier<Long> compare(Supplier<T> s1, Supplier<T> s2){
-            String identifier = String.format("compare(%s, %s)", s1.getIdentifier(), s2.getIdentifier());
-            return new NamedSupplier<>(
-                identifier,
-                values -> {
-                    // extract values
-                    T v1 = s1.extract(values);
-                    T v2 = s2.extract(values);
-                    // null check
-                    if(v1 == null || v2 == null){
-                        return null;
-                    }
-                    // apply comparison
-                    return (long)AggregationUtils.compare(v1, v2);
-                },
-                () -> combine(s1, s2)
+        public static <T extends Comparable & Serializable, I extends Comparable & Serializable> Supplier<Long> compare(Supplier<T> s1, Supplier<I> s2){
+            return createSupplier(
+                s1,
+                s2,
+                String.format("compare(%s, %s)", s1.getIdentifier(), s2.getIdentifier()),
+                (ComparableSupplierLambda<T,I,Long>) (v1, v2) -> (long)AggregationUtils.compare(v1,v2)
             );
         }
     
@@ -391,29 +379,590 @@ public class Suppliers {
          * @param <T> type of compared values
          * @return a difference comparison {@link Supplier}
          */
-        public static <T extends Comparable> Supplier<Long> compare(T value, Supplier<T> supplier){
-            String identifier = String.format("compare(%s, %s)", value.toString(), supplier.getIdentifier());
+        public static <T extends Comparable & Serializable, I extends Comparable & Serializable> Supplier<Long> compare(T value, Supplier<I> supplier){
+            return createSupplier(
+                value,
+                supplier,
+                String.format("compare(%s, %s)", value.toString(), supplier.getIdentifier()),
+                (v1, v2) -> (long) AggregationUtils.compare(v1, v2)
+            );
+        }
+    
+        /**
+         * Logical operation: T value &lt; Supplier&lt;I&gt; supplier.
+         *
+         * @param value    first operand
+         * @param supplier second operand supplier
+         * @param <T>      type of value
+         * @param <I>      inner type of supplier
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> lowerThan(T value, Supplier<I> supplier){
+            return createSupplier(
+                value,
+                supplier,
+                String.format("lowerThan(%s, %s)", value, supplier.getIdentifier()),
+                (v1, v2) -> v1.doubleValue() < v2.doubleValue()
+            );
+        }
+    
+        /**
+         * Logical operation: s1 &lt; s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> lowerThan(Supplier<T> s1, Supplier<I> s2){
+            return createSupplier(
+                s1,
+                s2,
+                String.format("lowerThan(%s, %s)", s1.getIdentifier(), s2.getIdentifier()),
+                (NumberSupplierLambda<T,I,Boolean>) (v1, v2) -> v1.doubleValue() < v2.doubleValue()
+            );
+        }
+    
+        /**
+         * Logical operation: value &lt;= supplier
+         *
+         * @param value     first operand
+         * @param supplier  second operand supplier
+         * @param <T>       type of value
+         * @param <I>       inner type of supplier
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> lowerThanEquals(T value, Supplier<I> supplier) {
+            return createSupplier(
+                value,
+                supplier,
+                String.format("lowerThanEquals(%s, %s)", value, supplier.getIdentifier()),
+                (v1, v2) -> v1.doubleValue() <= v2.doubleValue()
+            );
+        }
+    
+        /**
+         * Logical operation: s1 &lt;= s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> lowerThanEquals(Supplier<T> s1, Supplier<I> s2) {
+            return createSupplier(
+                s1,
+                s2,
+                String.format("lowerThanEquals(%s, %s)", s1.getIdentifier(), s2.getIdentifier()),
+                (NumberSupplierLambda<T,I,Boolean>) (v1, v2) -> v1.doubleValue() <= v2.doubleValue()
+            );
+        }
+    
+        /**
+         * Logical operation: value &gt; supplier
+         *
+         * @param value     first operand
+         * @param supplier  second operand supplier
+         * @param <T>       type of value
+         * @param <I>       inner type of supplier
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> greaterThan(T value, Supplier<I> supplier) {
+            return createSupplier(
+                value,
+                supplier,
+                String.format("greaterThan(%s, %s)", value, supplier.getIdentifier()),
+                (v1, v2) -> v1.doubleValue() > v2.doubleValue()
+            );
+        }
+    
+        /**
+         * Logical operation: s1 &gt; s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> greaterThan(Supplier<T> s1, Supplier<I> s2) {
+            return createSupplier(
+                s1,
+                s2,
+                String.format("greaterThan(%s, %s)", s1.getIdentifier(), s2.getIdentifier()),
+                (NumberSupplierLambda<T,I,Boolean>) (v1, v2) -> v1.doubleValue() > v2.doubleValue()
+            );
+        }
+    
+        /**
+         * Logical operation: value &gt;= supplier
+         *
+         * @param value     first operand
+         * @param supplier  second operand supplier
+         * @param <T>       type of value
+         * @param <I>       inner type of supplier
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> greaterThanEquals(T value, Supplier<I> supplier) {
+            return createSupplier(
+                value,
+                supplier,
+                String.format("greaterThanEquals(%s, %s)", value, supplier.getIdentifier()),
+                (v1, v2) -> v1.doubleValue() >= v2.doubleValue()
+            );
+        }
+    
+        /**
+         * Logical operation: s1 &gt;= s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Boolean> greaterThanEquals(Supplier<T> s1, Supplier<I> s2) {
+            return createSupplier(
+                s1,
+                s2,
+                String.format("greaterThanEquals(%s, %s)", s1.getIdentifier(), s2.getIdentifier()),
+                (NumberSupplierLambda<T,I,Boolean>) (v1, v2) -> v1.doubleValue() >= v2.doubleValue()
+            );
+        }
+    }
+    
+    public static class Caster implements Serializable {
+        /** hidden constructor */
+        private Caster(){
+            throwUnsupportedOperationException();
+        }
+    
+        /**
+         * Casting operation from T type to {@link Long}
+         *
+         * @param supplier for T type value
+         * @param <T> type of the supplied value
+         * @return a {@link Supplier} of {@link Long} type
+         */
+        public static <T extends Number> Supplier<Long> castToLong(Supplier<T> supplier){
+            String identifier = String.format("castToInteger(%s)", supplier.getIdentifier());
             return new NamedSupplier<>(
                 identifier,
                 values -> {
-                    // extract value
-                    T value2 = supplier.extract(values);
-                    // null check
-                    if (value2 == null) {
+                    T extract = supplier.extract(values);
+                    if(extract == null){
                         return null;
                     }
-                    // apply comparison
-                    return (long) AggregationUtils.compare(value, value2);
+                    return extract.longValue();
+                },
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
+            );
+        }
+    
+        /**
+         * Casting operation from T type to {@link Double}
+         *
+         * @param supplier for T type value
+         * @param <T> type of the supplied value
+         * @return a {@link Supplier} of {@link Double} type
+         */
+        public static <T extends Number> Supplier<Double> castToDouble(Supplier<T> supplier){
+            String identifier = String.format("castToDouble(%s)", supplier.getIdentifier());
+            return new NamedSupplier<>(
+                identifier,
+                values -> {
+                    T extract = supplier.extract(values);
+                    if(extract == null){
+                        return null;
+                    }
+                    return extract.doubleValue();
+                },
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
+            );
+        }
+    
+        /**
+         * Casting operation from T type to {@link String}
+         *
+         * @param supplier for T type value
+         * @param <T> type of the supplied value
+         * @return a {@link Supplier} of {@link String} type
+         */
+        public static <T extends Number> Supplier<String> castToString(Supplier<T> supplier){
+            String identifier = String.format("castToDouble(%s)", supplier.getIdentifier());
+            return new NamedSupplier<>(
+                identifier,
+                values -> {
+                    T extract = supplier.extract(values);
+                    if(extract == null){
+                        return null;
+                    }
+                    return extract.toString();
                 },
                 () -> new HashSet<>(supplier.getChannelIdentifiers())
             );
         }
     }
     
-    static class IdentifierCombiner implements Serializable {
+    public static class Parser implements Serializable {
+        /** hidden constructor */
+        private Parser(){
+            throwUnsupportedOperationException();
+        }
+    
+    
+        /**
+         * Parsing operation from {@link String} to {@link Long}
+         *
+         * @param supplier for the {@link String} values to be parsed
+         * @return a {@link Supplier} of {@link Long} type
+         */
+        public static Supplier<Long> parseLong(Supplier<String> supplier){
+            String identifier = String.format("parseLong(%s)", supplier.getIdentifier());
+            return new NamedSupplier<>(
+                identifier,
+                values -> Long.parseLong(supplier.extract(values)),
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
+            );
+        }
+    
+        /**
+         * Parsing operation from {@link String} to {@link Double}
+         *
+         * @param supplier for the {@link String} values to be parsed
+         * @return a {@link Supplier} of {@link Double} type
+         */
+        public static Supplier<Double> parseDouble(Supplier<String> supplier){
+            String identifier = String.format("parseDouble(%s)", supplier.getIdentifier());
+            return new NamedSupplier<>(
+                identifier,
+                values -> Double.parseDouble(supplier.extract(values)),
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
+            );
+        }
+    }
+    
+    public static class Mathematics implements Serializable{
+        private static final String ADD_NAME = "add(%s, %s)";
+        private static final String SUBTRACT_NAME = "subtract(%s, %s)";
+        private static final String MULTIPLY_NAME = "multiply(%s, %s)";
+        private static final String DIVIDE_NAME = "divide(%s, %s)";
+    
+        /** hidden constructor */
+        private Mathematics() {
+            throwUnsupportedOperationException();
+        }
+    
+        /**
+         * Arithmetical operation: supplier + value
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> add(Supplier<T> supplier, I value){
+            return createSupplier(
+                value,
+                supplier,
+                String.format(ADD_NAME, value, supplier.getIdentifier()),
+                AggregationUtils::add
+            );
+        }
+    
+        /**
+         * Arithmetical operation: value + supplier
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> add(I value, Supplier<T> supplier){
+            return add(supplier, value);
+        }
+    
+        /**
+         * Arithmetical operation: s1 + s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> add(Supplier<T> s1, Supplier<I> s2){
+            return createSupplier(
+                s1,
+                s2,
+                String.format(ADD_NAME, s1.getIdentifier(), s2.getIdentifier()),
+                (SupplierLambda<T, I, Double>) AggregationUtils::add
+            );
+        }
+    
+        /**
+         * Arithmetical operation: supplier - value
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> subtract(Supplier<T> supplier, I value){
+            return createSupplier(
+                value,
+                supplier,
+                String.format(SUBTRACT_NAME, value, supplier.getIdentifier()),
+                (v1, v2) -> AggregationUtils.subtract(v2, v1)
+            );
+        }
+    
+        /**
+         * Arithmetical operation: value - supplier
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> subtract(I value, Supplier<T> supplier){
+            return createSupplier(
+                value,
+                supplier,
+                String.format(SUBTRACT_NAME, value, supplier.getIdentifier()),
+                AggregationUtils::subtract
+            );
+        }
+    
+        /**
+         * Arithmetical operation: s1 - s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> subtract(Supplier<T> s1, Supplier<I> s2){
+            return createSupplier(
+                s1,
+                s2,
+                String.format(SUBTRACT_NAME, s1.getIdentifier(), s2.getIdentifier()),
+                (SupplierLambda<T, I, Double>) AggregationUtils::subtract
+            );
+        }
+    
+        /**
+         * Arithmetical operation: value * supplier
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> multiply(Supplier<T> supplier, I value){
+            return createSupplier(
+                value,
+                supplier,
+                String.format(MULTIPLY_NAME, value, supplier.getIdentifier()),
+                AggregationUtils::multiply
+            );
+        }
+    
+        /**
+         * Arithmetical operation: value * supplier
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> multiply(I value, Supplier<T> supplier){
+            return multiply(supplier, value);
+        }
+    
+        /**
+         * Arithmetical operation: s1 * s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> multiply(Supplier<T> s1, Supplier<I> s2){
+            return createSupplier(
+                s1,
+                s2,
+                String.format(MULTIPLY_NAME, s1.getIdentifier(), s2.getIdentifier()),
+                (SupplierLambda<T, I, Double>) AggregationUtils::multiply
+            );
+        }
+    
+        /**
+         * Arithmetical operation: supplier / value
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> divide(Supplier<T> supplier, I value){
+            return createSupplier(
+                value,
+                supplier,
+                String.format(DIVIDE_NAME, value, supplier.getIdentifier()),
+                (v1, v2) -> AggregationUtils.divide(v2, v1)
+            );
+        }
+    
+        /**
+         * Arithmetical operation: value / supplier
+         *
+         * @param value      first operand
+         * @param supplier   second operand supplier
+         * @param <T> type of value
+         * @param <I> inner type of supplier
+         * @return {@link Supplier} of Double type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> divide(I value, Supplier<T> supplier){
+            return createSupplier(
+                value,
+                supplier,
+                String.format(DIVIDE_NAME, value, supplier.getIdentifier()),
+                AggregationUtils::divide
+            );
+        }
+    
+        /**
+         * Arithmetical operation: s1 / s2
+         *
+         * @param s1 first operand supplier
+         * @param s2 second operand supplier
+         * @param <T> inner type of s1
+         * @param <I> inner type of s2
+         * @return {@link Supplier} of {@link Boolean} type
+         */
+        public static <T extends Number, I extends Number> Supplier<Double> divide(Supplier<T> s1, Supplier<I> s2){
+            return createSupplier(
+                s1,
+                s2,
+                String.format(DIVIDE_NAME, s1.getIdentifier(), s2.getIdentifier()),
+                (NumberSupplierLambda<T, I, Double>) AggregationUtils::divide
+            );
+        }
+    }
+    
+    /**
+     * creates a Supplier that operates on two Suppliers
+     *
+     * @param value      first operand
+     * @param supplier   second operand supplier
+     * @param identifier of the {@link Supplier} to be created
+     * @param lambda     the inner operation to be performed
+     * @param <T> type of value
+     * @param <I> inner type of supplier
+     * @param <R> inner type of the resulting {@link Supplier}
+     * @return {@link Supplier} of R type
+     */
+    private static <T extends Serializable, I extends Serializable, R extends Serializable> Supplier<R> createSupplier(
+        T value,
+        Supplier<I> supplier,
+        String identifier,
+        SupplierLambda<T,I,R> lambda
+    ) {
+        return new NamedSupplier<>(
+            identifier,
+            values -> {
+                // extract value
+                I value2 = supplier.extract(values);
+                if(value2 == null){
+                    return null;
+                }
+                return lambda.apply(value, value2);
+            },
+            () -> new HashSet<>(supplier.getChannelIdentifiers())
+        );
+    }
+    
+    /**
+     * creates a Supplier that operates on two Suppliers
+     *
+     * @param s1 first operand supplier
+     * @param s2 second operand supplier
+     * @param identifier of the {@link Supplier} to be created
+     * @param lambda the inner operation to be performed
+     * @param <T> inner type of s1
+     * @param <I> inner type of s2
+     * @param <R> inner type of the resulting {@link Supplier}
+     * @return {@link Supplier} of R type
+     */
+    private static <T extends Serializable, I extends Serializable, R extends Serializable> Supplier<R> createSupplier(
+        Supplier<T> s1,
+        Supplier<I> s2,
+        String identifier,
+        SupplierLambda<T,I,R> lambda
+    ) {
+        return new NamedSupplier<>(
+            identifier,
+            values -> {
+                // extract values
+                T value = s1.extract(values);
+                I value2 = s2.extract(values);
+                if(value == null || value2 == null){
+                    return null;
+                }
+                return lambda.apply(value, value2);
+            },
+            () -> combine(s1, s2)
+        );
+    }
+    
+    /** @inheritDoc */
+    @FunctionalInterface
+    interface NumberSupplierLambda<
+        T extends Number,
+        I extends Number,
+        R extends Serializable> extends SupplierLambda<T,I,R> {
+    }
+    
+    /** @inheritDoc */
+    @FunctionalInterface
+    interface ComparableSupplierLambda<
+        T extends Comparable & Serializable,
+        I extends Comparable & Serializable,
+        R extends Serializable> extends SupplierLambda<T,I,R> { }
+    
+    /**
+     * Lambda definition interface for definition of operations inside a {@link Supplier} that is created by the
+     * {@link #createSupplier(Serializable, Supplier, String, SupplierLambda)} and the
+     * {@link #createSupplier(Supplier, Supplier, String, SupplierLambda)} methods.
+     *
+     * @param <T> type of the first operand
+     * @param <I> type of the second operand
+     * @param <R> type of the result
+     */
+    @FunctionalInterface
+    interface SupplierLambda<T extends Serializable, I extends Serializable, R extends Serializable> {
+        R apply(T v1, I v2);
+    }
+    
+    /**
+     * Utility class for channel identifier extraction
+     */
+    static final class IdentifierCombiner implements Serializable {
         /** hidden constructor **/
         private IdentifierCombiner() {
-            throw new UnsupportedOperationException("this should never be initialized!");
+            throwUnsupportedOperationException();
         }
     
         /**
@@ -422,14 +971,13 @@ public class Suppliers {
          * @param s1 first {@link Supplier}
          * @param s2 second {@link Supplier}
          * @param <T> type of the {@link Supplier}s
-         * @return Set of String with all identifiers
+         * @return ArrayList of String with all identifiers
          */
         @SuppressWarnings("squid:S1319") // return type is not an interface for being serializable
-        public static <T> HashSet<String> combine(Supplier<T> s1, Supplier<T> s2) {
+        public static <T extends Serializable, I extends Serializable> HashSet<String> combine(Supplier<T> s1, Supplier<I> s2){
             HashSet<String> results = new HashSet<>(s1.getChannelIdentifiers());
             results.addAll(s2.getChannelIdentifiers());
             return results;
         }
     }
-    
 }

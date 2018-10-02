@@ -1,7 +1,5 @@
 package org.pragmaticminds.crunch.api.windowed.extractor.aggregate;
 
-import java.io.Serializable;
-
 /**
  * Aggregates all values to calculate am avg value as {@link Double}
  * @param <T> type of the incoming values
@@ -9,8 +7,8 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * craeted by Erwin Wagasow on 23.08.2018
  */
-class Avg<T extends Serializable> implements Aggregation<T, Double>{
-    private T sum;
+class Avg<T extends Number> implements Aggregation<T>{
+    private Double sum;
     private int count = 0;
 
     /**
@@ -33,9 +31,9 @@ class Avg<T extends Serializable> implements Aggregation<T, Double>{
         }
         count++;
         if(sum == null){
-            sum = value;
+            sum = value.doubleValue();
         }else{
-            sum = AggregationUtils.sum(sum, value);
+            sum = AggregationUtils.add(sum, value);
         }
     }
 

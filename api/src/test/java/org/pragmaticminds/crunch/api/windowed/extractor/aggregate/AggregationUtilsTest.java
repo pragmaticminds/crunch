@@ -1,10 +1,11 @@
 package org.pragmaticminds.crunch.api.windowed.extractor.aggregate;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.Instant;
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Erwin Wagasow
@@ -12,64 +13,55 @@ import java.util.Date;
  */
 public class AggregationUtilsTest {
     
-    private double delta;
+    private double delta = 0.00001;
     
     @Test
-    public void comapre() {
-        // integer
-        int compare = AggregationUtils.compare(1, 1);
-        Assert.assertEquals(0, compare);
-        // long
-        compare = AggregationUtils.compare(1L, 1L);
-        Assert.assertEquals(0, compare);
-        // float
-        compare = AggregationUtils.compare(1F, 1F);
-        Assert.assertEquals(0, compare);
-        // double
-        compare = AggregationUtils.compare(1D, 1D);
-        Assert.assertEquals(0, compare);
-        // string
-        compare = AggregationUtils.compare("1", "1");
-        Assert.assertEquals(0, compare);
-        // Date
+    public void compare() {
         Instant now = Instant.now();
-        compare = AggregationUtils.compare(Date.from(now), Date.from(now));
-        Assert.assertEquals(0, compare);
-        // Instant
-        compare = AggregationUtils.compare(now, now);
-        Assert.assertEquals(0, compare);
+        
+        assertEquals(0, AggregationUtils.compare(1, 1));
+        assertEquals(0, AggregationUtils.compare(1L, 1L));
+        assertEquals(0, AggregationUtils.compare(1F, 1F));
+        assertEquals(0, AggregationUtils.compare(1D, 1D));
+        assertEquals(0, AggregationUtils.compare("1", "1"));
+        assertEquals(0, AggregationUtils.compare(Date.from(now), Date.from(now)));
+        assertEquals(0, AggregationUtils.compare(now, now));
+        assertEquals(0, AggregationUtils.compare(now, now.toString()));
+        assertEquals(0, AggregationUtils.compare(1, "1"));
+        assertEquals(0, AggregationUtils.compare(1D, 1L));
     }
     
     @Test
-    public void sum() {
-        // integer
-        int sumInteger = AggregationUtils.sum(1, 1);
-        Assert.assertEquals(2, sumInteger);
-        // long
-        long sumLong = AggregationUtils.sum(1L, 1L);
-        Assert.assertEquals(2L, sumLong);
-        // float
-        float sumFloat = AggregationUtils.sum(1F, 1F);
-        Assert.assertEquals(2F, sumFloat, 0.0001);
-        // double
-        double sumDouble = AggregationUtils.sum(1D, 1D);
-        Assert.assertEquals(2D, sumDouble, 0.0001);
+    public void add() {
+        assertEquals(2, AggregationUtils.add(1, 1), delta);
+        assertEquals(2, AggregationUtils.add(1L, 1L), delta);
+        assertEquals(2, AggregationUtils.add(1F, 1F), delta);
+        assertEquals(2, AggregationUtils.add(1D, 1D), delta);
+        assertEquals(2, AggregationUtils.add(1D, 1L), delta);
+    }
+    
+    @Test
+    public void subtract() {
+        assertEquals(1, AggregationUtils.subtract(2, 1), delta);
+        assertEquals(1, AggregationUtils.subtract(2L, 1L), delta);
+        assertEquals(1, AggregationUtils.subtract(2F, 1F), delta);
+        assertEquals(1, AggregationUtils.subtract(2D, 1D), delta);
+        assertEquals(1, AggregationUtils.subtract(2D, 1L), delta);
+    }
+    
+    @Test
+    public void multiply() {
+        assertEquals(100, AggregationUtils.multiply(10, 10), delta);
+        assertEquals(100, AggregationUtils.multiply(10L, 10F), delta);
+        assertEquals(100, AggregationUtils.multiply(10F, 10D), delta);
+        assertEquals(100, AggregationUtils.multiply(10D, 10L), delta);
     }
     
     @Test
     public void divide() {
-        // integer
-        double divideInteger = AggregationUtils.divide(1, 1);
-        delta = 0.0001;
-        Assert.assertEquals(1.0, divideInteger, delta);
-        // long
-        double divideLong = AggregationUtils.divide(1L, 1);
-        Assert.assertEquals(1L, divideLong, delta);
-        // float
-        double divideFloat = AggregationUtils.divide(1F, 1);
-        Assert.assertEquals(1F, divideFloat, delta);
-        // double
-        double divideDouble = AggregationUtils.divide(1D, 1);
-        Assert.assertEquals(1D, divideDouble, delta);
+        assertEquals(1, AggregationUtils.divide(10, 10), delta);
+        assertEquals(1, AggregationUtils.divide(10L, 10F), delta);
+        assertEquals(1, AggregationUtils.divide(10F, 10D), delta);
+        assertEquals(1, AggregationUtils.divide(10D, 10L), delta);
     }
 }

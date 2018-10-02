@@ -1,7 +1,5 @@
 package org.pragmaticminds.crunch.api.windowed.extractor.aggregate;
 
-import java.io.Serializable;
-
 /**
  * Aggregates a maximal value.
  * Should not be directly visible.
@@ -10,8 +8,8 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * craeted by Erwin Wagasow on 23.08.2018
  */
-class Max<T extends Serializable & Comparable> implements Aggregation<T, T>{
-    private T maxValue;
+class Max<T extends Number & Comparable> implements Aggregation<T>{
+    private Double maxValue;
 
     /**
      * @return default identifier
@@ -27,8 +25,12 @@ class Max<T extends Serializable & Comparable> implements Aggregation<T, T>{
      */
     @Override
     public void aggregate(T value) {
-        if(maxValue == null || value != null && AggregationUtils.compare(value, maxValue) > 0){
-            maxValue = value;
+        if(value == null){
+            return;
+        }
+        double innerValue = value.doubleValue();
+        if(maxValue == null || AggregationUtils.compare(innerValue, maxValue) > 0){
+            maxValue = value.doubleValue();
         }
     }
 
@@ -36,7 +38,7 @@ class Max<T extends Serializable & Comparable> implements Aggregation<T, T>{
      * @return the maximum value so far
      */
     @Override
-    public T getAggregated() {
+    public Double getAggregated() {
         return maxValue;
     }
 

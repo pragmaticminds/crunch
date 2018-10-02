@@ -16,7 +16,7 @@ public class Aggregations implements Serializable {
      * @param <T> type of the values
      * @return the biggest value
      */
-    public static <T extends Serializable & Comparable> Aggregation<T, T> max(){
+    public static <T extends Number & Comparable> Aggregation<T> max(){
         return new Max<>();
     }
     
@@ -25,7 +25,7 @@ public class Aggregations implements Serializable {
      * @param <T> type of the values
      * @return the smallest value
      */
-    public static <T extends Serializable & Comparable> Aggregation<T, T> min(){
+    public static <T extends Number & Comparable> Aggregation<T> min(){
         return new Min<>();
     }
     
@@ -34,7 +34,7 @@ public class Aggregations implements Serializable {
      * @param <T> type of the values
      * @return the sum of all aggregated values
      */
-    public static <T extends Serializable> Aggregation<T, T> sum(){
+    public static <T extends Number> Aggregation<T> sum(){
         return new Sum<>();
     }
     
@@ -43,7 +43,7 @@ public class Aggregations implements Serializable {
      * @param <T> type of the values
      * @return the calculated avg value from aggregated values
      */
-    public static <T extends Serializable> Aggregation<T, Double> avg(){
+    public static <T extends Number> Aggregation<T> avg(){
         return new Avg<>();
     }
 }
