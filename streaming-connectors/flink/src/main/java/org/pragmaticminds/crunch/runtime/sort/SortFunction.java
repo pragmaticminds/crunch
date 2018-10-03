@@ -9,10 +9,10 @@ import org.apache.flink.streaming.api.TimerService;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pragmaticminds.crunch.execution.TimestampSortFunction;
 
-import java.util.Comparator;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.PriorityQueue;
 
 /**
@@ -23,18 +23,19 @@ import java.util.PriorityQueue;
  * Created by julian on 03.11.17
  */
 public class SortFunction extends ProcessFunction<MRecord, MRecord> {
-
-    private static final Logger logger = LoggerFactory.getLogger(SortFunction.class);
-
     private int capacity = 100;
-    private transient ValueState<PriorityQueue<MRecord>> queueState = null;
-
+    private transient ValueState<TimestampSortFunction<MRecord>> valueState;
+    
+    /** Basic constructor */
     public SortFunction() {
-        /*
-        for sonar
-         */
+        /* do nothing */
     }
-
+    
+    /**
+     * Constructor with the initial capacity of the queue in the {@link #valueState}.
+     *
+     * @param capacity initial value of the queue in the {@link #valueState}.
+     */
     public SortFunction(int capacity) {
         this.capacity = capacity;
     }
@@ -42,81 +43,73 @@ public class SortFunction extends ProcessFunction<MRecord, MRecord> {
     /**
      * Init a ValueStateDescriptor for the Flink Keyed State.
      *
-     * @param config
+     * @param config a {@link Configuration}
      */
     @Override
     public void open(Configuration config) {
-        ValueStateDescriptor<PriorityQueue<MRecord>> descriptor = new ValueStateDescriptor<>(
-                // state name
-                "sorted-events",
-                // type information of state
-                TypeInformation.of(new TypeHint<PriorityQueue<MRecord>>() {
-                }));
-        queueState = getRuntimeContext().getState(descriptor);
+        ValueStateDescriptor<TimestampSortFunction<MRecord>> descriptor = new ValueStateDescriptor<>(
+            // state name
+            "sorted-events",
+            // type information of state
+            TypeInformation.of(new TypeHint<TimestampSortFunction<MRecord>>() {})
+        );
+        valueState = getRuntimeContext().getState(descriptor);
     }
 
     /**
      * The Element is added to a {@link PriorityQueue} and a timer is set to check on time.
      * If the element is "too old", this means below the current watermark, it is discarded and a warning is logged.
      *
-     * @param event
-     * @param context
-     * @param out
-     * @throws Exception
+     * @param record of {@link MRecord} type.
+     * @param context of type {@link Context} from the {@link ProcessFunction}.
+     * @param out of {@link Collector} type, collects the resulting {@link MRecord}s.
      */
     @Override
-    public void processElement(MRecord event, Context context, Collector<MRecord> out) throws Exception {
+    public void processElement(MRecord record, Context context, Collector<MRecord> out) throws IOException {
         TimerService timerService = context.timerService();
-
-        if (context.timestamp() == null || context.timestamp() > timerService.currentWatermark()) {
-            PriorityQueue<MRecord> queue = queueState.value();
-            if (queue == null) {
-                queue = new PriorityQueue<>(capacity, new ValueEventComparator());
-            }
-            queue.add(event);
-            queueState.update(queue);
-            timerService.registerEventTimeTimer(event.getTimestamp());
-        } else {
-            logger.warn("GenericEvent with old timestamp is discarded {}", event);
+    
+        TimestampSortFunction<MRecord> innerSortFunction = valueState.value();
+        if(innerSortFunction == null){
+            innerSortFunction = new TimestampSortFunction<>(capacity);
         }
+        
+        // process record
+        innerSortFunction.process(
+            record.getTimestamp(),
+            timerService.currentWatermark(),
+            record
+        );
+        
+        // set timer
+        timerService.registerEventTimeTimer(record.getTimestamp());
+        
+        valueState.update(innerSortFunction);
     }
 
     /**
      * Checks if there are events that are "old enough" to be emitted (below the current watermark) and emits them, if so.
      *
-     * @param timestamp
-     * @param context
-     * @param out
-     * @throws Exception
+     * @param timestamp ignored value
+     * @param context   delivers the {@link TimerService} for the calling of the
+     *                  {@link #valueState#onTimer(Long)} method.
+     * @param out       Takes the {@link MRecord}s that are over the watermark timestamp from the
+     *                  context#timerService#currentWatermark.
      */
     @Override
-    public void onTimer(long timestamp, OnTimerContext context, Collector<MRecord> out) throws Exception {
-        PriorityQueue<MRecord> queue = queueState.value();
+    public void onTimer(long timestamp, OnTimerContext context, Collector<MRecord> out) throws IOException {
         Long watermark = context.timerService().currentWatermark();
-        MRecord head = queue.peek();
-        while (head != null && head.getTimestamp() <= watermark) {
-            out.collect(head);
-            queue.remove(head);
-            head = queue.peek();
+    
+        TimestampSortFunction<MRecord> innerSortFunction = valueState.value();
+        if(innerSortFunction == null){
+            innerSortFunction = new TimestampSortFunction<>(capacity);
         }
-    }
-
-    /**
-     * Comparator that compares the Long values of the two Timestamps.
-     */
-    public static class ValueEventComparator implements Comparator<MRecord> {
-
-        /**
-         * Use Long comapre on the timestamps of both events.
-         *
-         * @param o1
-         * @param o2
-         * @return
-         */
-        @Override
-        public int compare(MRecord o1, MRecord o2) {
-            return Long.compare(o1.getTimestamp(), o2.getTimestamp());
+        
+        Collection<MRecord> results = innerSortFunction.onTimer(watermark);
+        for (MRecord record : results){
+            out.collect(record);
         }
+        
+        valueState.update(innerSortFunction);
     }
 }
 

@@ -13,11 +13,9 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
 import org.pragmaticminds.crunch.api.pipe.SubStream;
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
@@ -127,49 +125,12 @@ class GraphFactory<T extends Serializable> {
             return param;
         });
     }
-
-    /**
-     * Todo this is a cheap copy of ValuesMergeFunction and has to be generified!
-     */
-    class MergeFunction implements Function<MRecord, MRecord> {
-
-        private TypedValues values = null;
-
+    
+    /** Wrapps the UntypedValuesMergeFunction as a akka {@link Function} */
+    static class MergeFunction extends UntypedValuesMergeFunction implements Function<MRecord, MRecord>{
         @Override
         public MRecord apply(MRecord value) throws Exception {
-            // Merge the Records
-            TypedValues currentValue;
-            if (TypedValues.class.isInstance(value)) {
-                currentValue = (TypedValues) value;
-            } else if (UntypedValues.class.isInstance(value)) {
-                currentValue = ((UntypedValues) value).toTypedValues();
-            } else {
-                throw new InvalidParameterException("ValuesMergeFunction currently only supports TypedValues and " +
-                        "UntypedValues and not " + value.getClass().getName());
-            }
-            // Do the mapping
-            values = mapWithoutState(values, currentValue);
-            return values;
+            return merge(value);
         }
-
-        /**
-         * Internal method that does the merging of the state.
-         * Does not fetch / rewrite the Function's state.
-         *
-         * @param currentValues
-         * @param newValues
-         * @return
-         */
-        TypedValues mapWithoutState(TypedValues currentValues, TypedValues newValues) {
-            // Init the valueState object on first value object
-            TypedValues state;
-            if (currentValues == null) {
-                state = newValues;
-            } else {
-                state = currentValues.merge(newValues);
-            }
-            return state;
-        }
-
     }
 }

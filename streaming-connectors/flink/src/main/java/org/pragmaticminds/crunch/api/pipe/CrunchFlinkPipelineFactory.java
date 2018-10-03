@@ -82,7 +82,7 @@ public class CrunchFlinkPipelineFactory<T extends Serializable> implements Seria
                 .keyBy(x -> 0)
 
                 // merge old values with new values
-                .map(new ValuesMergeFunction())
+                .map(new ValuesMergeFunction<MRecord>())
         
                 // set key to every value by source name
                 .keyBy(x -> 0)

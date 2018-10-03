@@ -9,13 +9,11 @@ import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.records.MRecord;
-import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.runtime.sort.ValueEventAssigner;
 import org.slf4j.LoggerFactory;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,58 +43,7 @@ public class ValuesMergeFunctionIT {
             Thread.currentThread().interrupt();
         }
     }
-
-    @Test
-    public void mapUntypedValues() {
-        ValuesMergeFunction mergeFunction = new ValuesMergeFunction();
-
-        UntypedValues values1 = UntypedValues.builder()
-                .source("source1")
-                .prefix("pf1")
-                .timestamp(100)
-                .values(Collections.singletonMap("key", "value1"))
-                .build();
-
-        UntypedValues values2 = UntypedValues.builder()
-                .source("source1")
-                .prefix("pf1")
-                .timestamp(110)
-                .values(Collections.singletonMap("key", "value2"))
-                .build();
-
-        UntypedValues mergedValues = mergeFunction.mapWithoutState(values1, values2);
-
-        assertEquals(110, mergedValues.getTimestamp());
-        assertEquals("value2", mergedValues.getString("key"));
-    }
-
-    @Test
-    public void map_aggregateMultipleKeys() {
-        ValuesMergeFunction mergeFunction = new ValuesMergeFunction();
-
-        UntypedValues values1 = UntypedValues.builder()
-                .source("source1")
-                .prefix("pf1")
-                .timestamp(100)
-                .values(Collections.singletonMap("key1", "value1"))
-                .build();
-
-        UntypedValues values2 = UntypedValues.builder()
-                .source("source1")
-                .prefix("pf1")
-                .timestamp(110)
-                .values(Collections.singletonMap("key2", "value2"))
-                .build();
-
-
-        UntypedValues mergedValues = mergeFunction.mapWithoutState(values1, values2);
-
-        assertEquals(110, mergedValues.getTimestamp());
-        assertEquals("value1", mergedValues.getString("key1"));
-        assertEquals("value2", mergedValues.getString("key2"));
-        assertEquals(2,mergedValues.getChannels().size());
-    }
-
+    
     /**
      * This is a test for the state ahndling and checkpointing.
      * The State is checkpointed every 10 ms.
