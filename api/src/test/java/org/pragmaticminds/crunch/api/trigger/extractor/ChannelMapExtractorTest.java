@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.api.trigger.extractor;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
@@ -47,33 +48,43 @@ public class ChannelMapExtractorTest {
     
     @Test
     public void withArrayConstructor() {
-        SimpleEvaluationContext context = new SimpleEvaluationContext(record);
+        SimpleEvaluationContext context1 = new SimpleEvaluationContext(record);
+        SimpleEvaluationContext context2 = new SimpleEvaluationContext(record);
         
         ChannelMapExtractor extractor = new ChannelMapExtractor(supplier1, supplier2, supplier3);
-        
-        executeAndCheckResults("test", context, extractor);
+        ChannelMapExtractor clone = ClonerUtil.clone(extractor);
+    
+        executeAndCheckResults("test", context1, extractor);
+    
+        executeAndCheckResults("test", context2, clone);
     }
     
     @Test
     public void withListConstructor() {
-        SimpleEvaluationContext context = new SimpleEvaluationContext(record);
-        
+        SimpleEvaluationContext context1 = new SimpleEvaluationContext(record);
+        SimpleEvaluationContext context2 = new SimpleEvaluationContext(record);
+    
         ChannelMapExtractor extractor = new ChannelMapExtractor(Arrays.asList(supplier1, supplier2, supplier3));
-        
-        executeAndCheckResults("test", context, extractor);
+        ChannelMapExtractor clone = ClonerUtil.clone(extractor);
+    
+        executeAndCheckResults("test", context1, extractor);
+        executeAndCheckResults("test", context2, clone);
     }
     
     @Test
     public void withMapConstructor() {
-        SimpleEvaluationContext context = new SimpleEvaluationContext(record);
+        SimpleEvaluationContext context1 = new SimpleEvaluationContext(record);
+        SimpleEvaluationContext context2 = new SimpleEvaluationContext(record);
     
         Map<Supplier, String> map = new HashMap<>();
         map.put(supplier1, "t1");
         map.put(supplier2, "t2");
         map.put(supplier3, "t3");
         ChannelMapExtractor extractor = new ChannelMapExtractor(map);
-        
-        executeAndCheckResults("t", context, extractor);
+        ChannelMapExtractor clone = ClonerUtil.clone(extractor);
+    
+        executeAndCheckResults("t", context1, extractor);
+        executeAndCheckResults("t", context2, clone);
     }
     
     private void executeAndCheckResults(String prefix, SimpleEvaluationContext context, ChannelMapExtractor extractor) {

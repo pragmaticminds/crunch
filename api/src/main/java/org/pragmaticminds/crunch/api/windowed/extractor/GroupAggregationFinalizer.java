@@ -15,7 +15,7 @@ import java.util.Map;
  * Created by Erwin Wagasow on 16.08.2018
  */
 @FunctionalInterface
-public interface GroupAggregationFinalizer extends Serializable {
+public interface GroupAggregationFinalizer<T extends Serializable> extends Serializable {
     
     /**
      * Packs the aggregated values into resulting {@link GenericEvent}s.
@@ -25,5 +25,5 @@ public interface GroupAggregationFinalizer extends Serializable {
      * @param context current from the evaluation call. Takes the resulting {@link GenericEvent}s, with the aggregated values
      *                as parameters.
      */
-    void onFinalize(Map<String, Object> aggregatedValues, EvaluationContext context);
+    void onFinalize(Map<String, Object> aggregatedValues, EvaluationContext<T> context);
 }

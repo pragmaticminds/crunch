@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.api.trigger.handler;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.extractor.Extractors;
@@ -27,7 +28,8 @@ public class ExtractorTriggerHandlerTest {
     private static final String EVENT_NAME = "TEST_EVENT";
     private MapExtractor extractor1;
     private MapExtractor extractor2;
-    private SimpleEvaluationContext context;
+    private SimpleEvaluationContext context1;
+    private SimpleEvaluationContext context2;
     private String CHANNEL_1 = "test1";
     private String CHANNEL_2 = "test2";
     
@@ -45,7 +47,8 @@ public class ExtractorTriggerHandlerTest {
             .timestamp(123L)
             .values(values)
             .build();
-        context = new SimpleEvaluationContext(record);
+        context1 = new SimpleEvaluationContext(record);
+        context2 = new SimpleEvaluationContext(record);
     }
     
     @Test
@@ -55,8 +58,10 @@ public class ExtractorTriggerHandlerTest {
             extractor1,
             extractor2
         );
+        ExtractorTriggerHandler clone = ClonerUtil.clone(handler);
     
-        executeAndCheckResults(handler);
+        executeAndCheckResults(handler, context1);
+        executeAndCheckResults(clone, context2);
     }
     
     @Test
@@ -65,11 +70,15 @@ public class ExtractorTriggerHandlerTest {
             EVENT_NAME,
             Arrays.asList(extractor1,extractor2)
         );
-        
-        executeAndCheckResults(handler);
+        ExtractorTriggerHandler clone = ClonerUtil.clone(handler);
+    
+        executeAndCheckResults(handler, context1);
+        executeAndCheckResults(clone, context2);
     }
     
-    private void executeAndCheckResults(ExtractorTriggerHandler handler) {
+    private void executeAndCheckResults(
+        ExtractorTriggerHandler handler, SimpleEvaluationContext context
+    ) {
         handler.handle(context);
         List<GenericEvent> events = context.getEvents();
         assertEquals(1, events.size());

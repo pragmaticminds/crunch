@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.api.trigger.extractor;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -19,6 +20,7 @@ import static org.junit.Assert.*;
  */
 public class AllChannelMapExtractorTest {
     private AllChannelMapExtractor extractor;
+    private AllChannelMapExtractor clone;
     private EvaluationContext context;
     
     @Before
@@ -36,12 +38,20 @@ public class AllChannelMapExtractorTest {
         context = new SimpleEvaluationContext(record);
         
         extractor = new AllChannelMapExtractor();
+        clone = ClonerUtil.clone(extractor);
     }
     
     @Test
     public void extract() {
         Map<String, Value> results = extractor.extract(context);
         
+        assertEquals(3, results.size());
+        assertEquals(1L, (long)results.get("test1").getAsLong());
+        assertEquals(2L, (long)results.get("test2").getAsLong());
+        assertEquals(3L, (long)results.get("test3").getAsLong());
+        
+        results = clone.extract(context);
+    
         assertEquals(3, results.size());
         assertEquals(1L, (long)results.get("test1").getAsLong());
         assertEquals(2L, (long)results.get("test2").getAsLong());

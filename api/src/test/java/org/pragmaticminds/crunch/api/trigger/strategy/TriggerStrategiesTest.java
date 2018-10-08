@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.api.trigger.strategy;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
@@ -63,6 +64,9 @@ public class TriggerStrategiesTest {
         strategy = onTrue(getSupplier());
         result = strategy.isToBeTriggered(null);
         assertFalse(result);
+    
+        TriggerStrategy clone = ClonerUtil.clone(strategy);
+        assertFalse(clone.isToBeTriggered(null));
     }
  
     @Test
@@ -72,6 +76,9 @@ public class TriggerStrategiesTest {
         assertFalse(result);
         
         assertTrue(strategy.getChannelIdentifiers().contains("test"));
+    
+        TriggerStrategy clone = ClonerUtil.clone(strategy);
+        assertFalse(clone.isToBeTriggered(null));
     }
  
     @Test
@@ -84,6 +91,9 @@ public class TriggerStrategiesTest {
         strategy = onFalse(getSupplier());
         result = strategy.isToBeTriggered(null);
         assertFalse(result);
+    
+        TriggerStrategy clone = ClonerUtil.clone(strategy);
+        assertFalse(clone.isToBeTriggered(null));
     }
  
     @Test
@@ -92,6 +102,9 @@ public class TriggerStrategiesTest {
         boolean result = strategy.isToBeTriggered(null);
         assertFalse(result);
         assertTrue(strategy.getChannelIdentifiers().contains("test"));
+    
+        TriggerStrategy clone = ClonerUtil.clone(strategy);
+        assertFalse(clone.isToBeTriggered(null));
     }
  
     @Test
@@ -231,21 +244,29 @@ public class TriggerStrategiesTest {
     }
     
     private Supplier<Boolean> getSupplier(Boolean value) {
-        return new Supplier<Boolean>() {
-            @Override
-            public Boolean extract(MRecord values) {
-                return value;
-            }
-            
-            @Override
-            public String getIdentifier() {
-                return "null";
-            }
-            
-            @Override
-            public Set<String> getChannelIdentifiers() {
-                return Collections.singleton("test");
-            }
-        };
+        return new InnerBooleanSupplier(value);
+    }
+    
+    public static class InnerBooleanSupplier implements Supplier<Boolean> {
+        private Boolean value;
+    
+        public InnerBooleanSupplier(Boolean value) {
+            this.value = value;
+        }
+    
+        @Override
+        public Boolean extract(MRecord values) {
+            return value;
+        }
+    
+        @Override
+        public String getIdentifier() {
+            return "null";
+        }
+    
+        @Override
+        public Set<String> getChannelIdentifiers() {
+            return Collections.singleton("test");
+        }
     }
 }

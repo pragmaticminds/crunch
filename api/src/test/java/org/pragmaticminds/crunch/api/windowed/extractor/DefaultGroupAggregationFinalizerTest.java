@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.windowed.extractor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
@@ -18,7 +19,8 @@ import java.util.Map;
  */
 public class DefaultGroupAggregationFinalizerTest {
     
-    private DefaultGroupAggregationFinalizer finalizer;
+    private DefaultGenericEventGroupAggregationFinalizer finalizer;
+    private DefaultGenericEventGroupAggregationFinalizer clone;
     private Map<String, Object>              aggregatedValues;
     private SimpleEvaluationContext          context;
     
@@ -26,7 +28,8 @@ public class DefaultGroupAggregationFinalizerTest {
     public void setUp() throws Exception {
         
         // create the finalizer
-        finalizer = new DefaultGroupAggregationFinalizer();
+        finalizer = new DefaultGenericEventGroupAggregationFinalizer();
+        clone = ClonerUtil.clone(finalizer);
         
         // create the aggregated values
         aggregatedValues = new HashMap<>();
@@ -52,7 +55,17 @@ public class DefaultGroupAggregationFinalizerTest {
     @Test
     public void onFinalize() {
         // call method
-        finalizer.onFinalize(aggregatedValues, context);
+        test(finalizer);
+    }
+    
+    @Test
+    public void onFinalizeWithClone() {
+        // call method
+        test(clone);
+    }
+    
+    private void test(DefaultGenericEventGroupAggregationFinalizer clone) {
+        clone.onFinalize(aggregatedValues, context);
         List<GenericEvent> events = context.getEvents();
         
         // check amount of events

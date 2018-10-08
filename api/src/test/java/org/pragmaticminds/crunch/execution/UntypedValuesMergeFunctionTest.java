@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.execution;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 
 import java.io.Serializable;
@@ -16,12 +17,14 @@ import static org.junit.Assert.assertEquals;
  */
 public class UntypedValuesMergeFunctionTest implements Serializable {
     UntypedValuesMergeFunction mergeFunction;
+    UntypedValuesMergeFunction clone;
     UntypedValues record1;
     UntypedValues record2;
     
     @Before
     public void setUp() throws Exception {
         mergeFunction = new UntypedValuesMergeFunction();
+        clone = ClonerUtil.clone(mergeFunction);
         Map<String, Object> values1 = new HashMap<>();
         values1.put("test1", 123L);
         Map<String, Object> values2 = new HashMap<>();
@@ -36,11 +39,20 @@ public class UntypedValuesMergeFunctionTest implements Serializable {
         UntypedValues result = (UntypedValues) mergeFunction.merge(record2);
         assertEquals(123L, (long)result.getValue("test1").getAsLong());
         assertEquals("string", result.getValue("test2").getAsString());
+        
+        clone.merge(record1);
+        result = (UntypedValues) clone.merge(record2);
+        assertEquals(123L, (long)result.getValue("test1").getAsLong());
+        assertEquals("string", result.getValue("test2").getAsString());
     }
     
     @Test
     public void mapWithoutState() {
         UntypedValues result = mergeFunction.mapWithoutState(record1, record2);
+        assertEquals(123L, (long)result.getValue("test1").getAsLong());
+        assertEquals("string", result.getValue("test2").getAsString());
+        
+        result = clone.mapWithoutState(record1, record2);
         assertEquals(123L, (long)result.getValue("test1").getAsLong());
         assertEquals("string", result.getValue("test2").getAsString());
     }

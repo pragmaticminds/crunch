@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 16.08.2018
  */
-public class GroupByExtractor implements WindowExtractor {
+public class GroupByExtractor<T extends Serializable> implements WindowExtractor<T> {
     private HashMap<String, Tuple2<Aggregation, Supplier>> aggregations;
-    private GroupAggregationFinalizer finalizer;
+    private GroupAggregationFinalizer<T> finalizer;
     
     /**
      * Private constructor for the {@link Builder}.
@@ -36,8 +36,9 @@ public class GroupByExtractor implements WindowExtractor {
      */
     private GroupByExtractor(
         Map<String, Tuple2<Aggregation, Supplier>> aggregations,
-        GroupAggregationFinalizer finalizer
+        GroupAggregationFinalizer<T> finalizer
     ) {
+        Preconditions.checkNotNull(finalizer);
         this.aggregations = new HashMap<>(aggregations);
         this.finalizer = finalizer;
         
@@ -76,7 +77,7 @@ public class GroupByExtractor implements WindowExtractor {
      *                {@link GenericEvent}s
      */
     @Override
-    public void finish(EvaluationContext context) {
+    public void finish(EvaluationContext<T> context) {
         // extract all the aggregated values from the aggregations and collect them with the key of the aggregations
         Map<String, Object> results = aggregations.entrySet().stream()
             .collect(
@@ -94,19 +95,19 @@ public class GroupByExtractor implements WindowExtractor {
      * Creates a Builder for this class
      * @return a Builder for this class
      */
-    public static Builder builder() {
-        return new Builder();
+    public static <T extends Serializable> Builder<T> builder() {
+        return new Builder<>();
     }
     
     /** Builder for this class */
-    public static final class Builder {
+    public static final class Builder<T extends Serializable> {
         private Map<String, Tuple2<Aggregation, Supplier>> aggregations;
         // optional
-        private GroupAggregationFinalizer finalizer;
+        private GroupAggregationFinalizer<T> finalizer;
         
         private Builder() { /* do nothing */ }
         
-        public Builder aggregate(Aggregation aggregation, Supplier supplier){
+        public Builder<T> aggregate(Aggregation aggregation, Supplier supplier){
             aggregate(
                 aggregation,
                 supplier,
@@ -115,7 +116,7 @@ public class GroupByExtractor implements WindowExtractor {
             return this;
         }
         
-        public Builder aggregate(Aggregation aggregation, Supplier supplier, String identifier){
+        public Builder<T> aggregate(Aggregation aggregation, Supplier supplier, String identifier){
             // lazy loading
             if(aggregations == null){
                 aggregations = new HashMap<>();
@@ -140,27 +141,33 @@ public class GroupByExtractor implements WindowExtractor {
          * @param aggregations to be set
          * @return this {@link Builder}
          */
-        private Builder aggregations(Map<String, Tuple2<Aggregation, Supplier>> aggregations) {
+        private Builder<T> aggregations(Map<String, Tuple2<Aggregation, Supplier>> aggregations) {
             this.aggregations = aggregations;
             return this;
         }
-        
-        public Builder finalizer(GroupAggregationFinalizer finalizer) {
+    
+        /**
+         * The finalizer packs the aggregated values into resulting Ts.
+         *
+         * If T is GenericEvent the class {@link DefaultGenericEventGroupAggregationFinalizer} can be used.
+         *
+         * @param finalizer instance of {@link GroupAggregationFinalizer}.
+         * @return self
+         */
+        public Builder<T> finalizer(GroupAggregationFinalizer<T> finalizer) {
             this.finalizer = finalizer;
             return this;
         }
     
-        public Builder but() {
-            return builder()
+        public Builder<T> but() {
+            return new Builder<T>()
                 .aggregations(aggregations)
                 .finalizer(finalizer);
         }
     
-        public GroupByExtractor build() {
-            if(finalizer == null){
-                finalizer = new DefaultGroupAggregationFinalizer();
-            }
-            return new GroupByExtractor(aggregations, finalizer);
+        @SuppressWarnings("unchecked") // must cast
+        public GroupByExtractor<T> build() {
+            return new GroupByExtractor<>(aggregations, finalizer);
         }
     }
 }

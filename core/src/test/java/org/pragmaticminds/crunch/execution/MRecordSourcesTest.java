@@ -14,20 +14,7 @@ import static org.junit.Assert.*;
  * Created by julian on 15.08.18
  */
 public class MRecordSourcesTest {
-
-    /**
-     * Asserts that the source has exactly two elements.
-     *
-     * @param source
-     */
-    private static void assertTwoElements(MRecordSource source) {
-        assertTrue(source.hasRemaining());
-        source.get();
-        assertTrue(source.hasRemaining());
-        source.get();
-        assertFalse(source.hasRemaining());
-    }
-
+    
     @Test
     public void of_Array() {
         MRecordSource source = MRecordSources.of(new UntypedValues(), new UntypedValues());
@@ -58,5 +45,18 @@ public class MRecordSourcesTest {
 
         assertTwoElements(source);
         assertEquals(MRecordSource.Kind.FINITE, source.getKind());
+    }
+    
+    /**
+     * Asserts that the source has exactly two elements.
+     *
+     * @param source
+     */
+    private static void assertTwoElements(MRecordSource source) {
+        assertTrue(source.hasRemaining());
+        source.get();
+        assertTrue(source.hasRemaining());
+        source.get();
+        assertFalse(source.hasRemaining());
     }
 }

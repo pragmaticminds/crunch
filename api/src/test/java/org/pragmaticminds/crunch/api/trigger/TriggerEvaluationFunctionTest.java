@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.extractor.Extractors;
@@ -40,7 +41,7 @@ public class TriggerEvaluationFunctionTest {
     
     @Test
     public void processElementNotTriggered() {
-        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 decisionBase -> false,
                 HashSet::new
@@ -53,7 +54,7 @@ public class TriggerEvaluationFunctionTest {
         List<GenericEvent> resultEventList;
         
         try {
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+            SimpleEvaluationContext<GenericEvent> context = new SimpleEvaluationContext<>(typedValues);
             resultEventList = context.getEvents();
             function.eval(context);
         } catch (Exception e) {
@@ -65,9 +66,9 @@ public class TriggerEvaluationFunctionTest {
     
     @Test
     public void processElementTriggeredNoResults() {
-        TriggerHandler triggerHandler = Mockito.mock(TriggerHandler.class);
+        TriggerHandler<GenericEvent> triggerHandler = Mockito.mock(TriggerHandler.class);
         
-        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 decisionBase -> true,
                 HashSet::new
@@ -78,7 +79,7 @@ public class TriggerEvaluationFunctionTest {
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
         List<GenericEvent> resultEventList;
         try {
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+            SimpleEvaluationContext<GenericEvent> context = new SimpleEvaluationContext<>(typedValues);
             resultEventList = context.getEvents();
             function.eval(context);
         } catch (Exception e) {
@@ -90,9 +91,36 @@ public class TriggerEvaluationFunctionTest {
     }
     
     @Test
+    public void processElementTriggeredClone() {
+        TriggerHandler<GenericEvent> triggerHandler = Mockito.mock(TriggerHandler.class);
+        
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
+            .withTriggerStrategy(new LambdaTriggerStrategy(
+                decisionBase -> true,
+                HashSet::new
+            ))
+            .withTriggerHandler(triggerHandler)
+            .build();
+        function = ClonerUtil.clone(function);
+        
+        Map<String, Value> values = new HashMap<>();
+        TypedValues typedValues = new TypedValues("testSource", timestamp, values);
+        List<GenericEvent> resultEventList;
+        try {
+            SimpleEvaluationContext<GenericEvent> context = new SimpleEvaluationContext<>(typedValues);
+            resultEventList = context.getEvents();
+            function.eval(context);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        assertTrue(resultEventList.isEmpty());
+    }
+    
+    @Test
     public void processElementOneResult() {
         GenericEvent resultEvent = new GenericEvent(timestamp, "testEventName", "testSource");
-        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 decisionBase -> true,
                 HashSet::new
@@ -103,7 +131,7 @@ public class TriggerEvaluationFunctionTest {
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
         List<GenericEvent> resultEventList;
         try {
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+            SimpleEvaluationContext<GenericEvent> context = new SimpleEvaluationContext<>(typedValues);
             resultEventList = context.getEvents();
             function.eval(context);
         } catch (Exception e) {
@@ -116,7 +144,7 @@ public class TriggerEvaluationFunctionTest {
     
     @Test
     public void processElementManyResults() {
-        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 decisionBase -> true,
                 HashSet::new
@@ -131,7 +159,7 @@ public class TriggerEvaluationFunctionTest {
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
         List<GenericEvent> resultEventList;
         try {
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+            SimpleEvaluationContext<GenericEvent> context = new SimpleEvaluationContext<>(typedValues);
             resultEventList = context.getEvents();
             function.eval(context);
         } catch (Exception e) {
@@ -144,7 +172,7 @@ public class TriggerEvaluationFunctionTest {
     
     @Test
     public void processWithResultFilter() {
-        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 decisionBase -> true,
                 HashSet::new
@@ -171,7 +199,7 @@ public class TriggerEvaluationFunctionTest {
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
         List<GenericEvent> resultEventList;
         try {
-            SimpleEvaluationContext context = new SimpleEvaluationContext(typedValues);
+            SimpleEvaluationContext<GenericEvent> context = new SimpleEvaluationContext<>(typedValues);
             resultEventList = context.getEvents();
             function.eval(context);
         } catch (Exception e) {
@@ -184,12 +212,12 @@ public class TriggerEvaluationFunctionTest {
     
     @Test
     public void getChannelIdentifier() {
-        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 record -> false,
                 () -> new HashSet<>(Collections.singletonList("test"))
             ))
-            .withTriggerHandler(mock(TriggerHandler.class))
+            .withTriggerHandler((TriggerHandler<GenericEvent>) mock(TriggerHandler.class))
             .build();
         
         assertTrue(function.getChannelIdentifiers().contains("test"));
@@ -210,10 +238,10 @@ public class TriggerEvaluationFunctionTest {
         );
         
         // create TriggerHandler
-        TriggerHandler triggerHandler = new GenericExtractorTriggerHandler("resultEvent", extractor1, extractor2);
+        TriggerHandler<GenericEvent> triggerHandler = new GenericExtractorTriggerHandler("resultEvent", extractor1, extractor2);
         
         // create TriggerEvaluationFunction
-        TriggerEvaluationFunction function = new TriggerEvaluationFunction.Builder()
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
             .withTriggerStrategy(new LambdaTriggerStrategy(
                 decisionBase -> true,
                 HashSet::new

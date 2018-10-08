@@ -76,15 +76,6 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
     }
 
     /**
-     * Creates a new instance of the {@link Builder} for this class.
-     *
-     * @return a {@link Builder} for this class.
-     */
-    public static <T extends Serializable> Builder<T> builder() {
-        return new Builder<>();
-    }
-
-    /**
      * Filters the results if filter is set
      *
      * @param record  for filtering purpose
@@ -152,6 +143,16 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
         }
     }
     
+    
+    /**
+     * Creates a new instance of the {@link Builder} for this class.
+     *
+     * @return a {@link Builder} for this class.
+     */
+    public static <T extends Serializable> Builder<T> builder() {
+        return new Builder<>();
+    }
+    
     /**
      * Builder of this class.
      */
@@ -174,7 +175,7 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
             this.filter = filter;
             return this;
         }
-        public TriggerEvaluationFunction build() {
+        public TriggerEvaluationFunction<T> build() {
             return new TriggerEvaluationFunction<>(triggerStrategy, triggerHandler, filter);
         }
     }

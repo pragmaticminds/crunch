@@ -15,26 +15,26 @@ import java.util.Map;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 23.08.2018
  */
-public class DefaultGroupAggregationFinalizer implements GroupAggregationFinalizer {
+public class DefaultGenericEventGroupAggregationFinalizer implements GroupAggregationFinalizer<GenericEvent> {
     private static int count = 0;
     private int groupNumber;
     
     /**
      * This constructor counts the instances of this class for the naming of the results
      */
-    public DefaultGroupAggregationFinalizer() {
+    public DefaultGenericEventGroupAggregationFinalizer() {
         groupNumber = count++;
     }
     
     /**
-     * Packs all aggregated values into resulting {@link GenericEvent} by their identifier.
+     * Packs all aggregated values into resulting T by their identifier.
      *
      * @param aggregatedValues is a map of all aggregated values, that can be further processed and be added as
-     *                         parameters into the resulting {@link GenericEvent}s.
-     * @param context          current from the evaluation call. Takes the resulting {@link GenericEvent}s, with the aggregated values
+     *                         parameters into the resulting Ts.
+     * @param context          current from the evaluation call. Takes the resulting Ts, with the aggregated values
      */
     @Override
-    public void onFinalize(Map<String, Object> aggregatedValues, EvaluationContext context) {
+    public void onFinalize(Map<String, Object> aggregatedValues, EvaluationContext<GenericEvent> context) {
         // if nothing is set -> return empty list
         if(aggregatedValues.isEmpty()){
             return;

@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.api.trigger.handler;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -13,7 +14,7 @@ import org.pragmaticminds.crunch.events.GenericEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Erwin Wagasow
@@ -26,14 +27,7 @@ public class GenericExtractorTriggerHandlerTest {
     
     @Before
     public void setUp() throws Exception {
-        handler = new GenericExtractorTriggerHandler("test", new MapExtractor() {
-            @Override
-            public Map<String, Value> extract(EvaluationContext context) {
-                Map<String, Value> map = new HashMap<>();
-                map.put("test", context.get().getValue("test"));
-                return map;
-            }
-        });
+        handler = new GenericExtractorTriggerHandler("test", new InnerMapExtractor());
     
         Map<String, Object> values = new HashMap<>();
         values.put("test", 123L);
@@ -53,5 +47,19 @@ public class GenericExtractorTriggerHandlerTest {
         GenericEvent event = handler.createEvent("testEvent", context, parameters);
         
         assertEquals(123L,(long)event.getParameter("test").getAsLong());
+    
+        // serializable test
+        GenericExtractorTriggerHandler clone = ClonerUtil.clone(handler);
+        event = clone.createEvent("testEvent", context, parameters);
+        assertEquals(123L,(long)event.getParameter("test").getAsLong());
+    }
+    
+    private static class InnerMapExtractor implements MapExtractor {
+        @Override
+        public Map<String, Value> extract(EvaluationContext context) {
+            Map<String, Value> map = new HashMap<>();
+            map.put("test", context.get().getValue("test"));
+            return map;
+        }
     }
 }

@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.windowed.extractor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
@@ -11,6 +12,7 @@ import org.pragmaticminds.crunch.api.windowed.extractor.aggregate.Aggregations;
 import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.events.GenericEventBuilder;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.doubleChannel;
@@ -19,19 +21,22 @@ import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.Channel
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 16.08.2018
  */
-public class GroupByExtractorTest {
+public class GroupByExtractorTest implements Serializable {
     
-    private GroupByExtractor        extractor;
-    private GroupByExtractor        extractor2;
-    private ArrayList<MRecord>      records;
-    private SimpleEvaluationContext context;
-    private String                  myMin;
+    private GroupByExtractor<GenericEvent> extractor;
+    private GroupByExtractor<GenericEvent> extractor2;
+    private GroupByExtractor<GenericEvent> clone1;
+    private GroupByExtractor<GenericEvent> clone2;
+    private ArrayList<MRecord> records;
+    private SimpleEvaluationContext<GenericEvent> context1;
+    private SimpleEvaluationContext<GenericEvent> context2;
+    private String myMin;
     
     @Before
     public void setUp() {
         // create extractors
         myMin = "my min";
-        extractor = GroupByExtractor.builder()
+        extractor = GroupByExtractor.<GenericEvent>builder()
             .aggregate(Aggregations.max(), doubleChannel("x"))
             .aggregate(Aggregations.max(), doubleChannel("x"))
             .aggregate(Aggregations.min(), doubleChannel("x"), myMin)
@@ -48,11 +53,14 @@ public class GroupByExtractorTest {
                     )
             )
             .build();
+        clone1 = ClonerUtil.clone(extractor);
     
-        extractor2 = GroupByExtractor.builder()
+        extractor2 = GroupByExtractor.<GenericEvent>builder()
             .aggregate(Aggregations.max(), doubleChannel("x"))
             .aggregate(Aggregations.min(), doubleChannel("x"), myMin)
+            .finalizer(new DefaultGenericEventGroupAggregationFinalizer())
             .build();
+        clone2 = ClonerUtil.clone(extractor2);
         
         // create records
         records = new ArrayList<>();
@@ -72,33 +80,60 @@ public class GroupByExtractorTest {
     
     @Test
     public void extract() {
-        context = new SimpleEvaluationContext(records.get(records.size()-1));
-        
+        context1 = new SimpleEvaluationContext<>(records.get(records.size()-1));
+    
         records.forEach(record -> extractor.apply(record));
-        extractor.finish(context);
-        List<GenericEvent> results = context.getEvents();
-        Assert.assertNotNull(results);
-        Assert.assertEquals(1, results.size());
-        GenericEvent event = results.get(0);
-        Assert.assertNotNull(event);
-        Assert.assertEquals(10D, event.getParameter("max.x").getAsDouble(), 0.0001);
-        Assert.assertEquals(10D, event.getParameter("max.x$0").getAsDouble(), 0.0001);
-        Assert.assertEquals(1D, event.getParameter("min.x").getAsDouble(), 0.0001);
+        extractor.finish(context1);
+        List<GenericEvent> results1 = context1.getEvents();
+        Assert.assertNotNull(results1);
+        Assert.assertEquals(1, results1.size());
+        GenericEvent event1 = results1.get(0);
+        Assert.assertNotNull(event1);
+        Assert.assertEquals(10D, event1.getParameter("max.x").getAsDouble(), 0.0001);
+        Assert.assertEquals(10D, event1.getParameter("max.x$0").getAsDouble(), 0.0001);
+        Assert.assertEquals(1D, event1.getParameter("min.x").getAsDouble(), 0.0001);
+        
+        // test on clone
+        context2 = new SimpleEvaluationContext<>(records.get(records.size()-1));
+        
+        records.forEach(record -> clone1.apply(record));
+        extractor.finish(context2);
+        List<GenericEvent> results2 = context2.getEvents();
+        Assert.assertNotNull(results2);
+        Assert.assertEquals(1, results2.size());
+        GenericEvent event2 = results2.get(0);
+        Assert.assertNotNull(event2);
+        Assert.assertEquals(10D, event2.getParameter("max.x").getAsDouble(), 0.0001);
+        Assert.assertEquals(10D, event2.getParameter("max.x$0").getAsDouble(), 0.0001);
+        Assert.assertEquals(1D, event2.getParameter("min.x").getAsDouble(), 0.0001);
     }
     
     @Test
     public void extractNoFinalizer() {
-        context = new SimpleEvaluationContext(records.get(records.size()-1));
+        context1 = new SimpleEvaluationContext<>(records.get(records.size()-1));
     
         records.forEach(record -> extractor2.apply(record));
-        extractor2.finish(context);
-        List<GenericEvent> results = context.getEvents();
-        Assert.assertNotNull(results);
-        Assert.assertEquals(1, results.size());
-        GenericEvent event = results.get(0);
-        Assert.assertNotNull(event);
-        Assert.assertEquals(10D, event.getParameter("max.x").getAsDouble(), 0.0001);
-        Assert.assertEquals(1D, event.getParameter(myMin).getAsDouble(), 0.0001);
+        extractor2.finish(context1);
+        List<GenericEvent> results1 = context1.getEvents();
+        Assert.assertNotNull(results1);
+        Assert.assertEquals(1, results1.size());
+        GenericEvent event1 = results1.get(0);
+        Assert.assertNotNull(event1);
+        Assert.assertEquals(10D, event1.getParameter("max.x").getAsDouble(), 0.0001);
+        Assert.assertEquals(1D, event1.getParameter(myMin).getAsDouble(), 0.0001);
+        
+        // test on clone2
+        context2 = new SimpleEvaluationContext<>(records.get(records.size()-1));
+        
+        records.forEach(record -> clone2.apply(record));
+        clone2.finish(context2);
+        List<GenericEvent> results2 = context2.getEvents();
+        Assert.assertNotNull(results2);
+        Assert.assertEquals(1, results2.size());
+        GenericEvent event2 = results2.get(0);
+        Assert.assertNotNull(event2);
+        Assert.assertEquals(10D, event2.getParameter("max.x").getAsDouble(), 0.0001);
+        Assert.assertEquals(1D, event2.getParameter(myMin).getAsDouble(), 0.0001);
     }
     
     @Test

@@ -1,6 +1,7 @@
 package org.pragmaticminds.crunch.api.trigger.extractor;
 
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 
 import java.util.Arrays;
@@ -38,5 +39,8 @@ public class ExtractorsTest {
         Map<Supplier, String> map = new HashMap<>();
         map.put(channel("test1"), "t1");
         assertNotNull(Extractors.channelMapExtractor(map));
+    
+        // serializable test
+        assertNotNull(ClonerUtil.clone(Extractors.channelMapExtractor(map)));;
     }
 }

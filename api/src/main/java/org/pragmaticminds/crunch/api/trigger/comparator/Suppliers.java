@@ -952,7 +952,7 @@ public final class Suppliers {
      * @param <R> type of the result
      */
     @FunctionalInterface
-    interface SupplierLambda<T extends Serializable, I extends Serializable, R extends Serializable> {
+    interface SupplierLambda<T extends Serializable, I extends Serializable, R extends Serializable> extends Serializable {
         R apply(T v1, I v2);
     }
     

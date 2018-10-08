@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.trigger.comparator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.BooleanOperators.*;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.*;
@@ -52,6 +54,11 @@ public class SuppliersTest {
         Supplier<Boolean> nullSupplier = booleanChannel("null");
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -59,7 +66,7 @@ public class SuppliersTest {
         // value test
         Supplier<Double> supplier = doubleChannel("double");
         Double extract = supplier.extract(values);
-        assertEquals(0.1f, extract, 0.001);
+        assertEquals(0.1f, extract, 0.0001);
     
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
         
@@ -67,6 +74,11 @@ public class SuppliersTest {
         Supplier<Double> nullSupplier = doubleChannel("null");
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Double> clone = ClonerUtil.clone(supplier);
+        Double clonedExtract = clone.extract(values);
+        assertEquals(0.1D, clonedExtract, 0.0001);
     }
     
     @Test
@@ -82,6 +94,11 @@ public class SuppliersTest {
         Supplier<Long> nullSupplier = longChannel("null");
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Long> clone = ClonerUtil.clone(supplier);
+        Long clonedExtract = clone.extract(values);
+        assertEquals(123L, (long)clonedExtract);
     }
     
     @Test
@@ -97,6 +114,11 @@ public class SuppliersTest {
         Supplier<Date> nullSupplier = dateChannel("null");
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Date> clone = ClonerUtil.clone(supplier);
+        Date clonedExtract = clone.extract(values);
+        assertNotNull(clonedExtract);
     }
     
     @Test
@@ -112,6 +134,11 @@ public class SuppliersTest {
         Supplier<String> nullSupplier = stringChannel("null");
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<String> clone = ClonerUtil.clone(supplier);
+        String clonedExtract = clone.extract(values);
+        assertEquals("string", clonedExtract);
     }
     
     @Test
@@ -125,6 +152,11 @@ public class SuppliersTest {
         Supplier<Value> supplier1 = channel("long");
         Long extract1 = supplier1.extract(values).getAsLong();
         assertEquals(123L, (long) extract1);
+    
+        // serializable test
+        Supplier<Value> clone = ClonerUtil.clone(supplier);
+        String clonedExtract = clone.extract(values).getAsString();
+        assertEquals("string", clonedExtract);
     }
     
     @Test
@@ -140,6 +172,11 @@ public class SuppliersTest {
         Supplier<Boolean> nullSupplier = and(booleanChannel("null"), booleanChannel("boolean"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -167,6 +204,11 @@ public class SuppliersTest {
         Supplier<Boolean> nullSupplier = or(booleanChannel("null"), booleanChannel("boolean"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -192,6 +234,11 @@ public class SuppliersTest {
         Supplier<Boolean> nullSupplier = not(booleanChannel("null"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -209,6 +256,11 @@ public class SuppliersTest {
         Assert.assertNull(extract);
     
         assertTrue(nullSupplier.getChannelIdentifiers().contains("null"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -242,6 +294,11 @@ public class SuppliersTest {
         Supplier<Boolean> nullSupplier = match("s.*g", stringChannel("null"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -257,6 +314,11 @@ public class SuppliersTest {
         Supplier<Boolean> nullSupplier = contains("str", stringChannel("null"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -272,6 +334,11 @@ public class SuppliersTest {
         Supplier<Long> nullSupplier = length(stringChannel("null"));
         extract = nullSupplier.extract(values);
         Assert.assertNull(extract);
+    
+        // serializable test
+        Supplier<Long> clone = ClonerUtil.clone(supplier);
+        Long clonedExtract = clone.extract(values);
+        assertEquals(6L, (long)clonedExtract);
     }
     
     @Test
@@ -281,6 +348,11 @@ public class SuppliersTest {
         assertTrue(extract);
     
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -290,6 +362,11 @@ public class SuppliersTest {
         assertTrue(extract);
     
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -299,6 +376,11 @@ public class SuppliersTest {
         assertEquals(0L, (long)extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Long> clone = ClonerUtil.clone(supplier);
+        Long clonedExtract = clone.extract(values);
+        assertEquals(0L, (long)clonedExtract);
     }
     
     @Test
@@ -308,6 +390,11 @@ public class SuppliersTest {
         assertEquals(0L, (long)extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Long> clone = ClonerUtil.clone(supplier);
+        Long clonedExtract = clone.extract(values);
+        assertEquals(0L, (long)clonedExtract);
     }
     
     @Test
@@ -317,6 +404,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -326,6 +418,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -335,6 +432,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -344,6 +446,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -353,6 +460,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double2"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -362,6 +474,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -371,6 +488,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -380,6 +502,11 @@ public class SuppliersTest {
         assertTrue(extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Boolean> clone = ClonerUtil.clone(supplier);
+        Boolean clonedExtract = clone.extract(values);
+        assertEquals(true, clonedExtract);
     }
     
     @Test
@@ -389,6 +516,11 @@ public class SuppliersTest {
         assertEquals(0L, (long)extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("double"));
+    
+        // serializable test
+        Supplier<Long> clone = ClonerUtil.clone(supplier);
+        Long clonedExtract = clone.extract(values);
+        assertEquals(0L, (long)clonedExtract);
     }
     
     @Test
@@ -398,6 +530,11 @@ public class SuppliersTest {
         assertEquals(123D, (double)extract, 0.00001);
         
         assertTrue(supplier.getChannelIdentifiers().contains("long"));
+    
+        // serializable test
+        Supplier<Double> clone = ClonerUtil.clone(supplier);
+        Double clonedExtract = clone.extract(values);
+        assertEquals(123D, clonedExtract, 0.0001);
     }
     
     @Test
@@ -407,6 +544,11 @@ public class SuppliersTest {
         assertEquals("123", extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("long"));
+    
+        // serializable test
+        Supplier<String> clone = ClonerUtil.clone(supplier);
+        String clonedExtract = clone.extract(values);
+        assertEquals("123", clonedExtract);
     }
     
     @Test
@@ -416,6 +558,11 @@ public class SuppliersTest {
         assertEquals(123L, extract);
         
         assertTrue(supplier.getChannelIdentifiers().contains("stringLong"));
+    
+        // serializable test
+        Supplier<Long> clone = ClonerUtil.clone(supplier);
+        Long clonedExtract = clone.extract(values);
+        assertEquals(123L, (long)clonedExtract);
     }
     
     @Test
@@ -425,6 +572,11 @@ public class SuppliersTest {
         assertEquals(0.1D, extract, 0.00001);
         
         assertTrue(supplier.getChannelIdentifiers().contains("stringDouble"));
+    
+        // serializable test
+        Supplier<Double> clone = ClonerUtil.clone(supplier);
+        Double clonedExtract = clone.extract(values);
+        assertEquals(0.1D, clonedExtract, 0.00001);
     }
     
     @Test
@@ -442,6 +594,11 @@ public class SuppliersTest {
         supplier = Suppliers.Mathematics.add(doubleChannel("double"), longChannel("long"));
         extract = supplier.extract(values);
         assertEquals(123.1D, extract, 0.00001);
+    
+        // serializable test
+        Supplier<Double> clone = ClonerUtil.clone(supplier);
+        Double clonedExtract = clone.extract(values);
+        assertEquals(123.1D, clonedExtract, 0.00001);
     }
     
     @Test
@@ -459,6 +616,11 @@ public class SuppliersTest {
         supplier = Suppliers.Mathematics.subtract(doubleChannel("double"), longChannel("long"));
         extract = supplier.extract(values);
         assertEquals(-122.9D, extract, 0.00001);
+    
+        // serializable test
+        Supplier<Double> clone = ClonerUtil.clone(supplier);
+        Double clonedExtract = clone.extract(values);
+        assertEquals(-122.9D, clonedExtract, 0.00001);
     }
     
     @Test
@@ -476,6 +638,11 @@ public class SuppliersTest {
         supplier = Suppliers.Mathematics.multiply(doubleChannel("double"), longChannel("long"));
         extract = supplier.extract(values);
         assertEquals(12.3D, extract, 0.00001);
+    
+        // serializable test
+        Supplier<Double> clone = ClonerUtil.clone(supplier);
+        Double clonedExtract = clone.extract(values);
+        assertEquals(12.3D, clonedExtract, 0.00001);
     }
     
     @Test
@@ -493,6 +660,11 @@ public class SuppliersTest {
         supplier = Suppliers.Mathematics.divide(longChannel("long"), doubleChannel("double"));
         extract = supplier.extract(values);
         assertEquals(1230D, extract, 0.00001);
+    
+        // serializable test
+        Supplier<Double> clone = ClonerUtil.clone(supplier);
+        Double clonedExtract = clone.extract(values);
+        assertEquals(1230D, clonedExtract, 0.00001);
     }
     
 }

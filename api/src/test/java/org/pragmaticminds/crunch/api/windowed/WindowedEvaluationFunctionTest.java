@@ -3,6 +3,7 @@ package org.pragmaticminds.crunch.api.windowed;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -25,8 +26,9 @@ import static org.pragmaticminds.crunch.api.windowed.Windows.bitActive;
  * Created by Erwin Wagasow on 16.08.2018
  */
 public class WindowedEvaluationFunctionTest implements Serializable {
-
+    
     private WindowedEvaluationFunction<GenericEvent> function;
+    private WindowedEvaluationFunction<GenericEvent> clone;
     private MRecord record1;
     private MRecord record2;
     private MRecord record3;
@@ -53,6 +55,7 @@ public class WindowedEvaluationFunctionTest implements Serializable {
                 }
             })
             .build();
+        clone = ClonerUtil.clone(function);
     
         // create test processing data
         TypedValues.TypedValuesBuilder typedValuesBuilder = TypedValues.builder()
@@ -92,33 +95,41 @@ public class WindowedEvaluationFunctionTest implements Serializable {
      */
     @Test
     public void eval() {
+        evalTest(function);
+        evalTest(clone);
+    }
+    
+    private void evalTest(WindowedEvaluationFunction<GenericEvent> innerFunction) {
         SimpleEvaluationContext<GenericEvent> context = new SimpleEvaluationContext<>(record1);
-        function.eval(context);
+        innerFunction.eval(context);
         Assert.assertEquals(0, context.getEvents().size());
-
+        
         context = new SimpleEvaluationContext<>(record2);
-        function.eval(context);
+        innerFunction.eval(context);
         Assert.assertEquals(0, context.getEvents().size());
-
+        
         context = new SimpleEvaluationContext<>(record3);
-        function.eval(context);
+        innerFunction.eval(context);
         Assert.assertEquals(0, context.getEvents().size());
-
+        
         context = new SimpleEvaluationContext<>(record4);
-        function.eval(context);
+        innerFunction.eval(context);
         Assert.assertEquals(0, context.getEvents().size());
-
+        
         context = new SimpleEvaluationContext<>(record5);
-        function.eval(context);
+        innerFunction.eval(context);
         List<GenericEvent> events = context.getEvents();
         Assert.assertEquals(1, events.size());
         Assert.assertEquals(3.0, events.get(0).getParameter("maxValue").getAsDouble(), 0.00001);
-
     }
     
     @Test
     public void getChannelIdentifiers() {
         Collection<String> channels = function.getChannelIdentifiers();
+        assertTrue(channels.contains("flag"));
+        assertTrue(channels.contains("test"));
+        
+        channels = clone.getChannelIdentifiers();
         assertTrue(channels.contains("flag"));
         assertTrue(channels.contains("test"));
     }

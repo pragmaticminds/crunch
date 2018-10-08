@@ -2,11 +2,13 @@ package org.pragmaticminds.crunch.api.windowed;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +22,7 @@ import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.Channel
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 16.08.2018
  */
-public class WindowsTest {
+public class WindowsTest implements Serializable {
     
     private TypedValues valuesTrue;
     private TypedValues valuesFalse;
@@ -48,81 +50,81 @@ public class WindowsTest {
     @Test
     public void testBitActive() {
         RecordWindow recordWindow = Windows.bitActive(
-            new Supplier<Boolean>() {
-                @Override
-                public Boolean extract(MRecord values) {
-                    return values.getBoolean("flag");
-                }
-
-                @Override
-                public String getIdentifier() {
-                    return "flag";
-                }
-
-                @Override
-                public Set<String> getChannelIdentifiers() {
-                    return Collections.singleton("flag");
-                }
-            }
+            new InnerBooleanSupplier()
         );
-        
+        RecordWindow clone = ClonerUtil.clone(recordWindow);
+    
+        innerTestBitActiver(recordWindow);
+        innerTestBitActiver(clone);
+    }
+    
+    private void innerTestBitActiver(RecordWindow recordWindow) {
         boolean result = recordWindow.inWindow(valuesTrue);
         assertTrue(result);
-    
+        
         result = recordWindow.inWindow(valuesFalse);
         assertFalse(result);
         
         result = recordWindow.inWindow(valuesNull);
         assertFalse(result);
-    
+        
         assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
     }
     
     @Test
     public void testBitNotActive() throws Exception {
         RecordWindow recordWindow = Windows.bitNotActive(booleanChannel("flag"));
+        RecordWindow clone = ClonerUtil.clone(recordWindow);
     
+        innerTestBitNotActive(recordWindow);
+        innerTestBitNotActive(clone);
+    }
+    
+    private void innerTestBitNotActive(RecordWindow recordWindow) {
         boolean result = recordWindow.inWindow(valuesTrue);
         assertFalse(result);
-    
+        
         result = recordWindow.inWindow(valuesFalse);
         assertTrue(result);
-    
+        
         result = recordWindow.inWindow(valuesNull);
         assertFalse(result);
-    
+        
         assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
     }
     
     @Test
     public void testValueEquals() throws Exception {
         RecordWindow recordWindow = Windows.valueEquals(booleanChannel("flag"), true);
-
-        boolean result = recordWindow.inWindow(valuesTrue);
-        assertTrue(result);
+        RecordWindow clone = ClonerUtil.clone(recordWindow);
     
-        result = recordWindow.inWindow(valuesFalse);
-        assertFalse(result);
-    
-        result = recordWindow.inWindow(valuesNull);
-        assertFalse(result);
-    
-        assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
+        innerTestBitActiver(recordWindow);
+        innerTestBitActiver(clone);
     }
     
     @Test
     public void testValueNotEquals() throws Exception {
         RecordWindow recordWindow = Windows.valueNotEquals(booleanChannel("flag"), true);
+        RecordWindow clone = ClonerUtil.clone(recordWindow);
     
-        boolean result = recordWindow.inWindow(valuesTrue);
-        assertFalse(result);
+        innerTestBitNotActive(recordWindow);
+        innerTestBitNotActive(clone);
+    }
     
-        result = recordWindow.inWindow(valuesFalse);
-        assertTrue(result);
+    private class InnerBooleanSupplier implements Supplier<Boolean> {
+        @Override
+        public Boolean extract(MRecord values) {
+            return values.getBoolean("flag");
+        }
     
-        result = recordWindow.inWindow(valuesNull);
-        assertFalse(result);
-        
-        assertTrue(recordWindow.getChannelIdentifiers().contains("flag"));
+        @Override
+        public String getIdentifier() {
+            return "flag";
+        }
+    
+        @Override
+        public Set<String> getChannelIdentifiers() {
+            return Collections.singleton("flag");
+        }
     }
 }

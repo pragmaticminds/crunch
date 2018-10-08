@@ -2,6 +2,7 @@ package org.pragmaticminds.crunch.api.trigger.filter;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
@@ -57,5 +58,9 @@ public class EventFiltersTest {
         
         // check get ChannelIdentifiers
         assertTrue(filter.getChannelIdentifiers().contains("val"));
+        
+        // serializable test
+        EventFilter clone = ClonerUtil.clone(filter);
+        assertFalse(clone.apply(null, values1));
     }
 }
