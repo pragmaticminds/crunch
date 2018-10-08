@@ -6,6 +6,7 @@ import org.pragmaticminds.crunch.api.values.TypedValues;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Similar to an {@link EvaluationFunction} this class can be added to a {@link EvaluationPipeline}.
@@ -36,5 +37,5 @@ public interface RecordHandler extends Serializable {
      * Collects all channel identifiers that are used in the record handler
      * @return a {@link List} or {@link Collection} of all channel identifiers
      */
-    public Collection<String> getChannelIdentifiers();
+    Set<String> getChannelIdentifiers();
 }

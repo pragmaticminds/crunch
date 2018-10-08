@@ -243,8 +243,8 @@ public class CrunchFlinkPipelineFactoryTest {
          * @return a {@link List} or {@link Collection} of all channel identifiers
          */
         @Override
-        public Collection<String> getChannelIdentifiers() {
-            return Collections.emptyList();
+        public Set<String> getChannelIdentifiers() {
+            return Collections.emptySet();
         }
     }
 }

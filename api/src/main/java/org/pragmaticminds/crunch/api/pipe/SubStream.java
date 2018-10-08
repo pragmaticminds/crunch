@@ -5,9 +5,7 @@ import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -105,10 +103,23 @@ public class SubStream<T extends Serializable> implements Serializable {
      *
      * @return a {@link List} or {@link Collection} of all channel identifiers that are used in this {@link SubStream}.
      */
-    public Collection<String> getChannelIdentifiers(){
-        return evaluationFunctions.stream()
-            .flatMap(evaluationFunction -> evaluationFunction.getChannelIdentifiers().stream())
-            .collect(Collectors.toList());
+    public Set<String> getChannelIdentifiers(){
+        HashSet<String> channelIdentifiers = new HashSet<>();
+        if(evaluationFunctions != null && !evaluationFunctions.isEmpty()){
+            channelIdentifiers.addAll(
+                evaluationFunctions.stream()
+                    .flatMap(evaluationFunction -> evaluationFunction.getChannelIdentifiers().stream())
+                    .collect(Collectors.toSet())
+            );
+        }
+        if(recordHandlers != null && !recordHandlers.isEmpty()){
+            channelIdentifiers.addAll(
+                recordHandlers.stream()
+                    .flatMap(recordHandler -> recordHandler.getChannelIdentifiers().stream())
+                    .collect(Collectors.toSet())
+            );
+        }
+        return channelIdentifiers;
     }
     
     

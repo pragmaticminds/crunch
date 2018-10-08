@@ -98,8 +98,8 @@ public class InfluxDBSink extends AbstractRecordHandler {
      * @return a {@link List} or {@link Collection} of all channel identifiers from triggering
      */
     @Override
-    public Collection<String> getChannelIdentifiers() {
-        return Collections.emptyList();
+    public Set<String> getChannelIdentifiers() {
+        return Collections.emptySet();
     }
     
     @FunctionalInterface

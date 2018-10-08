@@ -30,7 +30,7 @@ public class CrunchExecutorTest {
      * And checks that 2 Events are emitted.
      */
     @Test
-    public void run() {
+    public void run() throws InterruptedException {
         // Create source
         UntypedValues values = UntypedValues.builder()
             .source("test")
@@ -48,6 +48,7 @@ public class CrunchExecutorTest {
         CrunchExecutor crunchExecutor = new CrunchExecutor(source, pipeline, sink);
         // Run the executor
         crunchExecutor.run();
+    
         // Ensure that two events have been reported
         Mockito.verify(sink, times(2)).handle(any());
     }
@@ -56,11 +57,11 @@ public class CrunchExecutorTest {
         return EvaluationPipeline.builder()
                 .withIdentifier("bsdf")
                 .withSubStream(
-                        SubStream.builder()
-                                .withIdentifier("asdf")
-                                .withPredicate(x -> true)
-                                .withEvaluationFunction(new MyEvaluationFunction())
-                                .build()
+                    SubStream.builder()
+                        .withIdentifier("asdf")
+                        .withPredicate(x -> true)
+                        .withEvaluationFunction(new MyEvaluationFunction())
+                        .build()
                 )
                 .build();
     }
@@ -82,7 +83,7 @@ public class CrunchExecutorTest {
          */
         @Override
         public Set<String> getChannelIdentifiers() {
-            return null;
+            return Collections.singleton("test");
         }
     }
 }

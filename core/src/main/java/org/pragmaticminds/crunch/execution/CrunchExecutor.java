@@ -10,8 +10,7 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 /**
  * Executor that runs a {@link org.pragmaticminds.crunch.api.pipe.EvaluationPipeline}.
@@ -74,12 +73,15 @@ public class CrunchExecutor {
     private void runWithSink(EventSink sink) {
         Preconditions.checkNotNull(sink, "Please provide a Sink!");
         Materializer materializer = ActorMaterializer.create(SYSTEM);
-
-        RunnableGraph<CompletionStage<Done>> runnableGraph = GRAPH_FACTORY.create(source, evaluationPipeline, sink);
+        Long watermarkOffsetMs = 50L;
+    
+        RunnableGraph<CompletionStage<Done>> runnableGraph = GRAPH_FACTORY.create(source, evaluationPipeline, sink, watermarkOffsetMs);
 
         try {
             runnableGraph.run(materializer).toCompletableFuture().get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (ExecutionException e) {
+            logger.warn("Unable to wait for execution of pipeline.", e);
+        } catch (InterruptedException e){
             logger.warn("Unable to wait for execution of pipeline.", e);
             Thread.currentThread().interrupt();
         }

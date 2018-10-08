@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
@@ -23,7 +24,6 @@ import static org.junit.Assert.assertEquals;
  * Created by julian on 10.09.18
  */
 public class MRecordSourceWrapperTest {
-
     private static final MRecord DUMMY_RECORD = new MRecord() {
         @Override
         public String getSource() {
@@ -80,11 +80,15 @@ public class MRecordSourceWrapperTest {
      * See BUG CRUNCH-570
      */
     @Test
-    public void wrapperEmitsNull_sourceNotAllowedToThrowException() throws ExecutionException, InterruptedException {
+    public void wrapperEmitsNull_sourceNotAllowedToThrowException() throws
+        ExecutionException,
+        InterruptedException,
+        TimeoutException {
         MRecordSourceWrapper wrapper = new MRecordSourceWrapper(getSource());
 
         // Try to run it using Akka Streams
-        ActorSystem system = ActorSystem.create("CrunchExecutor");
+        ActorSystem system = ActorSystem.create("testExecutor");
+        
         ActorMaterializer materializer = ActorMaterializer.create(system);
 
         Source<MRecord, NotUsed> streamSource = Source.fromGraph(wrapper);
@@ -100,9 +104,11 @@ public class MRecordSourceWrapperTest {
 
         // Wait to finish
         stage.toCompletableFuture().get();
+        //stage.toCompletableFuture().get(400, TimeUnit.MILLISECONDS);
 
         // Check if the reference is the null object
         assertEquals(DUMMY_RECORD, reference.get());
+        system.terminate();
     }
 
     /**
@@ -141,5 +147,7 @@ public class MRecordSourceWrapperTest {
             }
         };
     }
+    
+    
 
 }

@@ -9,7 +9,7 @@ import java.util.*;
 
 /**
  * This class implements the {@link SortFunction} interface based on {@link Long} type timestamps.
- * All incoming values are processed by the {@link #process(Long, Serializable)} function and stored into an internal queue.
+ * All incoming values are processed by the {@link #process(Long, Long, Serializable)} function and stored into an internal queue.
  * A Timer is than calling the {@link #onTimer(Long)} method to collect all values that are over the given watermark
  * timestamp.
  *

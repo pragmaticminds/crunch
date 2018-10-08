@@ -115,17 +115,9 @@ public class CrunchFlinkPipelineFactory<T extends Serializable> implements Seria
      * @param subStream that delivers a {@link Collection} of channel identifiers that are used.
      * @return a {@link FilterFunction} for the type {@link MRecord}.
      */
-    private FilterFunction<MRecord> createChannelFilter(SubStream subStream) {
-        return record -> {
-            Collection<String> recordChannels = record.getChannels();
-            Collection<String> subStreamChannels = subStream.getChannelIdentifiers();
-            for (String recordChannel : recordChannels){
-                if(subStreamChannels.contains(recordChannel)){
-                    return true;
-                }
-            }
-            return false;
-        };
+    private FilterFunction<MRecord> createChannelFilter(SubStream<T> subStream) {
+        ChannelFilter<T> channelFilter = new ChannelFilter<>(subStream);
+        return channelFilter::filter;
     }
     
     /**
