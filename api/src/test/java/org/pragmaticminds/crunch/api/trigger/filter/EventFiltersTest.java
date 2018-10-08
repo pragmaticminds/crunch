@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,14 +42,14 @@ public class EventFiltersTest {
     @Test
     public void valueChangedTest() {
         // value test
-        EventFilter filter = onValueChanged(stringChannel("val"));
+        EventFilter<GenericEvent> filter = onValueChanged(stringChannel("val"));
     
         // first value receive -> false
-        assertFalse(filter.apply(null, values1));
+        assertFalse(filter.apply(new GenericEvent(), values1));
         // first change -> true
-        assertTrue(filter.apply(null, values2));
+        assertTrue(filter.apply(new GenericEvent(), values2));
         // value is null -> false
-        assertFalse(filter.apply(null, valuesNull));
+        assertFalse(filter.apply(new GenericEvent(), valuesNull));
         // value change -> true
         assertTrue(filter.apply(null, values1));
         // no change -> false
@@ -60,7 +61,7 @@ public class EventFiltersTest {
         assertTrue(filter.getChannelIdentifiers().contains("val"));
         
         // serializable test
-        EventFilter clone = ClonerUtil.clone(filter);
+        EventFilter<GenericEvent> clone = ClonerUtil.clone(filter);
         assertFalse(clone.apply(null, values1));
     }
 }
