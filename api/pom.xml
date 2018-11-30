@@ -3,13 +3,13 @@
     <parent>
         <artifactId>crunch-parent</artifactId>
         <groupId>org.pragmaticminds.crunch</groupId>
-        <version>0.2.0-RC5</version>
+        <version>0.3.0-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>crunch-api</artifactId>
-    <version>0.2.0-RC5</version>
+    <version>0.3.0-SNAPSHOT</version>
     <name>crunch-api</name>
     <description>Programing Interfaces for other CRUNCH Projects.</description>
 
