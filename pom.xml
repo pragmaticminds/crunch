@@ -13,7 +13,7 @@
 
     <groupId>org.pragmaticminds.crunch</groupId>
     <artifactId>crunch-parent</artifactId>
-    <version>0.2.0-RC5</version>
+    <version>0.3.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -258,6 +258,55 @@
                 <artifactId>maven-gpg-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <!-- Check if all source files have the required apache license headers -->
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>license-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <!-- Git related files -->
+                        <exclude>**/.git/**</exclude>
+                        <exclude>**/.gitignore</exclude>
+
+                        <!-- Maven related files -->
+                        <exclude>**/target/**</exclude>
+
+                        <!-- Eclipse related files -->
+                        <exclude>**/.project</exclude>
+                        <exclude>**/.settings/**</exclude>
+                        <exclude>**/.classpath</exclude>
+
+                        <!-- IntelliJ related files -->
+                        <exclude>**/.idea/**</exclude>
+                        <exclude>**/*.iml</exclude>
+
+                        <!-- Wireshark Captures -->
+                        <exclude>**/*.pcapng</exclude>
+
+                        <!-- Asciidoctor generated files -->
+                        <exclude>**/.asciidoctor/**</exclude>
+
+                        <!-- Jenkins build related files -->
+                        <exclude>.repository/**</exclude>
+
+                        <!-- Data files created by examples running an embedded elasticsearch -->
+                        <exclude>elasticsearch-data/**</exclude>
+
+                        <!-- JSON doesn't like comments -->
+                        <exclude>**/*.json</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
