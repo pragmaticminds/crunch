@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.windowed.extractor;
 
 import com.google.common.base.Preconditions;
@@ -28,29 +47,29 @@ import java.util.stream.Collectors;
 public class GroupByExtractor<T extends Serializable> implements WindowExtractor<T> {
     private HashMap<String, Tuple2<Aggregation, Supplier>> aggregations;
     private GroupAggregationFinalizer<T> finalizer;
-    
+
     /**
      * Private constructor for the {@link Builder}.
      * @param aggregations a Map of all set {@link Aggregation} implementations like sum, max etc.
      * @param finalizer optional resulting Events creator
      */
     private GroupByExtractor(
-        Map<String, Tuple2<Aggregation, Supplier>> aggregations,
-        GroupAggregationFinalizer<T> finalizer
+            Map<String, Tuple2<Aggregation, Supplier>> aggregations,
+            GroupAggregationFinalizer<T> finalizer
     ) {
         Preconditions.checkNotNull(finalizer);
         this.aggregations = new HashMap<>(aggregations);
         this.finalizer = finalizer;
-        
+
         checkValues();
     }
-    
+
     /** Check if all necessary values are present */
     private void checkValues() {
         Preconditions.checkNotNull(aggregations);
         Preconditions.checkArgument(!aggregations.isEmpty());
     }
-    
+
     /**
      * This method collects single values for the later made extraction.
      * The value is passed to each {@link Supplier} and the result to the {@link Aggregation}.
@@ -61,14 +80,14 @@ public class GroupByExtractor<T extends Serializable> implements WindowExtractor
     @SuppressWarnings("unchecked") // is insured to be safe
     public void apply(MRecord record) {
         aggregations.forEach(
-            // aggregate the current record value
-            (key, tuple2) -> tuple2.getF0().aggregate(
-                // extract the value of interest from the record with the Supplier
-                (Serializable) tuple2.getF1().extract(record)
-            )
+                // aggregate the current record value
+                (key, tuple2) -> tuple2.getF0().aggregate(
+                        // extract the value of interest from the record with the Supplier
+                        (Serializable) tuple2.getF1().extract(record)
+                )
         );
     }
-    
+
     /**
      * Generates resulting {@link GenericEvent}s from the applied {@link MRecord}s and calls the contexts collect method on the
      * results.
@@ -80,17 +99,17 @@ public class GroupByExtractor<T extends Serializable> implements WindowExtractor
     public void finish(EvaluationContext<T> context) {
         // extract all the aggregated values from the aggregations and collect them with the key of the aggregations
         Map<String, Object> results = aggregations.entrySet().stream()
-            .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> entry.getValue().getF0().getAggregated()
-                )
-            );
-    
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                entry -> entry.getValue().getF0().getAggregated()
+                        )
+                );
+
         // pass the aggregated values to finalizer and return its results
         finalizer.onFinalize(results, context);
     }
-    
+
     /**
      * Creates a Builder for this class
      * @return a Builder for this class
@@ -98,30 +117,30 @@ public class GroupByExtractor<T extends Serializable> implements WindowExtractor
     public static <T extends Serializable> Builder<T> builder() {
         return new Builder<>();
     }
-    
+
     /** Builder for this class */
     public static final class Builder<T extends Serializable> {
         private Map<String, Tuple2<Aggregation, Supplier>> aggregations;
         // optional
         private GroupAggregationFinalizer<T> finalizer;
-        
+
         private Builder() { /* do nothing */ }
-        
+
         public Builder<T> aggregate(Aggregation aggregation, Supplier supplier){
             aggregate(
-                aggregation,
-                supplier,
-                String.format("%s.%s", aggregation.getIdentifier(), supplier.getIdentifier())
+                    aggregation,
+                    supplier,
+                    String.format("%s.%s", aggregation.getIdentifier(), supplier.getIdentifier())
             );
             return this;
         }
-        
+
         public Builder<T> aggregate(Aggregation aggregation, Supplier supplier, String identifier){
             // lazy loading
             if(aggregations == null){
                 aggregations = new HashMap<>();
             }
-            
+
             // create a unique identifier
             String id = identifier;
             int count = 0;
@@ -129,12 +148,12 @@ public class GroupByExtractor<T extends Serializable> implements WindowExtractor
                 id = identifier + "$" + count;
                 count++;
             }
-            
+
             // aggregate
             aggregations.put(id, new Tuple2<>(aggregation, supplier));
             return this;
         }
-    
+
         /**
          * only allowed to be called internally, else the naming cannot be guaranteed
          *
@@ -145,7 +164,7 @@ public class GroupByExtractor<T extends Serializable> implements WindowExtractor
             this.aggregations = aggregations;
             return this;
         }
-    
+
         /**
          * The finalizer packs the aggregated values into resulting Ts.
          *
@@ -158,13 +177,13 @@ public class GroupByExtractor<T extends Serializable> implements WindowExtractor
             this.finalizer = finalizer;
             return this;
         }
-    
+
         public Builder<T> but() {
             return new Builder<T>()
-                .aggregations(aggregations)
-                .finalizer(finalizer);
+                    .aggregations(aggregations)
+                    .finalizer(finalizer);
         }
-    
+
         @SuppressWarnings("unchecked") // must cast
         public GroupByExtractor<T> build() {
             return new GroupByExtractor<>(aggregations, finalizer);

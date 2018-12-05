@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.state;
 
 import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
@@ -15,7 +34,7 @@ import java.util.List;
  */
 public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionStateFactory {
     private final EvaluationFunction prototype;
-    
+
     /**
      * private constructor for the builder
      * @param prototype of the EvaluationFunction to be cloned and used
@@ -23,7 +42,7 @@ public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionSt
     private CloneStateEvaluationFunctionFactory(EvaluationFunction prototype) {
         this.prototype = prototype;
     }
-    
+
     /**
      * Clones the prototype object from instantiation
      *
@@ -33,7 +52,7 @@ public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionSt
     public EvaluationFunction create() {
         return ClonerUtil.clone(prototype);
     }
-    
+
     /**
      * Collects all channel identifiers that are used in the inner {@link EvaluationFunction}.
      *
@@ -43,30 +62,30 @@ public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionSt
     public Collection<String> getChannelIdentifiers() {
         return prototype.getChannelIdentifiers();
     }
-    
+
     /**
      * creates a builder for this class
      * @return a builder
      */
     public static Builder builder() { return new Builder(); }
-    
+
     /**
      * The builder for this class
      */
     public static final class Builder {
         private EvaluationFunction prototype;
-        
+
         private Builder() { /* do nothing */ }
-        
+
         public Builder withPrototype(EvaluationFunction prototype) {
             this.prototype = prototype;
             return this;
         }
-        
+
         public Builder but() {
             return builder().withPrototype(prototype);
         }
-        
+
         public CloneStateEvaluationFunctionFactory build() {
             return new CloneStateEvaluationFunctionFactory(prototype);
         }

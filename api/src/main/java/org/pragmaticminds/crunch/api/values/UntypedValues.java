@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.values;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,16 +51,16 @@ public class UntypedValues implements MRecord {
     private long timestamp;
     private String prefix;
     private HashMap<String, Object> values;
-    
+
     public UntypedValues(
-        String source, long timestamp, String prefix, Map<String, Object> values
+            String source, long timestamp, String prefix, Map<String, Object> values
     ) {
         this.source = source;
         this.timestamp = timestamp;
         this.prefix = prefix;
         this.values = values == null ? null : new HashMap<>(values);
     }
-    
+
     @Override
     public Double getDouble(String channel) {
         Value v = getValue(channel);
@@ -140,7 +159,7 @@ public class UntypedValues implements MRecord {
     public Map<String, Object> getValues() {
         return values;
     }
-    
+
     /**
      * setter makes {@link HashMap} from {@link Map}
      * @param values to be saved as {@link HashMap}
@@ -170,13 +189,13 @@ public class UntypedValues implements MRecord {
                 this.prefix,
                 newValues);
     }
-    
+
     /**
      * Creates a builder for this class
      * @return a builder for this class
      */
     public static Builder builder() { return new Builder(); }
-    
+
     /**
      * Builder for this class
      */
@@ -185,37 +204,37 @@ public class UntypedValues implements MRecord {
         private long                timestamp;
         private String              prefix;
         private Map<String, Object> values;
-        
+
         private Builder() {}
-        
-        
+
+
         public Builder source(String source) {
             this.source = source;
             return this;
         }
-        
+
         public Builder timestamp(long timestamp) {
             this.timestamp = timestamp;
             return this;
         }
-        
+
         public Builder prefix(String prefix) {
             this.prefix = prefix;
             return this;
         }
-        
+
         public Builder values(Map<String, Object> values) {
             this.values = values;
             return this;
         }
-        
+
         public Builder but() {
             return builder().source(source)
-                .timestamp(timestamp)
-                .prefix(prefix)
-                .values(values);
+                    .timestamp(timestamp)
+                    .prefix(prefix)
+                    .values(values);
         }
-        
+
         public UntypedValues build() {
             UntypedValues untypedValues = new UntypedValues();
             untypedValues.setSource(source);

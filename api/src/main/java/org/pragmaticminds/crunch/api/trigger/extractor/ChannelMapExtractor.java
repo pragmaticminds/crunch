@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.trigger.extractor;
 
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
@@ -21,7 +40,7 @@ import java.util.stream.Collectors;
 class ChannelMapExtractor implements MapExtractor {
     private HashMap<Supplier, String> mappings = null;
     private ArrayList<Supplier> channels = null;
-    
+
     /**
      * Mapping channel extraction constructor.
      * All passed channels are extracted and keyed by the given name.
@@ -35,7 +54,7 @@ class ChannelMapExtractor implements MapExtractor {
         }
         this.mappings = new HashMap<>(mapping);
     }
-    
+
     /**
      * Simple channel extraction constructor.
      * All passed channels are extracted and keyed by their own name.
@@ -48,7 +67,7 @@ class ChannelMapExtractor implements MapExtractor {
         }
         this.channels = new ArrayList<>(channels);
     }
-    
+
     /**
      * Simple channel extraction constructor.
      * All passed channels are extracted and keyed by their own name.
@@ -61,7 +80,7 @@ class ChannelMapExtractor implements MapExtractor {
         }
         this.channels = new ArrayList<>(Arrays.asList(channels));
     }
-    
+
     /**
      * This method extracts a map of {@link Value}s from a {@link EvaluationContext}, in particular from it's
      * {@link MRecord}.
@@ -73,13 +92,13 @@ class ChannelMapExtractor implements MapExtractor {
     public Map<String, Value> extract(EvaluationContext context) {
         if(channels != null){
             return channels.stream().collect(Collectors.toMap(
-                Supplier::getIdentifier,
-                supplier -> Value.of(supplier.extract(context.get()))
+                    Supplier::getIdentifier,
+                    supplier -> Value.of(supplier.extract(context.get()))
             ));
         }else if(mappings != null){
             return mappings.entrySet().stream().collect(Collectors.toMap(
-                Map.Entry::getValue,
-                entry -> Value.of(entry.getKey().extract(context.get()))
+                    Map.Entry::getValue,
+                    entry -> Value.of(entry.getKey().extract(context.get()))
             ));
         }
         return null;

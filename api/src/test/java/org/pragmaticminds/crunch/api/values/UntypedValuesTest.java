@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.values;
 
 import org.junit.Test;
@@ -26,35 +45,35 @@ public class UntypedValuesTest {
 
         assertEquals(13L, event.getTimestamp());
     }
-    
+
     @Test
     public void toTypedValues() {
         UntypedValues untypedValues = UntypedValues.builder()
-            .timestamp(13L)
-            .prefix("")
-            .source("test")
-            .values(Collections.singletonMap("key", 42L))
-            .build();
-        
+                .timestamp(13L)
+                .prefix("")
+                .source("test")
+                .values(Collections.singletonMap("key", 42L))
+                .build();
+
         TypedValues typedValues = untypedValues.toTypedValues();
-        
+
         assertEquals(untypedValues.getTimestamp(), typedValues.getTimestamp());
         assertEquals(untypedValues.getSource(), typedValues.getSource());
         assertTrue(LongValue.class.isAssignableFrom(typedValues.getValues().get("key").getClass()));
         assertEquals(42L, untypedValues.getValues().get("key"));
     }
-    
+
     @Test
     public void toTypedValuesWithNulls() {
         UntypedValues untypedValues = UntypedValues.builder()
-            .timestamp(13L)
-            .prefix(null)
-            .source("test")
-            .values(Collections.singletonMap("key", null))
-            .build();
-        
+                .timestamp(13L)
+                .prefix(null)
+                .source("test")
+                .values(Collections.singletonMap("key", null))
+                .build();
+
         TypedValues typedValues = untypedValues.toTypedValues();
-        
+
         assertEquals(untypedValues.getTimestamp(), typedValues.getTimestamp());
         assertEquals(untypedValues.getSource(), typedValues.getSource());
         assertNull(typedValues.getValues().get("key"));
@@ -109,31 +128,31 @@ public class UntypedValuesTest {
         assertEquals(0, untypedValues.getValues().size());
         assertTrue(untypedValues.isEmpty());
     }
-    
+
     @Test
     public void toStringTest() {
         String string = getUntypedValues().toString();
         assertNotNull(string);
         assertEquals(
-            "UntypedValues(source=test, timestamp=13, prefix=, values={channel1=1, channel2=2, channel3=3})",
-            string
+                "UntypedValues(source=test, timestamp=13, prefix=, values={channel1=1, channel2=2, channel3=3})",
+                string
         );
     }
-    
+
     @Test
     public void toStringTestWithNulls() {
         UntypedValues values = UntypedValues.builder()
-            .values(Collections.singletonMap("key", null))
-            .build();
+                .values(Collections.singletonMap("key", null))
+                .build();
         String string = values.toString();
         assertNotNull(string);
         System.out.println(string);
         assertEquals(
-            "UntypedValues(source=null, timestamp=0, prefix=null, values={key=null})",
-            string
+                "UntypedValues(source=null, timestamp=0, prefix=null, values={key=null})",
+                string
         );
     }
-    
+
     private UntypedValues getUntypedValues() {
         HashMap<String, Object> values = new HashMap<>();
         values.put("channel1", 1);

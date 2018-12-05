@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.trigger;
 
 import com.google.common.base.Preconditions;
@@ -51,11 +70,11 @@ import java.util.stream.Collectors;
 public class TriggerEvaluationFunction<T extends Serializable> implements EvaluationFunction<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(TriggerEvaluationFunction.class);
-    
+
     private final TriggerStrategy triggerStrategy;
     private final TriggerHandler<T> triggerHandler;
     private final EventFilter<T> filter;
-    
+
     /**
      * Main constructor of this class
      * @param triggerStrategy decides on the base of the simplified {@link Supplier} result, whether to
@@ -106,7 +125,7 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
         results.addAll(triggerStrategy.getChannelIdentifiers());
         return results;
     }
-    
+
     /**
      * evaluates the incoming {@link TypedValues} from the {@link EvaluationContext} and passes the results
      * back to the collect method of the context
@@ -142,8 +161,8 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
             }
         }
     }
-    
-    
+
+
     /**
      * Creates a new instance of the {@link Builder} for this class.
      *
@@ -152,7 +171,7 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
     public static <T extends Serializable> Builder<T> builder() {
         return new Builder<>();
     }
-    
+
     /**
      * Builder of this class.
      */
@@ -175,6 +194,7 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
             this.filter = filter;
             return this;
         }
+
         public TriggerEvaluationFunction<T> build() {
             return new TriggerEvaluationFunction<>(triggerStrategy, triggerHandler, filter);
         }

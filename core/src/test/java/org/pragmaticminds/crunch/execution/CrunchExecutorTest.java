@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.execution;
 
 import org.junit.Test;
@@ -30,15 +49,15 @@ public class CrunchExecutorTest {
      * And checks that 2 Events are emitted.
      */
     @Test
-    public void run() throws InterruptedException {
+    public void run() {
         // Create source
         UntypedValues values = UntypedValues.builder()
-            .source("test")
-            .prefix("")
-            .timestamp(123L)
-            .values(Collections.singletonMap("test", "test"))
-            .build();
-        
+                .source("test")
+                .prefix("")
+                .timestamp(123L)
+                .values(Collections.singletonMap("test", "test"))
+                .build();
+
         MRecordSource source = MRecordSources.of(values, values);
         // Create Pipeline
         EvaluationPipeline pipeline = createPipeline();
@@ -48,7 +67,7 @@ public class CrunchExecutorTest {
         CrunchExecutor crunchExecutor = new CrunchExecutor(source, pipeline, sink);
         // Run the executor
         crunchExecutor.run();
-    
+
         // Ensure that two events have been reported
         Mockito.verify(sink, times(2)).handle(any());
     }
@@ -57,11 +76,11 @@ public class CrunchExecutorTest {
         return EvaluationPipeline.builder()
                 .withIdentifier("bsdf")
                 .withSubStream(
-                    SubStream.builder()
-                        .withIdentifier("asdf")
-                        .withPredicate(x -> true)
-                        .withEvaluationFunction(new MyEvaluationFunction())
-                        .build()
+                        SubStream.builder()
+                                .withIdentifier("asdf")
+                                .withPredicate(x -> true)
+                                .withEvaluationFunction(new MyEvaluationFunction())
+                                .build()
                 )
                 .build();
     }
@@ -75,7 +94,7 @@ public class CrunchExecutorTest {
                     .withSource("no source")
                     .build());
         }
-    
+
         /**
          * Collects all channel identifiers, that are used for the triggering condition
          *

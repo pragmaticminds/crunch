@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.trigger.strategy;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -16,12 +35,12 @@ import java.util.Set;
  * Created by Erwin Wagasow on 13.08.2018
  */
 public abstract class MemoryTriggerStrategy<T extends Serializable> implements TriggerStrategy {
-    
+
     protected ArrayList<T> lastDecisionBases = new ArrayList<>();
     protected Supplier<T>  supplier;
     protected int          bufferSize;
     protected T            initialValue;
-    
+
     /**
      * Main constructor
      * @param supplier of the decision base, which extracts relevant values from the {@link TypedValues}
@@ -35,7 +54,7 @@ public abstract class MemoryTriggerStrategy<T extends Serializable> implements T
             lastDecisionBases.add(initialValue);
         }
     }
-    
+
     /**
      * This method decides whether it is to be triggered or not.
      * This method is implemented in here an leads out the part of decision making into the method
@@ -46,12 +65,12 @@ public abstract class MemoryTriggerStrategy<T extends Serializable> implements T
     @Override
     public boolean isToBeTriggered(MRecord values) {
         T decisionBase = supplier.extract(values);
-        
+
         // ignore null values
         if(decisionBase == null){
             return false;
         }
-        
+
         boolean result = isToBeTriggered(decisionBase);
         lastDecisionBases.add(decisionBase);
         if(lastDecisionBases.size() > bufferSize){
@@ -59,7 +78,7 @@ public abstract class MemoryTriggerStrategy<T extends Serializable> implements T
         }
         return result;
     }
-    
+
     /**
      * This method is to be implemented by the user of this class, with the final decision making.
      * @param decisionBase the extracted value

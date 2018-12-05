@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.pipe;
 
 import com.google.common.base.Preconditions;
@@ -20,7 +39,7 @@ import java.util.stream.Collectors;
 public class EvaluationPipeline<T extends Serializable> implements Serializable {
     private final String identifier;
     private final List<SubStream<T>> subStreams;
-    
+
     /**
      * private constructor for the builder
      * @param identifier of the {@link EvaluationPipeline}
@@ -31,30 +50,31 @@ public class EvaluationPipeline<T extends Serializable> implements Serializable 
         this.identifier = identifier;
         this.subStreams = subStreams;
     }
-    
+
     // getter
     public String getIdentifier() {
         return identifier;
     }
+
     public List<SubStream<T>> getSubStreams() {
         return subStreams;
     }
-    
+
     /**
      * Creates a builder for this class
      * @return a builder
      */
     public static <T extends Serializable> Builder<T> builder() { return new Builder<>(); }
-    
+
     /**
      * this Builder creates new instances of {@link EvaluationPipeline} class
      */
     public static final class Builder<T extends Serializable> implements Serializable {
         private String identifier;
         private List<SubStream<T>> subStreams;
-        
+
         private Builder() {}
-    
+
         /**
          * set the identifier
          * @param identifier
@@ -90,7 +110,7 @@ public class EvaluationPipeline<T extends Serializable> implements Serializable 
             checkConstructorParameters(identifier, subStreams);
             return new EvaluationPipeline<T>(identifier, subStreams);
         }
-    
+
         /**
          * Checks if {@link SubStream} identifiers are null or used multiple times.
          * Checks if the identifier of the {@link EvaluationPipeline} is not null
@@ -102,18 +122,18 @@ public class EvaluationPipeline<T extends Serializable> implements Serializable 
             Preconditions.checkNotNull(identifier, "the identifier of the EvaluationPipeline is not set");
             Preconditions.checkNotNull(subStreams, "the SubStreams of the EvaluationPipeline are not set");
             Preconditions.checkArgument(!subStreams.isEmpty(), "the SubStream of the EvaluationPipeline is empty");
-            
+
             Set<String> identifiers = subStreams.stream()
-                .map(SubStream::getIdentifier)
-                .peek(identifier1 -> Preconditions.checkNotNull(
-                    identifier1,
-                    String.format("An identifier is null in EvaluationPipeline: %s", identifier)
-                ))
-                .collect(Collectors.toSet());
-        
+                    .map(SubStream::getIdentifier)
+                    .peek(identifier1 -> Preconditions.checkNotNull(
+                            identifier1,
+                            String.format("An identifier is null in EvaluationPipeline: %s", identifier)
+                    ))
+                    .collect(Collectors.toSet());
+
             if(identifiers.size() != subStreams.size()){
                 throw new IdentifierAlreadyExistsException(
-                    String.format("A SubStream identifier is already in use in EvaluationPipeline: %s", identifier)
+                        String.format("A SubStream identifier is already in use in EvaluationPipeline: %s", identifier)
                 );
             }
         }

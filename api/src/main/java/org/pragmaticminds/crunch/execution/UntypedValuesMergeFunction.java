@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.execution;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -15,9 +34,9 @@ import java.security.InvalidParameterException;
  * Created by Erwin Wagasow on 02.10.2018
  */
 public class UntypedValuesMergeFunction implements MergeFunction<MRecord, MRecord> {
-    
+
     private UntypedValues values = null;
-    
+
     /**
      * Merges incomming values to a aggregated value containing all other sub values from before.
      *
@@ -26,18 +45,18 @@ public class UntypedValuesMergeFunction implements MergeFunction<MRecord, MRecor
      */
     @Override
     public MRecord merge(MRecord currentValue) {
-        if(!UntypedValues.class.isInstance(currentValue)){
+        if (!(currentValue instanceof UntypedValues)) {
             throw new InvalidParameterException(String.format(
-                "ValuesMergeFunction currently only supports UntypedValues and not %s",
-                currentValue.getClass().getName()
+                    "ValuesMergeFunction currently only supports UntypedValues and not %s",
+                    currentValue.getClass().getName()
             ));
         }
-        
+
         // Do the mapping
         values = mapWithoutState(values, currentValue);
         return values;
     }
-    
+
     /**
      * Internal method that does the merging of the state.
      * Does not fetch / rewrite the Function's state.

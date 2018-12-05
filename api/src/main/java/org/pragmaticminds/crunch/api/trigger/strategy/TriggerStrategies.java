@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.trigger.strategy;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -16,7 +35,7 @@ import java.util.HashSet;
  */
 public class TriggerStrategies {
     private TriggerStrategies() { /* does nothing */}
-    
+
     /**
      * This method triggers always on supplied value = true
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -24,11 +43,11 @@ public class TriggerStrategies {
      */
     public static TriggerStrategy onTrue(Supplier<Boolean> supplier){
         return new LambdaTriggerStrategy(
-            values -> supplier.extract(values) != null && supplier.extract(values),
-            () -> new HashSet<>(supplier.getChannelIdentifiers())
+                values -> supplier.extract(values) != null && supplier.extract(values),
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
         );
     }
-    
+
     /**
      * This method triggers always on supplied value = false
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -36,15 +55,15 @@ public class TriggerStrategies {
      */
     public static TriggerStrategy onFalse(Supplier<Boolean> supplier){
         return new LambdaTriggerStrategy(
-            values ->
-                // null check
-                supplier.extract(values) != null
-                // on false check
-                && !supplier.extract(values),
-            () -> new HashSet<>(supplier.getChannelIdentifiers())
+                values ->
+                        // null check
+                        supplier.extract(values) != null
+                                // on false check
+                                && !supplier.extract(values),
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
         );
     }
-    
+
     /**
      * This method triggers on supplied value = true and the last supplied value = false
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -53,7 +72,7 @@ public class TriggerStrategies {
     public static TriggerStrategy onBecomeTrue(Supplier<Boolean> supplier){
         return onBecomeTrue(supplier, null);
     }
-    
+
     /**
      * This method triggers on supplied value = true and the last supplied value = false
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -65,14 +84,14 @@ public class TriggerStrategies {
             @Override
             public boolean isToBeTriggered(Boolean decisionBase) {
                 return
-                    // null check
-                    decisionBase != null
-                    // condition check
-                    && !lastDecisionBases.isEmpty() && !lastDecisionBases.get(0) && decisionBase;
+                        // null check
+                        decisionBase != null
+                                // condition check
+                                && !lastDecisionBases.isEmpty() && !lastDecisionBases.get(0) && decisionBase;
             }
         };
     }
-    
+
     /**
      * This method triggers on supplied value = false and the last supplied value = true
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -81,7 +100,7 @@ public class TriggerStrategies {
     public static TriggerStrategy onBecomeFalse(Supplier<Boolean> supplier){
         return onBecomeFalse(supplier, null);
     }
-    
+
     /**
      * This method triggers on supplied value = false and the last supplied value = true
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -93,14 +112,14 @@ public class TriggerStrategies {
             @Override
             public boolean isToBeTriggered(Boolean decisionBase) {
                 return
-                    // null check
-                    decisionBase != null
-                    // condition check
-                    && !lastDecisionBases.isEmpty() && lastDecisionBases.get(0) && !decisionBase;
+                        // null check
+                        decisionBase != null
+                                // condition check
+                                && !lastDecisionBases.isEmpty() && lastDecisionBases.get(0) && !decisionBase;
             }
         };
     }
-    
+
     /**
      * This method triggers on supplied value != last supplied value
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -109,7 +128,7 @@ public class TriggerStrategies {
     public static <T extends Serializable> TriggerStrategy onChange(Supplier<T> supplier){
         return onChange(supplier, null);
     }
-    
+
     /**
      * This method triggers on supplied value != last supplied value
      * @param supplier extracts the relevant values from a {@link TypedValues}
@@ -127,10 +146,10 @@ public class TriggerStrategies {
             @Override
             public boolean isToBeTriggered(T decisionBase) {
                 return
-                    // null check
-                    decisionBase != null
-                    // condition check
-                    && !lastDecisionBases.isEmpty() && !lastDecisionBases.get(0).equals(decisionBase);
+                        // null check
+                        decisionBase != null
+                                // condition check
+                                && !lastDecisionBases.isEmpty() && !lastDecisionBases.get(0).equals(decisionBase);
             }
         };
     }
@@ -143,8 +162,8 @@ public class TriggerStrategies {
      */
     public static <T> TriggerStrategy onNull(Supplier<T> supplier){
         return new LambdaTriggerStrategy(
-            values -> supplier.extract(values) == null,
-            () -> new HashSet<>(supplier.getChannelIdentifiers())
+                values -> supplier.extract(values) == null,
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
         );
     }
 
@@ -156,8 +175,8 @@ public class TriggerStrategies {
      */
     public static <T> TriggerStrategy onNotNull(Supplier<T> supplier){
         return new LambdaTriggerStrategy(
-            values -> supplier.extract(values) != null,
-            () -> new HashSet<>(supplier.getChannelIdentifiers())
+                values -> supplier.extract(values) != null,
+                () -> new HashSet<>(supplier.getChannelIdentifiers())
         );
     }
 
@@ -167,7 +186,7 @@ public class TriggerStrategies {
      */
     public static TriggerStrategy always(){
         return new LambdaTriggerStrategy(
-            values -> true, HashSet::new
+                values -> true, HashSet::new
         );
     }
 }

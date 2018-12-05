@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.execution;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -27,7 +46,7 @@ public class KafkaMRecordSource implements MRecordSource {
 
     private transient KafkaConsumer<String, UntypedValues>      consumer;
     private transient Iterator<ConsumerRecord<String, UntypedValues>> recordIterator;
-    
+
     /**
      * Only for testing constructor. Gets a {@link KafkaConsumer} as parameter.
      * !!!The consumer must be set to autocommit!!!
@@ -39,7 +58,7 @@ public class KafkaMRecordSource implements MRecordSource {
     KafkaMRecordSource(KafkaConsumer<String, UntypedValues> consumer) {
         this.consumer = consumer;
     }
-    
+
     /**
      * Main constructor. Creates a new instance of the {@link KafkaConsumer}
      * @param kafkaUrl to connect to kafka
@@ -75,7 +94,7 @@ public class KafkaMRecordSource implements MRecordSource {
                               Map<String, Object> additionalProperties) {
         initialize(kafkaUrl, kafkaGroup, topics, additionalProperties, false);
     }
-    
+
     /**
      * Helper for the constructors
      * @param kafkaUrl to connect to kafka
@@ -106,7 +125,7 @@ public class KafkaMRecordSource implements MRecordSource {
         this.consumer = new KafkaConsumer<>(properties, keyDeserializer, valueDeserializer);
         this.consumer.subscribe(topics);
     }
-    
+
     /**
      * Request the next record.
      * Poll on {@link KafkaConsumer} with Long.MAX_VALUE as timeout.
@@ -117,7 +136,7 @@ public class KafkaMRecordSource implements MRecordSource {
     public UntypedValues get() {
         // polls as long as it get's records
         getMRecordsIfNoneAvailable();
-    
+
         // return next record from the iterator
         ConsumerRecord<String, UntypedValues> next = recordIterator.next();
         if (logger.isTraceEnabled() && next.offset() % LoggingUtil.getTraceLogReportCheckpoint() == 0) {
@@ -125,7 +144,7 @@ public class KafkaMRecordSource implements MRecordSource {
         }
         return next.value();
     }
-    
+
     /**
      * polls until it gets records
      */
@@ -136,7 +155,7 @@ public class KafkaMRecordSource implements MRecordSource {
             recordIterator = consumerRecords.iterator();
         }
     }
-    
+
     /**
      * Check whether more records are available for fetch. In this case always true.
      *
@@ -147,14 +166,14 @@ public class KafkaMRecordSource implements MRecordSource {
     public boolean hasRemaining() {
         return true;
     }
-    
+
     /**
      * Is called before first call to {@link #hasRemaining()} or {@link #get()}.
      * In this case nothing is to do.
      */
     @Override
     public void init() { /* nothing to do in here */ }
-    
+
     /**
      * Is called after processing has ended (either by cancelling or by exhausting the source).
      * Closes the consumer provided with the constructor.
@@ -163,7 +182,7 @@ public class KafkaMRecordSource implements MRecordSource {
     public void close() {
         consumer.close();
     }
-    
+
     /**
      * Returns the Kind of the record source.
      *

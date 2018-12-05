@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.sinks;
 
 import org.influxdb.InfluxDB;
@@ -38,7 +57,7 @@ public class InfluxDBSink extends AbstractRecordHandler {
 
     private final InfluxFactory factory;
     private final String measurement;
-    
+
     private transient InfluxDB influxDB = null;
 
     private HashMap<String, Value> lastValues = new HashMap<>();
@@ -53,7 +72,7 @@ public class InfluxDBSink extends AbstractRecordHandler {
         this.factory = factory;
         this.measurement = measurement;
     }
-    
+
     /**
      * intializes sink.
      */
@@ -61,7 +80,7 @@ public class InfluxDBSink extends AbstractRecordHandler {
     public void init() {
         this.influxDB = factory.create();
     }
-    
+
     /**
      * processes the incoming {@link TypedValues} and stores it in the inner sink.
      *
@@ -76,9 +95,9 @@ public class InfluxDBSink extends AbstractRecordHandler {
             values = (TypedValues) record;
         } else {
             throw new UnsupportedOperationException("Currently only UntypedValues and Typed values " +
-                                                    "are supported in InfluxDBSink!");
+                    "are supported in InfluxDBSink!");
         }
-        
+
         for (Map.Entry<String, Value> entry : values.getValues().entrySet()) {
             //only write the new values or the values that changed
             if(!lastValues.containsKey(entry.getKey()) ||
@@ -90,7 +109,7 @@ public class InfluxDBSink extends AbstractRecordHandler {
             lastValues.put(entry.getKey(), entry.getValue());
         }
     }
-    
+
     /**
      * Collects all channel identifiers, that are used for the triggering condition.
      * In this case no identifiers can be returned.
@@ -101,92 +120,92 @@ public class InfluxDBSink extends AbstractRecordHandler {
     public Set<String> getChannelIdentifiers() {
         return Collections.emptySet();
     }
-    
+
     @FunctionalInterface
     interface InfluxFactory extends Serializable {
-        
+
         /**
          * Creates and returns an Instance of {@link InfluxDB}
          *
          * @return Valid InfluxDB Object.
          */
         InfluxDB create();
-        
+
     }
-    
+
     /**
      * implements the type conversion for storage into InfluxDb, based on VisitorPattern
      */
     private static class PointGeneratingVisitor implements ValueVisitor<Point> {
-        
+
         private long timestamp;
         private String source;
         private String measurement;
         private String field;
-        
+
         public PointGeneratingVisitor(long timestamp, String measurement, String source, String field) {
             this.timestamp = timestamp;
             this.source = source;
             this.measurement = measurement;
             this.field = field;
         }
-        
+
         @Override
         public Point visit(BooleanValue value) {
             Point.Builder builder = createPointBuilder()
-                .addField(field, value.getAsBoolean());
+                    .addField(field, value.getAsBoolean());
             return builder.build();
         }
-        
+
         @Override
         public Point visit(DateValue value) {
             Point.Builder builder = createPointBuilder()
-                .addField(field, value.getAsDate().toString());
+                    .addField(field, value.getAsDate().toString());
             return builder.build();
         }
-        
-        
+
+
         @Override
         public Point visit(DoubleValue value) {
             Point.Builder builder = createPointBuilder()
-                .addField(field, value.getAsDouble());
+                    .addField(field, value.getAsDouble());
             return builder.build();
         }
-        
+
         @Override
         public Point visit(LongValue value) {
             Point.Builder builder = createPointBuilder()
-                .addField(field, value.getAsLong());
+                    .addField(field, value.getAsLong());
             return builder.build();
         }
-        
+
         @Override
         public Point visit(StringValue value) {
             Point.Builder builder = createPointBuilder()
-                .addField(field, value.getAsString());
+                    .addField(field, value.getAsString());
             return builder.build();
         }
-        
+
         private Point.Builder createPointBuilder() {
             return Point
-                .measurement(measurement)
-                .tag("source", source)
-                .time(timestamp, TimeUnit.MILLISECONDS);
+                    .measurement(measurement)
+                    .tag("source", source)
+                    .time(timestamp, TimeUnit.MILLISECONDS);
         }
     }
-    
+
     /**
      * Default Factory.
      */
     public static class DefaultInfluxFactory implements InfluxFactory {
-        
+
         private final String url;
         private final String db;
         private final String influxUser;
         private final String influxPass;
         private int maxNumberOfBatchPoints;
         private int commitTimeMaxMs;
-        
+
         /**
          * Constructor without use of user/password
          * user/password where set to empty string
@@ -198,7 +217,7 @@ public class InfluxDBSink extends AbstractRecordHandler {
         public DefaultInfluxFactory(String url, String db, int maxNumberOfBatchPoints, int commitTimeMaxMs) {
             this(url,db,"","",maxNumberOfBatchPoints,commitTimeMaxMs);
         }
-        
+
         /**
          *
          * @param url                       influx urls incl. port
@@ -216,7 +235,7 @@ public class InfluxDBSink extends AbstractRecordHandler {
             this.influxUser = influxUser;
             this.influxPass = influxPass;
         }
-        
+
         /**
          * checks if database is existing and creates it if not
          *
@@ -225,19 +244,18 @@ public class InfluxDBSink extends AbstractRecordHandler {
          */
         private static void checkOrCreateDatabaseIfNotExists(InfluxDB influxDB, String databaseName) {
             List<String> dbNames = influxDB.describeDatabases();
-            
+
             if (!dbNames.contains(databaseName)) {
                 influxDB.createDatabase(databaseName);
             }
         }
-        
+
         @Override
         public InfluxDB create() {
             InfluxDB influxDB;
             if(!influxUser.isEmpty()){
                 influxDB = InfluxDBFactory.connect(url,influxUser,influxPass);
-            }
-            else{
+            } else{
                 influxDB = InfluxDBFactory.connect(url);
             }
 

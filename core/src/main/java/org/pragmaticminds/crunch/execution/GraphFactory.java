@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.execution;
 
 import akka.Done;
@@ -36,7 +55,7 @@ import java.util.concurrent.CompletionStage;
  * Created by julian on 15.08.18
  */
 class GraphFactory<T extends Serializable> {
-    
+
     /**
      * Creates a {@link RunnableGraph} from Akka Streams.
      * This graph can then be Materialized and run.
@@ -46,10 +65,10 @@ class GraphFactory<T extends Serializable> {
      * @return RunnableGraph for Materialization.
      */
     RunnableGraph<CompletionStage<Done>> create(
-        MRecordSource source,
-        EvaluationPipeline<T> pipeline,
-        EventSink<T> sink,
-        Long watermarkOffsetMs
+            MRecordSource source,
+            EvaluationPipeline<T> pipeline,
+            EventSink<T> sink,
+            Long watermarkOffsetMs
     ) {
         // Source from the MRecordSourceWrapper
         Source<MRecord, NotUsed> streamSource = Source.fromGraph(new MRecordSourceWrapper(source));
@@ -75,48 +94,48 @@ class GraphFactory<T extends Serializable> {
      */
     @SuppressWarnings("unchecked") // manually checked
     private Function2<GraphDSL.Builder<CompletionStage<Done>>, SinkShape<Object>, ClosedShape> buildGraph(
-        Source<MRecord, NotUsed> streamSource,
-        EvaluationPipeline<T> pipeline,
-        EventSink<T> sink,
-        Long watermarkOffsetMs
+            Source<MRecord, NotUsed> streamSource,
+            EvaluationPipeline<T> pipeline,
+            EventSink<T> sink,
+            Long watermarkOffsetMs
     ) {
         return (builder, out) -> {  // variables: builder (GraphDSL.Builder) and out (SinkShape)
             final Outlet<MRecord> builderSource = builder.add(streamSource).out();
 
             GraphDSL.Builder.ForwardOps stream = builder.from(builderSource);
             for (SubStream<T> subStream : pipeline.getSubStreams()) {
-                
+
                 // Generate a Flow from the RecordHandlers
                 List<RecordHandler> recordHandlers = subStream.getRecordHandlers();
                 // Initialize the record handlers
                 recordHandlers.forEach(RecordHandler::init);
-                
+
                 // Generate a Flow from the Evaluation Functions
                 List<EvaluationFunction<T>> evalFunctions = subStream.getEvalFunctions();
                 // Initialize the eval functions
                 evalFunctions.forEach(EvaluationFunction::init);
-                
+
                 // Prepare the stream
                 GraphDSL.Builder.ForwardOps outStream = stream
-                    .via(builder.add(
-                        Flow.of(MRecord.class)
-                            // filter all incoming MRecords with predicate
-                            .filter(record -> subStream.getPredicate().validate(record))
-                            // filter all not relevant MRecords with channels that are never used
-                            .filter(createChannelFilter(subStream))
-                            // merge incoming MRecords
-                            .map(new MergeFunction())
+                        .via(builder.add(
+                                Flow.of(MRecord.class)
+                                        // filter all incoming MRecords with predicate
+                                        .filter(record -> subStream.getPredicate().validate(record))
+                                        // filter all not relevant MRecords with channels that are never used
+                                        .filter(createChannelFilter(subStream))
+                                        // merge incoming MRecords
+                                        .map(new MergeFunction())
+                                )
                         )
-                    )
-                    .via(builder.add(
-                        // Sort all incoming records by their timestamp in the time window defined by #watermarkOffsetMs
-                        new SortGraphFlow<>(watermarkOffsetMs)
-                    ))
-                    .via(builder.add(
-                        // pass all MRecords to all EvaluationFunctions and RecordHandlers of the current subStream
-                        GraphFactory.this.toFlow(recordHandlers, evalFunctions, sink))
-                    );
-                
+                        .via(builder.add(
+                                // Sort all incoming records by their timestamp in the time window defined by #watermarkOffsetMs
+                                new SortGraphFlow<>(watermarkOffsetMs)
+                        ))
+                        .via(builder.add(
+                                // pass all MRecords to all EvaluationFunctions and RecordHandlers of the current subStream
+                                GraphFactory.this.toFlow(recordHandlers, evalFunctions, sink))
+                        );
+
                 // Ignore this sink
                 outStream.to(out);
             }
@@ -124,7 +143,7 @@ class GraphFactory<T extends Serializable> {
             return ClosedShape.getInstance();
         };
     }
-    
+
     /**
      * Creates a filter that is looking for the availability of the channels that are used.
      *
@@ -145,36 +164,36 @@ class GraphFactory<T extends Serializable> {
      * @return Flow for usage in {@link #buildGraph(Source, EvaluationPipeline, EventSink, Long)} method
      */
     private Flow<MRecord, MRecord, NotUsed> toFlow(
-        List<RecordHandler> recordHandlers,
-        List<EvaluationFunction<T>> functions,
-        EventSink<T> sink
+            List<RecordHandler> recordHandlers,
+            List<EvaluationFunction<T>> functions,
+            EventSink<T> sink
     ) {
         return Flow
-            .of(MRecord.class)
-            .map(
-                (Function<MRecord, MRecord>)param -> {
-                    for (RecordHandler handler : recordHandlers) {
-                        handler.apply(param);
-                    }
-                    return param;
-                }
-            )
-            .map(
-            (Function<MRecord, MRecord>) param -> {
-                EvaluationContext<T> context = new EventSinkContext<>(sink);
-                ((EventSinkContext) context).setCurrent(param);
-                for (EvaluationFunction<T> function : functions) {
-                    function.eval(context);
-                }
-                return param;
-            }
-        );
+                .of(MRecord.class)
+                .map(
+                        (Function<MRecord, MRecord>)param -> {
+                            for (RecordHandler handler : recordHandlers) {
+                                handler.apply(param);
+                            }
+                            return param;
+                        }
+                )
+                .map(
+                        (Function<MRecord, MRecord>) param -> {
+                            EvaluationContext<T> context = new EventSinkContext<>(sink);
+                            ((EventSinkContext) context).setCurrent(param);
+                            for (EvaluationFunction<T> function : functions) {
+                                function.eval(context);
+                            }
+                            return param;
+                        }
+                );
     }
-    
+
     /** Wrapps the UntypedValuesMergeFunction as a akka {@link Function} */
     static class MergeFunction extends UntypedValuesMergeFunction implements Function<MRecord, MRecord>{
         @Override
-        public MRecord apply(MRecord value) throws Exception {
+        public MRecord apply(MRecord value) {
             return merge(value);
         }
     }

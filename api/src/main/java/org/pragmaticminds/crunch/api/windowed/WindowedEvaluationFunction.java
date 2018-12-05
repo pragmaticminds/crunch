@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.windowed;
 
 import com.google.common.base.Preconditions;
@@ -30,7 +49,7 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
     private WindowExtractor<T> extractor;
     private EventFilter<T> filter;
     private boolean         lastWindowOpen = false;
-    
+
     /**
      * Private Constructor for the Builder of this class.
      *
@@ -47,18 +66,18 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
         this.recordWindowPrototype = recordWindow;
         this.extractorPrototype = extractor;
         this.filterPrototype = filter;
-        
+
         makeLocalInstances();
-        
+
         checkValues();
     }
-    
+
     /** Check if all necessary members are available */
     private void checkValues() {
         Preconditions.checkNotNull(recordWindowPrototype);
         Preconditions.checkNotNull(extractorPrototype);
     }
-    
+
     private void makeLocalInstances(){
         recordWindow = ClonerUtil.clone(recordWindowPrototype);
         extractor = ClonerUtil.clone(extractorPrototype);
@@ -75,7 +94,7 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
     public static <B extends Serializable> Builder<B> builder() {
         return new Builder<>();
     }
-    
+
     /**
      * evaluates the incoming {@link MRecord} from the {@link EvaluationContext} and passes the results
      * back to the collect method of the context.
@@ -112,7 +131,7 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
             lastWindowOpen = false;
         }
     }
-    
+
     /**
      * Collects all channel identifiers, that are used for the triggering condition
      *
@@ -127,7 +146,7 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
         results.addAll(recordWindowPrototype.getChannelIdentifiers());
         return results;
     }
-    
+
     /**
      * Checks if the results are set and if a filter is set, applies the filter on the results and collects them by
      * the context.
@@ -139,13 +158,13 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
         if(results != null){
             if(filter != null){
                 applyFilter(results, context.get())
-                    .forEach(context::collect);
+                        .forEach(context::collect);
             }else{
                 results.forEach(context::collect);
             }
         }
     }
-    
+
     /**
      * applies the filter on the results
      * @param results to be filtered
@@ -153,10 +172,10 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
      */
     private Collection<T> applyFilter(Collection<T> results, MRecord record) {
         return results.stream()
-            .filter(event -> filter.apply(event, record))
-            .collect(Collectors.toList());
+                .filter(event -> filter.apply(event, record))
+                .collect(Collectors.toList());
     }
-    
+
     /**
      * Builder for this class
      */
@@ -164,7 +183,7 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
         RecordWindow    recordWindow;
         WindowExtractor<T> extractor;
         EventFilter<T> filter;
-        
+
         private Builder() {}
 
         public Builder<T> recordWindow(RecordWindow recordWindow) {
@@ -184,8 +203,8 @@ public class WindowedEvaluationFunction<T extends Serializable> implements Evalu
 
         public Builder<T> but() {
             return (new Builder<T>()).recordWindow(recordWindow)
-                .extractor(extractor)
-                .filter(filter);
+                    .extractor(extractor)
+                    .filter(filter);
         }
 
         public WindowedEvaluationFunction<T> build() {

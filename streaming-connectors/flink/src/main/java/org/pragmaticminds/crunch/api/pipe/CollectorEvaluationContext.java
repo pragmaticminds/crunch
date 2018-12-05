@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.pipe;
 
 import com.google.common.base.Preconditions;
@@ -29,7 +48,7 @@ public class CollectorEvaluationContext<T extends Serializable> extends Evaluati
         this.value = value;
         this.out = out;
     }
-    
+
     /**
      * delivers the next {@link MRecord} data to be processed
      *
@@ -39,7 +58,7 @@ public class CollectorEvaluationContext<T extends Serializable> extends Evaluati
     public MRecord get() {
         return this.value;
     }
-    
+
     /**
      * collects the resulting Ts of processing
      *
@@ -49,13 +68,13 @@ public class CollectorEvaluationContext<T extends Serializable> extends Evaluati
     public void collect(T event) {
         out.collect(event);
     }
-    
+
     /**
      * Creates a builder for this class {@link CollectorEvaluationContext}
      * @return a builder for this class {@link CollectorEvaluationContext}
      */
     public static <T extends Serializable> Builder<T> builder() { return new Builder<>(); }
-    
+
     /**
      * Creates instances of the type {@link CollectorEvaluationContext}
      */
@@ -64,25 +83,25 @@ public class CollectorEvaluationContext<T extends Serializable> extends Evaluati
         private Collector<T> out;
 
         private Builder() {}
-        
+
         public Builder withValue(MRecord value) {
             this.value = value;
             return this;
         }
-        
+
         public Builder withOut(Collector<T> out) {
             this.out = out;
             return this;
         }
-    
+
         @SuppressWarnings("unchecked") // manually checked
         public Builder but() { return builder().withValue(value).withOut(out); }
-        
+
         public CollectorEvaluationContext build() {
             checkParameters();
             return new CollectorEvaluationContext<T>(value, out);
         }
-    
+
         private void checkParameters() {
             Preconditions.checkNotNull(value);
             Preconditions.checkNotNull(out);

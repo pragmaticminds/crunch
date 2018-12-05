@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.execution;
 
 import akka.stream.Attributes;
@@ -29,19 +48,19 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>> implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(SortGraphFlow.class);
-    
+
     // constructor parameters
     private final Long watermarkOffsetMs;
-    
-    private final transient Inlet<T> in = Inlet.<T>create("SortGraphFlow.in");
-    private final transient Outlet<T> out = Outlet.<T>create("SortGraphFlow.out");
+
+    private final transient Inlet<T> in = Inlet.create("SortGraphFlow.in");
+    private final transient Outlet<T> out = Outlet.create("SortGraphFlow.out");
     private final FlowShape<T, T> shape = FlowShape.of(in, out);
-    
+
     private TimestampSortFunction<T> sortFunction;
     private final Serializable bufferMutex = new Serializable() {};
     private final ArrayDeque<T> buffer = new ArrayDeque<>();
-    
-    
+
+
     /**
      * Main constructor taking the {@link SubStream} structure and the watermark offset in milly seconds.
      *
@@ -51,27 +70,26 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
         this.watermarkOffsetMs = watermarkOffsetMs;
         sortFunction = new TimestampSortFunction<>();
     }
-    
+
     /** {@inheritDoc} */
     @Override
     public FlowShape<T, T> shape() {
         return shape;
     }
-    
+
     /**
      * Creates a Graph with an inner Sink and Source.
      * The {@link TimestampSortFunction} is also integrated in the processing.
      *
      * @param inheritedAttributes are ignored
      * @return the {@link GraphStageLogic}
-     * @throws Exception if something went wrong
      */
     @Override
     @SuppressWarnings({
-        "squid:S3776", // do not refactor to reduce cognitive complexity
-        "squid:S1171" // have to use field initializers in here
+            "squid:S3776", // do not refactor to reduce cognitive complexity
+            "squid:S1171" // have to use field initializers in here
     })
-    public GraphStageLogic createLogic(Attributes inheritedAttributes) throws Exception {
+    public GraphStageLogic createLogic(Attributes inheritedAttributes) {
         // create a GraphStageLogic with timer functionality
         return new TimerGraphStageLogic(shape()) {
             // All state MUST be inside the GraphStageLogic,
@@ -79,9 +97,9 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
             // This state is safe to access and modify from all the
             // callbacks that are provided by GraphStageLogic and the
             // registered handlers.
-            
+
             private AtomicReference<Long> systemTimeToRecordTimeDifference = new AtomicReference<>();
-    
+
             // Initialization in Akka Java is usually done in static init blocks
             {
                 // set the handlers for onPush and onPull
@@ -89,24 +107,22 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
                     /**
                      * Is called by the in when a record is available.
                      *
-                     * @throws Exception if something went wrong.
                      */
                     @Override
-                    public void onPush() throws Exception {
+                    public void onPush() {
                         T record = grab(in);
                         // for calculating the relative time difference
                         systemTimeToRecordTimeDifference.set(System.currentTimeMillis() - record.getTimestamp());
                         sortFunction.process(record.getTimestamp(), calculateWatermark(record.getTimestamp()), record);
                         scheduleOnce("key", Duration.of(watermarkOffsetMs, ChronoUnit.MILLIS));
                     }
-    
+
                     /**
                      * Is called by the out back pressure.
                      *
-                     * @throws Exception if something went wrong
                      */
                     @Override
-                    public void onPull() throws Exception {
+                    public void onPull() {
                         T record;
                         if((record = bufferPop()) == null){
                             if(!isClosed(in) && !hasBeenPulled(in)){
@@ -118,7 +134,7 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
                     }
                 });
             }
-    
+
             /**
              * Tries to get a record from the #buffer synchronized.
              *
@@ -132,7 +148,7 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
                     return buffer.pop();
                 }
             }
-    
+
             /**
              * Is always called when a Timer created by scheduleOnce is reached.
              *
@@ -145,7 +161,7 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
                 if(systemTimeToRecordTimeDifference.get() != null){
                     actualTimestamp -= systemTimeToRecordTimeDifference.get();
                 }
-                
+
                 // call onTimer to get all messages over the watermark
                 Collection<T> results = sortFunction.onTimer(calculateWatermark(actualTimestamp));
                 if(!results.isEmpty()){
@@ -162,7 +178,7 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
                     record1 = bufferPop();
                 }
             }
-    
+
             /**
              * Calculates the current watermark by record.getTimestamp() - watermarkOffsetMs.
              *
@@ -172,7 +188,7 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
             private long calculateWatermark(long timestamp) {
                 return timestamp - watermarkOffsetMs;
             }
-    
+
             /** {@inheritDoc} */
             @Override
             public void preStart() throws Exception {
@@ -180,7 +196,7 @@ public class SortGraphFlow<T extends MRecord> extends GraphStage<FlowShape<T, T>
                 pull(in);
                 logger.debug("Initializing SortGraphFlow");
             }
-    
+
             /** {@inheritDoc} */
             @Override
             public void postStop() throws Exception {

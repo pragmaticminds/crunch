@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.trigger.extractor;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -18,7 +37,7 @@ public class Extractors {
     private Extractors() {
         throw new UnsupportedOperationException("this constructor should never be used!");
     }
-    
+
     /**
      * Creates a {@link MapExtractor} that collects the {@link Value}s of all available channels in a {@link MRecord}.
      *
@@ -27,7 +46,7 @@ public class Extractors {
     public static AllChannelMapExtractor allChannelMapExtractor(){
         return new AllChannelMapExtractor();
     }
-    
+
     /**
      * Creates a {@link MapExtractor} that collects the {@link Value}s of a all {@link Supplier}s in the {@link Map},
      * which are saved in the resulting {@link Map} by their given {@link String} mapping name in the {@link Map}.
@@ -38,7 +57,7 @@ public class Extractors {
     public static ChannelMapExtractor channelMapExtractor(Map<Supplier, String> mapping){
         return new ChannelMapExtractor(mapping);
     }
-    
+
     /**
      * Creates a {@link MapExtractor} that collects the {@link Value}s of a all {@link Supplier}s in the {@link Map},
      * which are saved in the resulting {@link Map} by the identifier of the {@link Supplier}, which is the name of
@@ -50,7 +69,7 @@ public class Extractors {
     public static ChannelMapExtractor channelMapExtractor(Collection<Supplier> channels){
         return new ChannelMapExtractor(channels);
     }
-    
+
     /**
      * Creates a {@link MapExtractor} that collects the {@link Value}s of a all {@link Supplier}s in the {@link Map},
      * which are saved in the resulting {@link Map} by the identifier of the {@link Supplier}, which is the name of

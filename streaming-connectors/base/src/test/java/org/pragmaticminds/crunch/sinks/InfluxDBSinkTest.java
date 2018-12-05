@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.sinks;
 
 import org.influxdb.InfluxDB;
@@ -28,27 +47,27 @@ import static org.mockito.Mockito.verify;
  * Created by julian on 15.08.18
  */
 public class InfluxDBSinkTest {
-    
+
     @Test
-    public void callEval() throws InterruptedException {
+    public void callEval() {
         // Mock factory
         InfluxDB mock = Mockito.mock(InfluxDB.class);
         InfluxDBSink.InfluxFactory factory = () -> mock;
-        
+
         // Create the EvalFunction
         RecordHandler sink = new InfluxDBSink(factory, "meas1");
-        
+
         // Perform
         sink.init();
         sink.apply(createUntypedValues());
         sink.apply(createTypedValues());
         sink.close();
-        
+
         // Verify that something has been done
         verify(mock, times(6)).write(any(Point.class));
         assertTrue(sink.getChannelIdentifiers().isEmpty());
     }
-    
+
     private UntypedValues createUntypedValues() {
         HashMap<String, Object> values = new HashMap<>();
         values.put("value1", 1L);
@@ -57,31 +76,31 @@ public class InfluxDBSinkTest {
         values.put("value4", true);
         values.put("value5", new Date(Instant.now().toEpochMilli()));
         return UntypedValues.builder()
-            .source("source")
-            .prefix("")
-            .timestamp(0L)
-            .values(values)
-            .build();
+                .source("source")
+                .prefix("")
+                .timestamp(0L)
+                .values(values)
+                .build();
     }
-    
+
     private TypedValues createTypedValues() {
         return TypedValues.builder()
-            .source("source")
-            .timestamp(0L)
-            .values(Collections.singletonMap("value", Value.of("String")))
-            .build();
+                .source("source")
+                .timestamp(0L)
+                .values(Collections.singletonMap("value", Value.of("String")))
+                .build();
     }
-    
+
     private EvaluationContext createContext(MRecord record) {
         return new EvaluationContext<GenericEvent>() {
             @Override
             public MRecord get() {
                 return record;
             }
-            
+
             @Override
             public void collect(GenericEvent event) {
-            
+
             }
         };
     }

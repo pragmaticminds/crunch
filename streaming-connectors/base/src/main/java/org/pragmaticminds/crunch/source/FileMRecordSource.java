@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.source;
 
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -21,12 +40,12 @@ import java.util.Iterator;
  */
 public class FileMRecordSource extends AbstractMRecordSource implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(FileMRecordSource.class);
-    
+
     private final transient BufferedReader                  reader;
     private final transient Iterator<String>                iterator;
     private final transient FileReader                      fileReader;
     private final           JsonDeserializer<UntypedValues> deserializer;
-    
+
     /**
      * Main constructor.
      * Opens a {@link FileReader} and creates a {@link Iterator} on the lines of the file.
@@ -37,7 +56,7 @@ public class FileMRecordSource extends AbstractMRecordSource implements AutoClos
     public FileMRecordSource(String filePath) {
         // set Kind as finite
         super(MRecordSource.Kind.FINITE);
-    
+
         // initialize file reading structures
         try {
             fileReader = new FileReader(new File(filePath));
@@ -47,11 +66,11 @@ public class FileMRecordSource extends AbstractMRecordSource implements AutoClos
             logger.error("File could not be read!", ex);
             throw new UncheckedIOException(ex);
         }
-        
+
         // initialize json parser
         deserializer = new JsonDeserializer<>(UntypedValues.class);
     }
-    
+
     /**
      * Request the next record.
      * That for the next line is requested from the file iterator and than parsed
@@ -68,8 +87,8 @@ public class FileMRecordSource extends AbstractMRecordSource implements AutoClos
         }
         return null;
     }
-    
-    
+
+
     /**
      * Check whether more records are available for fetch
      *
@@ -84,7 +103,7 @@ public class FileMRecordSource extends AbstractMRecordSource implements AutoClos
             return false;
         }
     }
-    
+
     /**
      * Closes the file handle to the source file.
      */

@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.runtime.sort;
 
 import org.apache.flink.api.common.state.ValueState;
@@ -25,12 +44,12 @@ import java.util.PriorityQueue;
 public class SortFunction extends ProcessFunction<MRecord, MRecord> {
     private int capacity = 100;
     private transient ValueState<TimestampSortFunction<MRecord>> valueState;
-    
+
     /** Basic constructor */
     public SortFunction() {
         /* do nothing */
     }
-    
+
     /**
      * Constructor with the initial capacity of the queue in the {@link #valueState}.
      *
@@ -48,10 +67,10 @@ public class SortFunction extends ProcessFunction<MRecord, MRecord> {
     @Override
     public void open(Configuration config) {
         ValueStateDescriptor<TimestampSortFunction<MRecord>> descriptor = new ValueStateDescriptor<>(
-            // state name
-            "sorted-events",
-            // type information of state
-            TypeInformation.of(new TypeHint<TimestampSortFunction<MRecord>>() {})
+                // state name
+                "sorted-events",
+                // type information of state
+                TypeInformation.of(new TypeHint<TimestampSortFunction<MRecord>>() {})
         );
         valueState = getRuntimeContext().getState(descriptor);
     }
@@ -67,22 +86,22 @@ public class SortFunction extends ProcessFunction<MRecord, MRecord> {
     @Override
     public void processElement(MRecord record, Context context, Collector<MRecord> out) throws IOException {
         TimerService timerService = context.timerService();
-    
+
         TimestampSortFunction<MRecord> innerSortFunction = valueState.value();
         if(innerSortFunction == null){
             innerSortFunction = new TimestampSortFunction<>(capacity);
         }
-        
+
         // process record
         innerSortFunction.process(
-            record.getTimestamp(),
-            timerService.currentWatermark(),
-            record
+                record.getTimestamp(),
+                timerService.currentWatermark(),
+                record
         );
-        
+
         // set timer
         timerService.registerEventTimeTimer(record.getTimestamp());
-        
+
         valueState.update(innerSortFunction);
     }
 
@@ -98,17 +117,17 @@ public class SortFunction extends ProcessFunction<MRecord, MRecord> {
     @Override
     public void onTimer(long timestamp, OnTimerContext context, Collector<MRecord> out) throws IOException {
         Long watermark = context.timerService().currentWatermark();
-    
+
         TimestampSortFunction<MRecord> innerSortFunction = valueState.value();
         if(innerSortFunction == null){
             innerSortFunction = new TimestampSortFunction<>(capacity);
         }
-        
+
         Collection<MRecord> results = innerSortFunction.onTimer(watermark);
         for (MRecord record : results){
             out.collect(record);
         }
-        
+
         valueState.update(innerSortFunction);
     }
 }

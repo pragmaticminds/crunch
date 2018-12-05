@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.pipe;
 
 import com.google.common.base.Preconditions;
@@ -26,13 +45,13 @@ import java.util.stream.Collectors;
  * Created by Erwin Wagasow on 01.08.2018
  */
 public class SubStream<T extends Serializable> implements Serializable {
-    
+
     private final String identifier;
     private final SubStreamPredicate predicate;
     private final List<EvaluationFunction<T>> evaluationFunctions;
     private final List<RecordHandler> recordHandlers;
     private final long sortWindowMs;
-    
+
     /**
      * private constructor for the builder
      * @param identifier the name of the {@link SubStream}
@@ -44,11 +63,11 @@ public class SubStream<T extends Serializable> implements Serializable {
      */
     @SuppressWarnings("unchecked") // is manually checked
     private SubStream(
-        String identifier,
-        SubStreamPredicate predicate,
-        List<EvaluationFunction<T>> evaluationFunctions,
-        List<RecordHandler> recordHandlers,
-        long sortWindowMs
+            String identifier,
+            SubStreamPredicate predicate,
+            List<EvaluationFunction<T>> evaluationFunctions,
+            List<RecordHandler> recordHandlers,
+            long sortWindowMs
     ) {
         this.identifier = identifier;
         this.predicate = predicate;
@@ -66,16 +85,16 @@ public class SubStream<T extends Serializable> implements Serializable {
         }
         this.sortWindowMs = sortWindowMs;
     }
-    
+
     // getter
     public String getIdentifier() {
         return identifier;
     }
-    
+
     public SubStreamPredicate getPredicate() {
         return predicate;
     }
-    
+
     /**
      * This getter returns always the same instances, that are in use and have a state!!!
      * So be sure to clone them before reusing in an other place and that you are not affected of their states.
@@ -84,7 +103,7 @@ public class SubStream<T extends Serializable> implements Serializable {
     public List<EvaluationFunction<T>> getEvalFunctions() {
         return evaluationFunctions;
     }
-    
+
     /**
      * This getter returns always the same instances, that are in use and have a state!!!
      * So be sure to clone them before reusing in an other place and that you are not affected of their states.
@@ -93,11 +112,11 @@ public class SubStream<T extends Serializable> implements Serializable {
     public List<RecordHandler> getRecordHandlers(){
         return recordHandlers;
     }
-    
+
     public long getSortWindowMs() {
         return sortWindowMs;
     }
-    
+
     /**
      * Collect all channel identifiers that are used in the {@link EvaluationFunction}s.
      *
@@ -107,24 +126,24 @@ public class SubStream<T extends Serializable> implements Serializable {
         HashSet<String> channelIdentifiers = new HashSet<>();
         if(evaluationFunctions != null && !evaluationFunctions.isEmpty()){
             channelIdentifiers.addAll(
-                evaluationFunctions.stream()
-                    .flatMap(evaluationFunction -> evaluationFunction.getChannelIdentifiers().stream())
-                    .collect(Collectors.toSet())
+                    evaluationFunctions.stream()
+                            .flatMap(evaluationFunction -> evaluationFunction.getChannelIdentifiers().stream())
+                            .collect(Collectors.toSet())
             );
         }
         if(recordHandlers != null && !recordHandlers.isEmpty()){
             channelIdentifiers.addAll(
-                recordHandlers.stream()
-                    .flatMap(recordHandler -> recordHandler.getChannelIdentifiers().stream())
-                    .collect(Collectors.toSet())
+                    recordHandlers.stream()
+                            .flatMap(recordHandler -> recordHandler.getChannelIdentifiers().stream())
+                            .collect(Collectors.toSet())
             );
         }
         return channelIdentifiers;
     }
-    
-    
+
+
     public static <T extends Serializable> Builder<T> builder() { return new Builder<>(); }
-    
+
     /**
      * Creates new instances of the {@link SubStream} class.
      * Also Checks if all necessary values are set.
@@ -135,7 +154,7 @@ public class SubStream<T extends Serializable> implements Serializable {
         private List<EvaluationFunction<R>> evaluationFunctions;
         private long sortWindow;
         private List<RecordHandler> recordHandlers;
-        
+
         private Builder() {}
 
         public Builder<R> withIdentifier(String identifier) {
@@ -186,21 +205,21 @@ public class SubStream<T extends Serializable> implements Serializable {
             this.sortWindow = sortWindow;
             return this;
         }
-        
+
         @SuppressWarnings("unchecked") // is manually checked
         public Builder<R> but() {
             return new Builder<R>().withIdentifier(identifier)
-                .withPredicate(predicate)
-                .withEvaluationFunctions(evaluationFunctions)
-                .withSortWindow(sortWindow);
+                    .withPredicate(predicate)
+                    .withEvaluationFunctions(evaluationFunctions)
+                    .withSortWindow(sortWindow);
         }
-        
+
         @SuppressWarnings("unchecked") // is manually checked
         public SubStream<R> build() {
             checkParameters();
             return new SubStream(identifier, predicate, evaluationFunctions, recordHandlers, sortWindow);
         }
-        
+
         /**
          * Checks all given values to the Builder for consistency
          */
@@ -208,9 +227,9 @@ public class SubStream<T extends Serializable> implements Serializable {
             Preconditions.checkNotNull(identifier, "identifier is not set for SubStream");
             Preconditions.checkNotNull(predicate, "predicate is not set for SubStream");
             Preconditions.checkArgument(
-                (evaluationFunctions == null || !evaluationFunctions.isEmpty())
-                && (recordHandlers == null || !recordHandlers.isEmpty()),
-                "evaluationFunctions list and recordHandlers list is empty in SubStream"
+                    (evaluationFunctions == null || !evaluationFunctions.isEmpty())
+                            && (recordHandlers == null || !recordHandlers.isEmpty()),
+                    "evaluationFunctions list and recordHandlers list is empty in SubStream"
             );
             if(evaluationFunctions != null){
                 evaluationFunctions.forEach(Preconditions::checkNotNull);

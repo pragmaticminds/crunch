@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.state;
 
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
@@ -20,11 +39,11 @@ import java.util.Map;
  */
 public class StateEvaluationContext<T extends Serializable> extends EvaluationContext<T> {
     private static final Logger logger = LoggerFactory.getLogger(StateEvaluationContext.class);
-    
+
     private final HashMap<String, T>  events;
     private MRecord values;
     private String alias;
-    
+
     /**
      * private constructor on base of a {@link MRecord} object
      * @param values
@@ -34,12 +53,12 @@ public class StateEvaluationContext<T extends Serializable> extends EvaluationCo
         this.alias = alias;
         this.events = new HashMap<>();
     }
-    
+
     // getter
     public Map<String, T> getEvents() {
         return events;
     }
-    
+
     /**
      * delivers the next {@link MRecord} data to be processed
      *
@@ -49,8 +68,9 @@ public class StateEvaluationContext<T extends Serializable> extends EvaluationCo
     public MRecord get() {
         return values;
     }
-    
+
     // setter
+
     /**
      * sets the current {@link MRecord} data to be processed
      * @param values the record to be processed next
@@ -58,7 +78,7 @@ public class StateEvaluationContext<T extends Serializable> extends EvaluationCo
     public void set(MRecord values) {
         this.values = values;
     }
-    
+
     /**
      * sets the alias for naming resulting {@link Event}s.
      * @param alias name for resulting Events.
@@ -66,8 +86,9 @@ public class StateEvaluationContext<T extends Serializable> extends EvaluationCo
     public void setAlias(String alias) {
         this.alias = alias;
     }
-    
+
     // methods
+
     /**
      * collects the resulting T event of processing with it's key
      * @param key should be unique, else it overrides the last value
@@ -76,7 +97,7 @@ public class StateEvaluationContext<T extends Serializable> extends EvaluationCo
     public void collect(String key, T event) {
         this.events.put(key, event);
     }
-    
+
     /**
      * collects the resulting {@link Event} of processing
      * !! do not use the simple collect Method in the {@link MultiStepEvaluationFunction} !!

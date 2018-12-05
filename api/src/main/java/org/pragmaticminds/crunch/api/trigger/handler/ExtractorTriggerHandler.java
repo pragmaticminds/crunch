@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.pragmaticminds.crunch.api.trigger.handler;
 
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
@@ -68,27 +87,27 @@ public abstract class ExtractorTriggerHandler<T extends Serializable> implements
 
         // merge the results of all extractors into one map
         Map<String, Value> results = extractors.stream()
-            // let all extractors extract their result data
-            .flatMap(
-                extractor ->
-                    extractor
-                        .extract(context)
-                        .entrySet()
-                        .stream()
-            )
-            // combine all maps into one
-            .collect(
-                Collectors.toMap(
-                    Map.Entry<String, Value>::getKey,
-                    Map.Entry<String, Value>::getValue
+                // let all extractors extract their result data
+                .flatMap(
+                        extractor ->
+                                extractor
+                                        .extract(context)
+                                        .entrySet()
+                                        .stream()
                 )
-            );
+                // combine all maps into one
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue
+                        )
+                );
 
         // collect the resulting Event with the context
         context.collect(
-            createEvent(eventName, context, results)
+                createEvent(eventName, context, results)
         );
     }
-    
+
     protected abstract T createEvent(String eventName, EvaluationContext<T> context, Map<String, Value> results);
 }
