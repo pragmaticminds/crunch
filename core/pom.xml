@@ -20,16 +20,15 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>crunch-parent</artifactId>
         <groupId>org.pragmaticminds.crunch</groupId>
         <version>0.3.0-SNAPSHOT</version>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
-
     <artifactId>crunch-core</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
 
     <name>crunch-core</name>
     <description>Core module of the crunch project</description>
@@ -46,6 +45,16 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-stream_${akka-scala.version}</artifactId>
             <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${akka-scala.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
         <!--Junit-->
         <dependency>

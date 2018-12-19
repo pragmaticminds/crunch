@@ -19,19 +19,31 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>crunch-parent</artifactId>
         <groupId>org.pragmaticminds.crunch</groupId>
         <version>0.3.0-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>playground</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
-    <description>This module is for "Playin" Around Stuff which is runnable enough to serve others as well.
-    </description>
+
+    <description>This module is for "Playing" Around Stuff which is runnable enough to serve others as well.</description>
 
     <dependencies>
+        <!--Chronicle-->
+        <dependency>
+            <groupId>net.openhft</groupId>
+            <artifactId>chronicle-core</artifactId>
+            <version>${chronicle-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.openhft</groupId>
+            <artifactId>chronicle-wire</artifactId>
+            <version>${chronicle-wire.version}</version>
+        </dependency>
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-queue</artifactId>

@@ -21,7 +21,7 @@
 <Configuration monitorIntervall="10">
     <Appenders>
         <RollingFile name="File"
-                     fileName="logs/streamProcessing.log"
+                     fileName="target/logs/streamProcessing.log"
                      filePattern="logs/%d{yyyy-MM-dd}-%i.log.zip"
                      append="true">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>

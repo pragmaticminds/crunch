@@ -19,26 +19,27 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>crunch-parent</artifactId>
         <groupId>org.pragmaticminds.crunch</groupId>
         <version>0.3.0-SNAPSHOT</version>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
-
     <artifactId>crunch-api</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+
     <name>crunch-api</name>
     <description>Programing Interfaces for other CRUNCH Projects.</description>
 
     <dependencies>
         <!--json serialization-->
-        <dependency>
+        <!--dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -58,12 +59,6 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.25</version>
             <scope>compile</scope>
-        </dependency>
-        <!--Lombok IS DEPRECATED -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
         </dependency>
         <!--Hibernate for the JPA Annotations. IS DEPRECATED-->
         <dependency>
@@ -85,6 +80,14 @@
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!--Lombok IS DEPRECATED -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

@@ -19,18 +19,20 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>streaming-connectors</artifactId>
         <groupId>org.pragmaticminds.crunch</groupId>
         <version>0.3.0-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>streaming-connector-flink</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+
     <properties>
-        <flink.version>1.4.0</flink.version>
-        <flink-scala.version>2.11</flink-scala.version>
+        <flink.version>1.7.0</flink.version>
+        <flink-scala.version>2.12</flink-scala.version>
     </properties>
 
     <dependencies>
@@ -39,19 +41,23 @@
             <groupId>org.pragmaticminds.crunch</groupId>
             <artifactId>crunch-api</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.pragmaticminds.crunch</groupId>
-            <artifactId>streaming-connector-base</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!--Guava-->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-            <scope>compile</scope>
+        </dependency>
+        <!--Jackson-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <!--Flink-->
         <!--Core-->
@@ -73,6 +79,5 @@
             <version>${junit.version}</version>
         </dependency>
     </dependencies>
-
 
 </project>
