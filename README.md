@@ -21,6 +21,7 @@
 
 [![Build Status](https://travis-ci.com/pragmaticminds/crunch.svg?branch=develop)](https://travis-ci.com/pragmaticminds/crunch)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.pragmaticminds.crunch/crunch-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.pragmaticminds.crunch/crunch-parent)
+[![Apache License, Version 2.0](https://img.shields.io/github/license/apache/maven.svg?label=License)](https://img.shields.io/github/license/apache/maven.svg?label=License)
 
 Please read this before asking questions!!!
 
