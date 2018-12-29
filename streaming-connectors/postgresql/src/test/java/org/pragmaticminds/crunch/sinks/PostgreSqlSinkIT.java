@@ -21,6 +21,7 @@ package org.pragmaticminds.crunch.sinks;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.events.GenericEventBuilder;
@@ -39,6 +40,8 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 11.09.2018
  */
+// TODO Implement
+@Ignore
 public class PostgreSqlSinkIT {
     private static final Logger logger = LoggerFactory.getLogger(PostgreSqlSinkIT.class);
 
