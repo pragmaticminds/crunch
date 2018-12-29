@@ -69,7 +69,7 @@
         <javadoc.opts>-Xdoclint:none</javadoc.opts>
         <!--Akka-->
         <akka-scala.version>2.12</akka-scala.version>
-        <akka.version>2.5.14</akka.version>
+        <akka.version>2.5.16</akka.version>
         <mockito.version>2.13.0</mockito.version>
         <chronicle-core.version>1.16.24</chronicle-core.version>
         <chronicle-bytes.version>1.16.25</chronicle-bytes.version>
