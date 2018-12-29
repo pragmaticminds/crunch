@@ -35,10 +35,20 @@
     <name>crunch-parent</name>
     <organization>
         <name>pragmatic minds GmbH</name>
+        <url>www.pragmaticminds.de</url>
     </organization>
 
     <description>Parent project for crunch</description>
-    <url>http://crunch.pragmaticindustries.de</url>
+    <url>www.pragmaticminds.de</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
 
     <modules>
         <module>core</module>
