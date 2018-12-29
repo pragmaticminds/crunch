@@ -16,5 +16,17 @@
 # specific language governing permissions and limitations
 # under the License.
 # ----------------------------------------------------------------------------
----
+
 language: java
+
+env:
+- MAVEN_OPTS="-Xms512m -Xmx512m"
+
+matrix:
+  fast_finish: true
+
+install: true
+
+script:
+- jdk_switcher use oraclejdk8
+- mvn clean install site:site
