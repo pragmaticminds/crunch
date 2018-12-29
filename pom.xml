@@ -39,7 +39,7 @@
     </organization>
 
     <description>Parent project for crunch</description>
-    <url>www.pragmaticminds.de</url>
+    <url>crunch.pragmaticminds.de</url>
 
     <licenses>
         <license>
@@ -494,6 +494,12 @@
                 </configuration>
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ftp</artifactId>
+            </extension>
+        </extensions>
     </build>
 
     <!--Reporting for Maven Site Plugin-->
