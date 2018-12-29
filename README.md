@@ -18,6 +18,9 @@
   -->
   
 # Readme
+
+[![Build Status](https://travis-ci.com/pragmaticminds/crunch.svg?branch=develop)](https://travis-ci.com/pragmaticminds/crunch)
+
 Please read this before asking questions!!!
 
 ## Documentation

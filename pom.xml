@@ -461,6 +461,9 @@
 
                         <!-- JSON doesn't like comments -->
                         <exclude>**/*.json</exclude>
+
+                        <!-- GITHUB Templates-->
+                        <exclude>.github/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
