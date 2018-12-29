@@ -17,8 +17,7 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -82,10 +81,11 @@
     </properties>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com:JulianFeinauer/crunch.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:JulianFeinauer/crunch.git</developerConnection>
+        <connection>scm:git:https://github.com/JulianFeinauer/crunch.git</connection>
+        <developerConnection>scm:git:https://github.com/JulianFeinauer/crunch.git</developerConnection>
         <url>https://github.com/JulianFeinauer/crunch</url>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <distributionManagement>
         <site>
@@ -267,7 +267,7 @@
                                 </requireJavaVersion>
                                 <!-- Disabled for now as it breaks the ability to build single modules -->
                                 <!--reactorModuleConvergence/-->
-                                <banVulnerable implementation="org.sonatype.ossindex.maven.enforcer.BanVulnerableDependencies"/>
+                                <banVulnerable implementation="org.sonatype.ossindex.maven.enforcer.BanVulnerableDependencies" />
                             </rules>
                         </configuration>
                     </execution>
