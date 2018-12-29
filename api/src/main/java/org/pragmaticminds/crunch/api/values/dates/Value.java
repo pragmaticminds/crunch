@@ -116,14 +116,23 @@ public abstract class Value implements Serializable {
         if (Date.class.isAssignableFrom(o.getClass())) {
             return new DateValue((Date) o);
         }
+      if (Float.class.isAssignableFrom(o.getClass())) {
+        return new DoubleValue(((Float) o).doubleValue());
+      }
         if (Double.class.isAssignableFrom(o.getClass())) {
             return new DoubleValue((Double) o);
         }
+      if (Byte.class.isAssignableFrom(o.getClass())) {
+        return new LongValue((long) (Byte) o);
+      }
+      if (Short.class.isAssignableFrom(o.getClass())) {
+        return new LongValue((long) (Short) o);
+      }
+      if (Integer.class.isAssignableFrom(o.getClass())) {
+        return new LongValue((long) (Integer) o);
+      }
         if (Long.class.isAssignableFrom(o.getClass())) {
             return new LongValue((Long) o);
-        }
-        if (Integer.class.isAssignableFrom(o.getClass())) {
-            return new LongValue((long) (Integer) o);
         }
         if (String.class.isAssignableFrom(o.getClass())) {
             return new StringValue((String) o);

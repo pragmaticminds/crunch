@@ -57,10 +57,31 @@ public class ValueTest {
     }
 
     @Test
+    public void ofObject_float() {
+        Object o = 3.14f;
+        Value of = Value.of(o);
+        assertEquals(3.14, of.getAsDouble(), 0.001);
+    }
+
+    @Test
     public void ofObject_double() {
         Object o = 3.14;
         Value of = Value.of(o);
         assertEquals(3.14, of.getAsDouble(), 0.001);
+    }
+
+    @Test
+    public void ofObject_byte() {
+        Object o = (byte) 42;
+        Value of = Value.of(o);
+        assertEquals(new Long(42L), of.getAsLong());
+    }
+
+    @Test
+    public void ofObject_short() {
+        Object o = (short) 42L;
+        Value of = Value.of(o);
+        assertEquals(new Long(42L), of.getAsLong());
     }
 
     @Test
