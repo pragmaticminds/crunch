@@ -29,10 +29,20 @@ public class ResultHandler<EVENT> implements StreamNode<EVENT, Void> {
 
   private final Object instance;
   private final Method method;
+  private final Consumer<EVENT> consumer;
 
   public ResultHandler(Object instance, Method method) {
+    this(instance, method, null);
+  }
+
+  public ResultHandler(Consumer<EVENT> consumer) {
+    this(null, null, consumer);
+  }
+
+  public ResultHandler(Object instance, Method method, Consumer<EVENT> consumer) {
     this.instance = instance;
     this.method = method;
+    this.consumer = consumer;
   }
 
   public Object getInstance() {
@@ -43,7 +53,11 @@ public class ResultHandler<EVENT> implements StreamNode<EVENT, Void> {
     return method;
   }
 
+  /** Return either the given one or create one */
   public Consumer<EVENT> getConsumer() {
+    if (consumer != null) {
+      return consumer;
+    }
     return new Consumer<EVENT>() {
       @Override public void accept(EVENT event) {
         try {

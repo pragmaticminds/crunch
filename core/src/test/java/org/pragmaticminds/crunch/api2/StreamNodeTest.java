@@ -45,7 +45,8 @@ public class StreamNodeTest {
 
     final StreamNodeVisitor<Void> vis = new StreamNodeVisitor<Void>() {
 
-      @Override public <EVENT extends Serializable, IN> Void visit(Evaluate<IN, EVENT> evaluate) {
+
+      @Override public <IN, EVENT extends Serializable> Void visit(Evaluate<IN, EVENT> evaluate) {
         System.out.println("Evaluate function " + evaluate.getEvaluation());
         for (int i = 0; i < evaluate.getChildren().size(); i++) {
           evaluate.getChild(i).accept(this);

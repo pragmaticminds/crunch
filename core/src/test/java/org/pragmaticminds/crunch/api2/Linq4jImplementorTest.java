@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.values.UntypedValues;
+import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -94,13 +95,13 @@ public class Linq4jImplementorTest {
     final Filter<UntypedValues> filter = new Filter<>(i -> true);
     root.addChild(filter);
     final GroupBy<UntypedValues, String> groupBy = new GroupBy<>(u -> u.getSource());
-    filter.addChild((StreamNode) groupBy);
+    filter.addChild(groupBy);
     final Evaluate<UntypedValues, Serializable> evaluate = new Evaluate<>(new SerializableEvaluationFunction());
-    groupBy.addChild((StreamNode) evaluate);
+    groupBy.addChild(evaluate);
     final ResultHandler<Serializable> handler = new ResultHandler<>(null, Linq4jImplementorTest.class.getMethod("print", Object.class));
     evaluate.addChild(handler);
 
-    final Linq4jImplementor implementor = new Linq4jImplementor<>(root.getValues(), filter.predicate, groupBy.groupAssigner, Collections.singletonList(new Linq4jImplementor.EvaluationANdHandler<>(evaluate.getEvaluation(), handler.getConsumer())));
+    final Linq4jImplementor<UntypedValues, GenericEvent> implementor = new Linq4jImplementor<>(root);
     final Enumerator enumerator = implementor.implement();
 
     while (enumerator.moveNext()) {

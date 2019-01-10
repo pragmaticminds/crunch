@@ -22,6 +22,9 @@ package org.pragmaticminds.crunch.api2;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Consumer;
 
 public class Evaluate<IN, EVENT extends Serializable> extends AbstractStreamNode<IN, EVENT> {
 
@@ -37,5 +40,27 @@ public class Evaluate<IN, EVENT extends Serializable> extends AbstractStreamNode
 
   @Override public <T> T accept(StreamNodeVisitor<T> visitor) {
     return visitor.visit(this);
+  }
+
+  public ResultHandler<EVENT> handle(Consumer<EVENT> consumer) {
+    final ResultHandler<EVENT> handler = new ResultHandler<>(consumer);
+    this.addChild(handler);
+    return handler;
+  }
+
+  public ResultHandler<EVENT> handle(Object instance, String method, Class<EVENT> clazz) {
+    // Resolve method on class
+    try {
+      final Method m = instance.getClass().getMethod(method, clazz);
+      return this.handle(e -> {
+        try {
+          m.invoke(instance, e);
+        } catch (IllegalAccessException | InvocationTargetException e1) {
+          throw new RuntimeException("Unnable to invoce the caller method");
+        }
+      });
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException("No such method found in instance object");
+    }
   }
 }

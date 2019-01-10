@@ -24,6 +24,7 @@ import org.apache.calcite.linq4j.Enumerator;
 import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
+import org.pragmaticminds.crunch.api.records.MRecord;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,12 +36,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class Linq4jImplementor {
+public class Linq4jImplementor<T extends MRecord, EVENT extends Serializable> {
 
-  private final Enumerable<?> input;
-  private final Predicate<?> predicate;
-  private final Function<?, Object> groupAssigner;
-  private final List<EvaluationANdHandler<?>> evaluations;
+  private final Enumerable<T> input;
+  private final Predicate<T> predicate;
+  private final Function<T, Object> groupAssigner;
+  private final List<EvaluationANdHandler<EVENT>> evaluations;
 
   public Linq4jImplementor(Root<T> root) {
     final ImplementingVisitor implementingVisitor = new ImplementingVisitor();
@@ -52,7 +53,7 @@ public class Linq4jImplementor {
   }
 
   public Enumerator<Void> implement() {
-    Enumerable<?> datastream;
+    Enumerable<T> datastream;
     if (predicate != null) {
       datastream = input.where(predicate::test);
     } else {
@@ -62,10 +63,10 @@ public class Linq4jImplementor {
     return implementEvaluation(datastream, groupAssigner, evaluations);
   }
 
-  private Enumerator<Void> implementEvaluation(Enumerable<?> in, Function<?, Object> groupAssigner, List<EvaluationANdHandler<?>> evaluations) {
+  private <EVENT extends Serializable> Enumerator<Void> implementEvaluation(Enumerable<T> in, Function<T, Object> groupAssigner, List<EvaluationANdHandler<EVENT>> evaluations) {
     // Need state for each group and each Evaluation...
-    Map<GroupEvaluation<?>, EvaluationFunction<?>> states = new HashMap<>();
-    final Enumerator<?> enumerator = in.enumerator();
+    Map<GroupEvaluation<EVENT>, EvaluationFunction<EVENT>> states = new HashMap<>();
+    final Enumerator<T> enumerator = in.enumerator();
     return new Enumerator<Void>() {
 
       @Override public Void current() {
@@ -78,13 +79,13 @@ public class Linq4jImplementor {
           // Get hash
           final Object hash = groupAssigner.apply(enumerator.current());
           // For each evaluation
-          for (EvaluationANdHandler<?> eh : evaluations) {
-            final SimpleEvaluationContext<?> ctx = new SimpleEvaluationContext<>(enumerator.current());
-            final GroupEvaluation<?> group = new GroupEvaluation<>(hash, eh.evaluation);
+          for (EvaluationANdHandler<EVENT> eh : evaluations) {
+            final SimpleEvaluationContext<EVENT> ctx = new SimpleEvaluationContext<>(enumerator.current());
+            final GroupEvaluation<EVENT> group = new GroupEvaluation<>(hash, eh.evaluation);
             states.computeIfAbsent(group, g -> ClonerUtil.clone(g.evaluation));
             states.get(group).eval(ctx);
 
-            for (Object event : ctx.getEvents()) {
+            for (EVENT event : ctx.getEvents()) {
               eh.handler.accept(event);
             }
           }
@@ -153,34 +154,34 @@ public class Linq4jImplementor {
     }
   }
 
-  private static class ImplementingVisitor implements StreamNodeVisitor<Void> {
+  private static class ImplementingVisitor<IN, KEY, EVENT extends Serializable> implements StreamNodeVisitor<Void> {
 
-    private Enumerable<?> input;
-    private Predicate<?> predicate;
-    private Function<?, Object> groupAssigner;
-    private List<EvaluationANdHandler<?>> eh = new ArrayList<>();
+    private Enumerable<IN> input;
+    private Predicate<IN> predicate;
+    private Function<KEY, Object> groupAssigner;
+    private List<EvaluationANdHandler<EVENT>> eh = new ArrayList<>();
 
-    @Override public <IN> Void visit(Root<IN> root) {
-      input = root.getValues();
+    @Override public <IN1> Void visit(Root<IN1> root) {
+      input = ((Enumerable<IN>) root.getValues());
       root.getChildren().forEach(c -> c.accept(this));
       return null;
     }
 
-    @Override public <IN> Void visit(Filter<IN> filter) {
-      predicate = filter.predicate;
+    @Override public <IN1> Void visit(Filter<IN1> filter) {
+      predicate = (Predicate<IN>) filter.predicate;
       filter.getChildren().forEach(c -> c.accept(this));
       return null;
     }
 
-    @Override public <KEY, IN> Void visit(GroupBy<KEY, IN> groupBy) {
-      groupAssigner = groupBy.groupAssigner;
+    @Override public <KEY1, T> Void visit(GroupBy<KEY1, T> groupBy) {
+      groupAssigner = (Function<KEY, Object>) groupBy.groupAssigner;
       groupBy.getChildren().forEach(c -> c.accept(this));
       return null;
     }
 
-    @Override public <IN, EVENT extends Serializable> Void visit(Evaluate<IN, EVENT> evaluate) {
-      final EvaluationFunction<EVENT> evaluation = evaluate.getEvaluation();
-      for (StreamNode<EVENT, ?> child : evaluate.getChildren()) {
+    @Override public <IN1, EVENT1 extends Serializable> Void visit(Evaluate<IN1, EVENT1> evaluate) {
+      final EvaluationFunction<EVENT> evaluation = (EvaluationFunction<EVENT>) evaluate.getEvaluation();
+      for (StreamNode<EVENT1, ?> child : evaluate.getChildren()) {
         assert child instanceof ResultHandler;
         this.eh.add(new EvaluationANdHandler<>(evaluation, ((ResultHandler<EVENT>) child).getConsumer()));
       }

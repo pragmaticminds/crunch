@@ -19,20 +19,29 @@
 
 package org.pragmaticminds.crunch.api2;
 
+import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
+
+import java.io.Serializable;
 import java.util.function.Function;
 
 // TODO what is the output type??
-public class GroupBy<KEY, E> extends AbstractStreamNode<E, E> {
+public class GroupBy<E, KEY> extends AbstractStreamNode<E, E> {
 
-  final Function<KEY, Object> groupAssigner;
+  final Function<E, KEY> groupAssigner;
 
-  public GroupBy(Function<KEY, Object> groupAssigner) {
+  public GroupBy(Function<E, KEY> groupAssigner) {
     super();
     this.groupAssigner = groupAssigner;
   }
 
   @Override public <T> T accept(StreamNodeVisitor<T> visitor) {
     return visitor.visit(this);
+  }
+
+  public <EVENT extends Serializable> Evaluate<E, EVENT> evaluate(EvaluationFunction<EVENT> evaluation) {
+    final Evaluate<E, EVENT> evaluate = new Evaluate<>(evaluation);
+    this.addChild(evaluate);
+    return evaluate;
   }
 
 }

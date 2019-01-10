@@ -19,6 +19,7 @@
 
 package org.pragmaticminds.crunch.api2;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class Filter<E> extends AbstractStreamNode<E, E> {
@@ -32,6 +33,12 @@ public class Filter<E> extends AbstractStreamNode<E, E> {
 
   @Override public <T> T accept(StreamNodeVisitor<T> visitor) {
     return visitor.visit(this);
+  }
+
+  public <KEY> GroupBy<E, KEY> groupBy(Function<E, KEY> groupAssigner) {
+    final GroupBy<E, KEY> groupBy = new GroupBy<>(groupAssigner);
+    this.addChild(groupBy);
+    return groupBy;
   }
 
 }

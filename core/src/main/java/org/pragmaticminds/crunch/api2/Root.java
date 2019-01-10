@@ -21,6 +21,9 @@ package org.pragmaticminds.crunch.api2;
 
 import org.apache.calcite.linq4j.Enumerable;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 public class Root<OUT> extends AbstractStreamNode<Void, OUT> {
 
   final CrunchContext context;
@@ -42,6 +45,18 @@ public class Root<OUT> extends AbstractStreamNode<Void, OUT> {
 
   @Override public <T> T accept(StreamNodeVisitor<T> visitor) {
     return visitor.visit(this);
+  }
+
+  public Filter<OUT> filter(Predicate<OUT> predicate) {
+    final Filter<OUT> filter = new Filter<>(predicate);
+    this.addChild(filter);
+    return filter;
+  }
+
+  public <KEY> GroupBy<OUT, KEY> groupBy(Function<OUT, KEY> groupAssigner) {
+    final GroupBy<OUT, KEY> groupBy = new GroupBy<>(groupAssigner);
+    this.addChild(groupBy);
+    return groupBy;
   }
 
 }

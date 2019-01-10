@@ -19,21 +19,53 @@
 
 package org.pragmaticminds.crunch.api2;
 
+import org.apache.calcite.linq4j.Enumerable;
+import org.apache.calcite.linq4j.Enumerator;
+import org.apache.calcite.linq4j.Linq4j;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
+
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public class CrunchContext {
 
-  public <E extends Serializable> StreamNode<Void, E> messages(E... e) {
-    System.out.println("Generating new source...");
-    final ListSupplier<E> list = new ListSupplier<>(Arrays.asList(e));
-    return new Root<E>(this, null);
+  private List<Root<?>> streams = new ArrayList<>();
+
+  public <E extends Serializable> Root<E> values(E... e) {
+    return this.source(Linq4j.asEnumerable(e));
+  }
+
+  public <E extends Serializable> Root<E> source(Enumerable<E> values) {
+    final Root<E> root = new Root<>(this, values);
+    streams.add(root);
+    return root;
   }
 
   public Future<Void> execute() {
+    final List<Thread> threads = streams.stream()
+        .map(s -> new Thread(getRunnable((Root<UntypedValues>) s)))
+        .collect(Collectors.toList());
+
+    // Start all threads
+    threads.forEach(Thread::run);
     return CompletableFuture.completedFuture(null);
+  }
+
+  private Runnable getRunnable(Root<UntypedValues> stream) {
+    return () -> {
+      final Linq4jImplementor<UntypedValues, Serializable> implementor =
+          new Linq4jImplementor<>(stream);
+
+      final Enumerator<Void> enumerator = implementor.implement();
+
+      while (enumerator.moveNext()) {
+        // Do nothing
+      }
+    };
   }
 
 }
