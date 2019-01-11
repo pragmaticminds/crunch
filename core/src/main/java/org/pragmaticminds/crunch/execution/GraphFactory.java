@@ -24,9 +24,7 @@ import akka.NotUsed;
 import akka.japi.function.Function;
 import akka.japi.function.Function2;
 import akka.japi.function.Predicate;
-import akka.stream.ClosedShape;
-import akka.stream.Outlet;
-import akka.stream.SinkShape;
+import akka.stream.*;
 import akka.stream.javadsl.*;
 import org.pragmaticminds.crunch.api.pipe.*;
 import org.pragmaticminds.crunch.api.records.MRecord;
@@ -102,7 +100,10 @@ class GraphFactory<T extends Serializable> {
         return (builder, out) -> {  // variables: builder (GraphDSL.Builder) and out (SinkShape)
             final Outlet<MRecord> builderSource = builder.add(streamSource).out();
 
-            GraphDSL.Builder.ForwardOps stream = builder.from(builderSource);
+            UniformFanOutShape<MRecord, MRecord> broadcast = builder.add(Broadcast.create(pipeline.getSubStreams().size()));
+            UniformFanInShape<Object, Object> merge = builder.add(Merge.create(pipeline.getSubStreams().size()));
+            builder.from(builderSource).viaFanOut(broadcast);
+
             for (SubStream<T> subStream : pipeline.getSubStreams()) {
 
                 // Generate a Flow from the RecordHandlers
@@ -116,7 +117,7 @@ class GraphFactory<T extends Serializable> {
                 evalFunctions.forEach(EvaluationFunction::init);
 
                 // Prepare the stream
-                GraphDSL.Builder.ForwardOps outStream = stream
+                builder.from(broadcast)
                         .via(builder.add(
                                 Flow.of(MRecord.class)
                                         // filter all incoming MRecords with predicate
@@ -134,11 +135,11 @@ class GraphFactory<T extends Serializable> {
                         .via(builder.add(
                                 // pass all MRecords to all EvaluationFunctions and RecordHandlers of the current subStream
                                 GraphFactory.this.toFlow(recordHandlers, evalFunctions, sink))
-                        );
-
-                // Ignore this sink
-                outStream.to(out);
+                        )
+                        .toFanIn(merge);
             }
+            // Ignore this sink
+            builder.from(merge).to(out);
 
             return ClosedShape.getInstance();
         };
