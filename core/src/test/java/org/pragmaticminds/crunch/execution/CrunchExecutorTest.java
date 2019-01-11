@@ -72,12 +72,56 @@ public class CrunchExecutorTest {
         Mockito.verify(sink, times(2)).handle(any());
     }
 
+    @Test
+    public void runWithTwoSubstreams() {
+        // Create source
+        UntypedValues values = UntypedValues.builder()
+                .source("test")
+                .prefix("")
+                .timestamp(123L)
+                .values(Collections.singletonMap("test", "test"))
+                .build();
+
+        MRecordSource source = MRecordSources.of(values, values);
+        // Create Pipeline
+        EvaluationPipeline pipeline = createPipelineWithTwoSubstreams();
+        // Create Sink
+        EventSink sink = Mockito.mock(EventSink.class);
+        // Create the Executor
+        CrunchExecutor crunchExecutor = new CrunchExecutor(source, pipeline, sink);
+        // Run the executor
+        crunchExecutor.run();
+
+        // Ensure that two events have been reported
+        Mockito.verify(sink, times(4)).handle(any());
+    }
+
     private EvaluationPipeline createPipeline() {
         return EvaluationPipeline.builder()
                 .withIdentifier("bsdf")
                 .withSubStream(
                         SubStream.builder()
                                 .withIdentifier("asdf")
+                                .withPredicate(x -> true)
+                                .withEvaluationFunction(new MyEvaluationFunction())
+                                .build()
+                )
+                .build();
+    }
+
+    private EvaluationPipeline createPipelineWithTwoSubstreams() {
+        return EvaluationPipeline.builder()
+                .withIdentifier("bsdf")
+                .withSubStream(
+                        SubStream.builder()
+                                .withIdentifier("asdf")
+                                .withPredicate(x -> true)
+                                .withEvaluationFunction(new MyEvaluationFunction())
+                                .build()
+                )
+                .withSubStream(
+                        SubStream.builder()
+                                .withIdentifier("csdf")
                                 .withPredicate(x -> true)
                                 .withEvaluationFunction(new MyEvaluationFunction())
                                 .build()
