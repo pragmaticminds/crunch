@@ -22,24 +22,30 @@ package org.pragmaticminds.crunch.api2;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Base for the implementation of custom Stream Nodes.
+ *
+ * @param <IN>  Input type of elements
+ * @param <OUT> Output type of elements
+ */
 public abstract class AbstractStreamNode<IN, OUT> implements StreamNode<IN, OUT> {
 
-  protected final List<StreamNode<OUT, ?>> children;
+    protected final List<StreamNode<OUT, ?>> children;
 
-  public AbstractStreamNode() {
-    children = new ArrayList<>();
-  }
+    public AbstractStreamNode() {
+        children = new ArrayList<>();
+    }
 
-  @Override public List<StreamNode<OUT, ?>> getChildren() {
-    return children;
-  }
+    @Override public List<StreamNode<OUT, ?>> getChildren() {
+        return children;
+    }
 
-  @Override public StreamNode<OUT, ?> getChild(int i) {
-    return children.get(i);
-  }
+    @Override public StreamNode<OUT, ?> getChild(int i) {
+        return children.get(i);
+    }
 
-  @Override public void addChild(StreamNode<OUT, ?> child) {
-    this.children.add(child);
-  }
+    @Override public void addChild(StreamNode<OUT, ?> child) {
+        this.children.add(child);
+    }
 
 }

@@ -24,39 +24,44 @@ import org.apache.calcite.linq4j.Enumerable;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * This class is the "base" of each Crunch Stream and contains the Source.
+ *
+ * @param <OUT> Element type that is emitted
+ */
 public class Root<OUT> extends AbstractStreamNode<Void, OUT> {
 
-  final CrunchContext context;
-  final Enumerable<OUT> values;
+    final CrunchContext context;
+    final Enumerable<OUT> values;
 
-  public Root(CrunchContext context, Enumerable<OUT> values) {
-    super();
-    this.context = context;
-    this.values = values;
-  }
+    public Root(CrunchContext context, Enumerable<OUT> values) {
+        super();
+        this.context = context;
+        this.values = values;
+    }
 
-  public CrunchContext getContext() {
-    return context;
-  }
+    public CrunchContext getContext() {
+        return context;
+    }
 
-  public Enumerable<OUT> getValues() {
-    return values;
-  }
+    public Enumerable<OUT> getValues() {
+        return values;
+    }
 
-  @Override public <T> T accept(StreamNodeVisitor<T> visitor) {
-    return visitor.visit(this);
-  }
+    @Override public <T> T accept(StreamNodeVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 
-  public Filter<OUT> filter(Predicate<OUT> predicate) {
-    final Filter<OUT> filter = new Filter<>(predicate);
-    this.addChild(filter);
-    return filter;
-  }
+    public Filter<OUT> filter(Predicate<OUT> predicate) {
+        final Filter<OUT> filter = new Filter<>(predicate);
+        this.addChild(filter);
+        return filter;
+    }
 
-  public <KEY> GroupBy<OUT, KEY> groupBy(Function<OUT, KEY> groupAssigner) {
-    final GroupBy<OUT, KEY> groupBy = new GroupBy<>(groupAssigner);
-    this.addChild(groupBy);
-    return groupBy;
-  }
+    public <KEY> GroupBy<OUT, KEY> groupBy(Function<OUT, KEY> groupAssigner) {
+        final GroupBy<OUT, KEY> groupBy = new GroupBy<>(groupAssigner);
+        this.addChild(groupBy);
+        return groupBy;
+    }
 
 }

@@ -22,6 +22,11 @@ package org.pragmaticminds.crunch.api2;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * Node that represents a filter operation by the given predicate.
+ *
+ * @param <E> Type of the elements
+ */
 public class Filter<E> extends AbstractStreamNode<E, E> {
 
   final Predicate<E> predicate;

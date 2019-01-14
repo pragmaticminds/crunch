@@ -31,41 +31,48 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+/**
+ * This class is used to store the information about cruch streams
+ * that are generated.
+ * Also, streams are run together with their context by {@link #execute()}.
+ *
+ * @author julian
+ */
 public class CrunchContext {
 
-  private List<Root<?>> streams = new ArrayList<>();
+    private List<Root<?>> streams = new ArrayList<>();
 
-  public <E extends Serializable> Root<E> values(E... e) {
-    return this.source(Linq4j.asEnumerable(e));
-  }
+    public <E extends Serializable> Root<E> values(E... e) {
+        return this.source(Linq4j.asEnumerable(e));
+    }
 
-  public <E extends Serializable> Root<E> source(Enumerable<E> values) {
-    final Root<E> root = new Root<>(this, values);
-    streams.add(root);
-    return root;
-  }
+    public <E extends Serializable> Root<E> source(Enumerable<E> values) {
+        final Root<E> root = new Root<>(this, values);
+        streams.add(root);
+        return root;
+    }
 
-  public Future<Void> execute() {
-    final List<Thread> threads = streams.stream()
-        .map(s -> new Thread(getRunnable((Root<UntypedValues>) s)))
-        .collect(Collectors.toList());
+    public Future<Void> execute() {
+        final List<Thread> threads = streams.stream()
+                .map(s -> new Thread(getRunnable((Root<UntypedValues>) s)))
+                .collect(Collectors.toList());
 
-    // Start all threads
-    threads.forEach(Thread::run);
-    return CompletableFuture.completedFuture(null);
-  }
+        // Start all threads
+        threads.forEach(Thread::run);
+        return CompletableFuture.completedFuture(null);
+    }
 
-  private Runnable getRunnable(Root<UntypedValues> stream) {
-    return () -> {
-      final Linq4jImplementor<UntypedValues, Serializable> implementor =
-          new Linq4jImplementor<>(stream);
+    private Runnable getRunnable(Root<UntypedValues> stream) {
+        return () -> {
+            final Linq4jImplementor<UntypedValues, Serializable> implementor =
+                    new Linq4jImplementor<>(stream);
 
-      final Enumerator<Void> enumerator = implementor.implement();
+            final Enumerator<Void> enumerator = implementor.implement();
 
-      while (enumerator.moveNext()) {
-        // Do nothing
-      }
-    };
-  }
+            while (enumerator.moveNext()) {
+                // Do nothing
+            }
+        };
+    }
 
 }

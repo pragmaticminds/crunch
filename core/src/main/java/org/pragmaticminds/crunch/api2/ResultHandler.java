@@ -19,13 +19,21 @@
 
 package org.pragmaticminds.crunch.api2;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ResultHandler<EVENT> implements StreamNode<EVENT, Void> {
+/**
+ * Final "closing" block of a Crunch Stream.
+ * It contains the logic how the Events should be "handled".
+ * For that it contains a consumer or a crunch sink.
+ *
+ * @param <EVENT> Type of events.
+ */
+public class ResultHandler<EVENT extends Serializable> implements StreamNode<EVENT, Void> {
 
   private final Object instance;
   private final Method method;

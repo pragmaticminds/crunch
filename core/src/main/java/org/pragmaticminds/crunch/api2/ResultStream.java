@@ -19,5 +19,12 @@
 
 package org.pragmaticminds.crunch.api2;
 
-public class ResultStream<EVENT> {
+import java.io.Serializable;
+
+/**
+ * Final stream that contains only events.
+ *
+ * @param <EVENT> Type of the events.
+ */
+public interface ResultStream<EVENT extends Serializable> extends StreamNode<EVENT, Void> {
 }

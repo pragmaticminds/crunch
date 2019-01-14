@@ -24,7 +24,12 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import java.io.Serializable;
 import java.util.function.Function;
 
-// TODO what is the output type??
+/**
+ * Representation fo the Grou
+ *
+ * @param <E>
+ * @param <KEY>
+ */
 public class GroupBy<E, KEY> extends AbstractStreamNode<E, E> {
 
   final Function<E, KEY> groupAssigner;

@@ -22,7 +22,11 @@ package org.pragmaticminds.crunch.api2;
 import java.util.List;
 
 /**
- * Base class for the DAG that describes a complete Stream.
+ * Base interface for the DAG that describes a complete Stream.
+ * Usually custom Nodes are implemented based on {@link AbstractStreamNode}.
+ *
+ * @param <IN> Type of input elements
+ * @param <OUT> Type of emitted elements
  */
 public interface StreamNode<IN, OUT> {
 

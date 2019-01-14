@@ -34,5 +34,5 @@ public interface StreamNodeVisitor<T> {
 
   <IN, EVENT extends Serializable> T visit(Evaluate<IN, EVENT> evaluate);
 
-  <EVENT> T visit(ResultHandler<EVENT> handler);
+  <EVENT extends Serializable> T visit(ResultHandler<EVENT> handler);
 }
