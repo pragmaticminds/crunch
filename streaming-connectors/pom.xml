@@ -25,7 +25,7 @@
     <parent>
         <artifactId>crunch-parent</artifactId>
         <groupId>org.pragmaticminds.crunch</groupId>
-        <version>0.2.2</version>
+        <version>0.2.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>streaming-connectors</artifactId>
