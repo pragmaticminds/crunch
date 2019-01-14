@@ -101,7 +101,7 @@
         <site>
             <id>crunch-docu</id>
             <name>crunch-docu</name>
-            <url>scp://192.168.169.13/var/lib/crunch-docu/</url>
+            <url>https://github.com/pragmaticminds/crunch.git</url>
         </site>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
@@ -251,6 +251,18 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
+                </plugin>
+
+                <!-- Tell the SCM publish plugin to use a different branch for staging the site -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-scm-publish-plugin</artifactId>
+                    <configuration>
+                        <!-- mono-module doesn't require site:stage -->
+                        <content>${project.build.directory}/staging</content>
+                        <!-- branch where to deploy -->
+                        <scmBranch>gh-pages</scmBranch>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

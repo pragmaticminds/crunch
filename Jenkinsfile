@@ -98,6 +98,37 @@ node('linux') {
                     junit '**/surefire-reports/*.xml'
                 }
             }
+
+            stage('Build site') {
+                when {
+                    branch 'develop'
+                }
+                steps {
+                    echo 'Building Site'
+                    sh 'mvn -P${JENKINS_PROFILE} site'
+                }
+            }
+
+            stage('Stage site') {
+                when {
+                    branch 'develop'
+                }
+                steps {
+                    echo 'Staging Site'
+                    sh 'mvn -P${JENKINS_PROFILE} site:stage'
+                }
+            }
+
+            stage('Deploy site') {
+                when {
+                    branch 'develop'
+                }
+                steps {
+                    echo 'Deploying Site'
+                    sh 'mvn scm-publish:publish-scm'
+                }
+            }
+
             // TODO Enable
 //            stage('integration tests') {
 //                // Run Integration tests with failsafe plugin
