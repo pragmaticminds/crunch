@@ -30,8 +30,10 @@ import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.GenericEvent;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -80,5 +82,9 @@ public class GenericExtractorTriggerHandlerTest {
             map.put("test", context.get().getValue("test"));
             return map;
         }
+
+      @Override public Set<String> getChannelIdentifiers() {
+        return Collections.singleton("test");
+      }
     }
 }

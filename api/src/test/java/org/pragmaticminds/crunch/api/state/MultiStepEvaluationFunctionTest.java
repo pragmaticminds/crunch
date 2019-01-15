@@ -22,6 +22,7 @@ package org.pragmaticminds.crunch.api.state;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.exceptions.OverallTimeoutException;
 import org.pragmaticminds.crunch.api.exceptions.StepTimeoutException;
+import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.LambdaEvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.values.TypedValues;
@@ -29,9 +30,17 @@ import org.pragmaticminds.crunch.events.GenericEvent;
 import org.pragmaticminds.crunch.events.GenericEventBuilder;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 /** *
@@ -41,12 +50,26 @@ import static org.mockito.Mockito.mock;
  */
 public class MultiStepEvaluationFunctionTest implements Serializable {
 
-    private ErrorExtractor<GenericEvent> errorExtractor = (ErrorExtractor<GenericEvent>) (events, ex, context) -> context.collect(new GenericEvent(0L, ex.getClass().getName(), ""));
-    private EvaluationCompleteExtractor<GenericEvent> evaluationCompleteExtractor = (EvaluationCompleteExtractor<GenericEvent>) (events, context) -> {
-        for (Map.Entry<String, GenericEvent> stringEventEntry : events.entrySet()) {
-            Map.Entry<String, GenericEvent> entry = stringEventEntry;
-            context.collect(entry.getValue());
-        }
+  private ErrorExtractor<GenericEvent> errorExtractor = new ErrorExtractor<GenericEvent>() {
+    @Override public void process(Map<String, GenericEvent> events, Exception ex, EvaluationContext<GenericEvent> context) {
+      context.collect(new GenericEvent(0L, ex.getClass().getName(), ""));
+    }
+
+    @Override public Set<String> getChannelIdentifiers() {
+      return Collections.emptySet();
+    }
+  };
+  private EvaluationCompleteExtractor<GenericEvent> evaluationCompleteExtractor = new EvaluationCompleteExtractor<GenericEvent>() {
+    @Override public void process(Map<String, GenericEvent> events, EvaluationContext<GenericEvent> context) {
+      for (Map.Entry<String, GenericEvent> stringEventEntry : events.entrySet()) {
+        Map.Entry<String, GenericEvent> entry = stringEventEntry;
+        context.collect(entry.getValue());
+      }
+    }
+
+    @Override public Set<String> getChannelIdentifiers() {
+      return Collections.emptySet();
+    }
     };
     private GenericEvent successEvent = GenericEventBuilder.anEvent()
             .withTimestamp(System.currentTimeMillis())
@@ -176,8 +199,24 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
     @Test
     public void test_builder() {
         MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
-                .withErrorExtractor((ErrorExtractor) (events, ex, context) -> { })
-                .withEvaluationCompleteExtractor((EvaluationCompleteExtractor) (events, context) -> { })
+            .withErrorExtractor(new ErrorExtractor<Serializable>() {
+              @Override public void process(Map<String, Serializable> events, Exception ex, EvaluationContext<Serializable> context) {
+
+              }
+
+              @Override public Set<String> getChannelIdentifiers() {
+                return null;
+              }
+            })
+            .withEvaluationCompleteExtractor(new EvaluationCompleteExtractor<Serializable>() {
+              @Override public void process(Map<String, Serializable> events, EvaluationContext<Serializable> context) {
+
+              }
+
+              @Override public Set<String> getChannelIdentifiers() {
+                return null;
+              }
+            })
                 .withOverallTimeoutMs(0L)
                 .addEvaluationFunction(new LambdaEvaluationFunction(
                                 ctx -> { /* do nothing */ },

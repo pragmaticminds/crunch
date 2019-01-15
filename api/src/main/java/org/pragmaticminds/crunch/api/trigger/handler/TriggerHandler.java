@@ -24,6 +24,7 @@ import org.pragmaticminds.crunch.api.trigger.TriggerEvaluationFunction;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * This class handles the situation when a {@link TriggerEvaluationFunction} is triggered.
@@ -32,7 +33,6 @@ import java.io.Serializable;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 19.09.2018
  */
-@FunctionalInterface
 public interface TriggerHandler<T extends Serializable> extends Serializable {
 
     /**
@@ -42,4 +42,6 @@ public interface TriggerHandler<T extends Serializable> extends Serializable {
      *                objects.
      */
     void handle(EvaluationContext<T> context);
+
+    Set<String> getChannelIdentifiers();
 }

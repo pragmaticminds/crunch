@@ -25,6 +25,7 @@ import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This interface if for the extraction of resulting {@link GenericEvent}s after the successful processing of the
@@ -34,7 +35,6 @@ import java.util.Map;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
-@FunctionalInterface
 public interface EvaluationCompleteExtractor<T extends Serializable> extends Serializable {
 
     /**
@@ -47,4 +47,6 @@ public interface EvaluationCompleteExtractor<T extends Serializable> extends Ser
      * @param context has a collect method for the outgoing {@link GenericEvent}s
      */
     void process(Map<String, T> events, EvaluationContext<T> context);
+
+  Set<String> getChannelIdentifiers();
 }

@@ -28,7 +28,12 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.Event;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -110,4 +115,10 @@ public abstract class ExtractorTriggerHandler<T extends Serializable> implements
     }
 
     protected abstract T createEvent(String eventName, EvaluationContext<T> context, Map<String, Value> results);
+
+  @Override public Set<String> getChannelIdentifiers() {
+    return this.extractors.stream()
+        .flatMap(ex -> ex.getChannelIdentifiers().stream())
+        .collect(Collectors.toSet());
+  }
 }

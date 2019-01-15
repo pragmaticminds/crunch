@@ -24,6 +24,7 @@ import org.pragmaticminds.crunch.events.GenericEvent;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This extractor class processes error situations that happen while processing in the {@link MultiStepEvaluationFunction}
@@ -31,7 +32,6 @@ import java.util.Map;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
-@FunctionalInterface
 public interface ErrorExtractor<T extends Serializable> extends Serializable {
 
     /**
@@ -45,4 +45,6 @@ public interface ErrorExtractor<T extends Serializable> extends Serializable {
      * @param context has a collect method for the outgoing T events
      */
     void process(Map<String, T> events, Exception ex, EvaluationContext<T> context);
+
+    Set<String> getChannelIdentifiers();
 }

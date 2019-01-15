@@ -123,6 +123,7 @@ public class TriggerEvaluationFunction<T extends Serializable> implements Evalua
             results.addAll(filter.getChannelIdentifiers());
         }
         results.addAll(triggerStrategy.getChannelIdentifiers());
+        results.addAll(triggerHandler.getChannelIdentifiers());
         return results;
     }
 

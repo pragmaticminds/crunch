@@ -31,7 +31,7 @@ import java.util.Set;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 23.08.2018
  */
-class NamedSupplier<T extends Serializable> implements Supplier<T> {
+public class NamedSupplier<T extends Serializable> implements Supplier<T> {
     private String identifier;
     private SerializableFunction<MRecord, T> extractLambda;
     private SerializableResultFunction<HashSet<String>> getIdentifiersLambda;
