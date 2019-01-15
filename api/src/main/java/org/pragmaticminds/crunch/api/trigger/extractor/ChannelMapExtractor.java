@@ -24,7 +24,12 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -93,12 +98,24 @@ class ChannelMapExtractor implements MapExtractor {
         if(channels != null){
             return channels.stream().collect(Collectors.toMap(
                     Supplier::getIdentifier,
-                    supplier -> Value.of(supplier.extract(context.get()))
+                supplier -> {
+                    try {
+                        return Value.of(supplier.extract(context.get()));
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
             ));
         }else if(mappings != null){
             return mappings.entrySet().stream().collect(Collectors.toMap(
                     Map.Entry::getValue,
-                    entry -> Value.of(entry.getKey().extract(context.get()))
+                entry -> {
+                    try {
+                        return Value.of(entry.getKey().extract(context.get()));
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
             ));
         }
         return null;
