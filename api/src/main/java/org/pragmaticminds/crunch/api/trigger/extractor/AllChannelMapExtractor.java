@@ -24,6 +24,7 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -49,4 +50,8 @@ class AllChannelMapExtractor implements MapExtractor {
                 channel -> context.get().getValue(channel)
         ));
     }
+
+  @Override public Set<String> getChannelIdentifiers() {
+    throw new UnsupportedOperationException("This Extractor is currently not allowed");
+  }
 }

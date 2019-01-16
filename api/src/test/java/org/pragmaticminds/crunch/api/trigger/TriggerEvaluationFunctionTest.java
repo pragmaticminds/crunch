@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
+import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.extractor.Extractors;
@@ -36,12 +37,22 @@ import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.GenericEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.booleanChannel;
 import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.channel;
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.longChannel;
+import static org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategies.onBecomeTrue;
 
 /**
  * @author Erwin Wagasow
@@ -65,7 +76,15 @@ public class TriggerEvaluationFunctionTest {
                         decisionBase -> false,
                         HashSet::new
                 ))
-                .withTriggerHandler((context) -> context.collect(resultEvent))
+            .withTriggerHandler(new TriggerHandler<GenericEvent>() {
+                @Override public void handle(EvaluationContext<GenericEvent> context) {
+                    context.collect(resultEvent);
+                }
+
+                @Override public Set<String> getChannelIdentifiers() {
+                    return null;
+                }
+            })
                 .build();
 
         Map<String, Value> values = new HashMap<>();
@@ -144,7 +163,15 @@ public class TriggerEvaluationFunctionTest {
                         decisionBase -> true,
                         HashSet::new
                 ))
-                .withTriggerHandler((context) -> context.collect(resultEvent))
+            .withTriggerHandler(new TriggerHandler<GenericEvent>() {
+                @Override public void handle(EvaluationContext<GenericEvent> context) {
+                    context.collect(resultEvent);
+                }
+
+                @Override public Set<String> getChannelIdentifiers() {
+                    return null;
+                }
+            })
                 .build();
         Map<String, Value> values = new HashMap<>();
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
@@ -168,11 +195,17 @@ public class TriggerEvaluationFunctionTest {
                         decisionBase -> true,
                         HashSet::new
                 ))
-                .withTriggerHandler(context -> {
+            .withTriggerHandler(new TriggerHandler<GenericEvent>() {
+                @Override public void handle(EvaluationContext<GenericEvent> context) {
                     context.collect(resultEvent);
                     context.collect(resultEvent);
                     context.collect(resultEvent);
-                })
+                }
+
+                @Override public Set<String> getChannelIdentifiers() {
+                    return null;
+                }
+            })
                 .build();
         Map<String, Value> values = new HashMap<>();
         TypedValues typedValues = new TypedValues("testSource", timestamp, values);
@@ -196,11 +229,17 @@ public class TriggerEvaluationFunctionTest {
                         decisionBase -> true,
                         HashSet::new
                 ))
-                .withTriggerHandler(context -> {
+            .withTriggerHandler(new TriggerHandler<GenericEvent>() {
+                @Override public void handle(EvaluationContext<GenericEvent> context) {
                     context.collect(resultEvent);
                     context.collect(resultEvent);
                     context.collect(resultEvent);
-                })
+                }
+
+                @Override public Set<String> getChannelIdentifiers() {
+                    return null;
+                }
+            })
                 .withFilter(new EventFilter<GenericEvent>() {
                     @Override
                     public boolean apply(GenericEvent event, MRecord values) {
@@ -294,5 +333,19 @@ public class TriggerEvaluationFunctionTest {
         GenericEvent event = resultEventList.get(0);
         Assert.assertEquals(1L, (long)event.getParameter("test1").getAsLong());
         Assert.assertEquals(2L, (long)event.getParameter("test2").getAsLong());
+    }
+
+    @Test
+    public void getAllChannelIdentifiersAlsoFromExtractor() {
+        TriggerEvaluationFunction<GenericEvent> function = TriggerEvaluationFunction.<GenericEvent>builder()
+            .withTriggerStrategy(onBecomeTrue(booleanChannel("signal_0")))
+            .withTriggerHandler(new GenericExtractorTriggerHandler("my_event", Extractors.channelMapExtractor(longChannel("channel1"))))
+            .build();
+
+        final Set<String> channelIdentifiers = function.getChannelIdentifiers();
+
+        System.out.println(function.getChannelIdentifiers());
+
+        assertEquals(2, channelIdentifiers.size());
     }
 }

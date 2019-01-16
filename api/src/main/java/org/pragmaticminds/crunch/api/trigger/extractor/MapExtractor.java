@@ -25,6 +25,7 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class extracts a {@link Map} of keyed {@link Value}s from a {@link EvaluationContext}.
@@ -32,7 +33,6 @@ import java.util.Map;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 19.09.2018
  */
-@FunctionalInterface
 public interface MapExtractor extends Serializable {
     /**
      * This method extracts a map of {@link Value}s from a {@link EvaluationContext}, in particular from it's
@@ -42,4 +42,6 @@ public interface MapExtractor extends Serializable {
      * @return a {@link Map} of keyed extracted values from the {@link EvaluationContext}s {@link MRecord}.
      */
     Map<String, Value> extract(EvaluationContext context);
+
+  Set<String> getChannelIdentifiers();
 }

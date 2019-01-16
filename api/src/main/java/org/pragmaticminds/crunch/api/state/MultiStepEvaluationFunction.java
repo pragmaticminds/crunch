@@ -32,7 +32,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -187,10 +193,16 @@ public class MultiStepEvaluationFunction<T extends Serializable> implements Eval
      */
     @Override
     public Set<String> getChannelIdentifiers() {
-        return stateConfigs.stream()
+      final Set<String> result = new HashSet<>();
+      result.addAll(errorExtractor.getChannelIdentifiers());
+      result.addAll(stateCompleteExtractor.getChannelIdentifiers());
+      result.addAll(
+          stateConfigs.stream()
                 .flatMap(
                         stateConfig -> stateConfig.getFactory().getChannelIdentifiers().stream())
-                .collect(Collectors.toSet());
+              .collect(Collectors.toSet())
+      );
+      return result;
     }
 
     /**

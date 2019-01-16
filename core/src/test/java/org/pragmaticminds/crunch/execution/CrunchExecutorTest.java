@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -44,6 +45,13 @@ import static org.mockito.Mockito.times;
  */
 public class CrunchExecutorTest {
 
+  public static final Function<Long, UntypedValues> VALUES_FACTORY = t -> UntypedValues.builder()
+      .source("test")
+      .prefix("")
+      .timestamp(t)
+      .values(Collections.singletonMap("test", "test"))
+      .build();
+
     /**
      * Creates a Simple Pipeline and runs it.
      * And checks that 2 Events are emitted.
@@ -51,14 +59,9 @@ public class CrunchExecutorTest {
     @Test
     public void run() {
         // Create source
-        UntypedValues values = UntypedValues.builder()
-                .source("test")
-                .prefix("")
-                .timestamp(123L)
-                .values(Collections.singletonMap("test", "test"))
-                .build();
+      Function<Long, UntypedValues> values = VALUES_FACTORY;
 
-        MRecordSource source = MRecordSources.of(values, values);
+      MRecordSource source = MRecordSources.of(values.apply(123L), values.apply(124L));
         // Create Pipeline
         EvaluationPipeline pipeline = createPipeline();
         // Create Sink
@@ -69,7 +72,8 @@ public class CrunchExecutorTest {
         crunchExecutor.run();
 
         // Ensure that two events have been reported
-        Mockito.verify(sink, times(2)).handle(any());
+      // It shoudl only fire 1 event because timestamp increases 1 time
+      Mockito.verify(sink, times(1)).handle(any());
     }
 
     @Test
@@ -82,7 +86,8 @@ public class CrunchExecutorTest {
                 .values(Collections.singletonMap("test", "test"))
                 .build();
 
-        MRecordSource source = MRecordSources.of(values, values);
+      MRecordSource source = MRecordSources.of(VALUES_FACTORY.apply(123L),
+          VALUES_FACTORY.apply(124L), VALUES_FACTORY.apply(125L));
         // Create Pipeline
         EvaluationPipeline pipeline = createPipelineWithTwoSubstreams();
         // Create Sink
