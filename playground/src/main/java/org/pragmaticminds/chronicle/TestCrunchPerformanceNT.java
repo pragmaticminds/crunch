@@ -19,11 +19,13 @@
 
 package org.pragmaticminds.chronicle;
 
-import net.openhft.chronicle.queue.ChronicleQueue;
-import net.openhft.chronicle.queue.ExcerptAppender;
-import net.openhft.chronicle.queue.ExcerptTailer;
-import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
-import net.openhft.chronicle.wire.ValueIn;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Warmup;
 import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
 import org.pragmaticminds.crunch.api.pipe.SubStream;
 import org.pragmaticminds.crunch.api.trigger.TriggerEvaluationFunction;
@@ -40,16 +42,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author kerstin
  * Created by kerstin on 16.01.18
  */
 public class TestCrunchPerformanceNT {
-
-    public static final int NUMBER_OF_RECORDS = 10000;
 
     static ArrayList<SubStream<GenericEvent>> getSubStreams() {
         List<String> machines = Arrays.asList("LHL_01", "LHL_02", "LHL_03", "LHL_04", "LHL_05", "LHL_06");
@@ -131,12 +130,17 @@ public class TestCrunchPerformanceNT {
         return subStreams;
     }
 
-    public static void main(String... ignored) {
+  @Benchmark
+  @BenchmarkMode(Mode.AverageTime)
+  @OutputTimeUnit(TimeUnit.MILLISECONDS)
+  @Fork(2)
+  @Warmup(iterations = 10)
+  @Measurement(iterations = 20)
+  public void run() {
 
         EvaluationPipeline<GenericEvent> eventEvaluationPipeline = EvaluationPipeline.<GenericEvent>builder().withIdentifier("CRUNCH_TEST").withSubStreams(getSubStreams()).build();
 
-
-        FileMRecordSource kafkaMRecordSource = new FileMRecordSource("src/test/resources/sample.txt");
+    FileMRecordSource kafkaMRecordSource = new FileMRecordSource("/tmp/sample2.txt");
         List<GenericEvent> events = new ArrayList<>();
 
         CrunchExecutor crunchExecutor = new CrunchExecutor(kafkaMRecordSource, eventEvaluationPipeline,
@@ -144,7 +148,7 @@ public class TestCrunchPerformanceNT {
 
                     @Override
                     public void handle(GenericEvent genericEvent) {
-                        events.add(genericEvent);
+                      System.out.println(genericEvent);
                     }
                 }
         );

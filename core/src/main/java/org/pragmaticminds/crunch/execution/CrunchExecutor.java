@@ -29,6 +29,7 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -46,7 +47,7 @@ public class CrunchExecutor {
     /**
      * Use one actor system for all executors in one jvm.
      */
-    private static final ActorSystem SYSTEM = ActorSystem.create("CrunchExecutor");
+    private final ActorSystem SYSTEM = ActorSystem.create("CrunchExecutor");
 
     /**
      * Use one Fraph Factory
@@ -98,13 +99,16 @@ public class CrunchExecutor {
         RunnableGraph<CompletionStage<Done>> runnableGraph = GRAPH_FACTORY.create(source, evaluationPipeline, sink, watermarkOffsetMs);
 
         try {
-            runnableGraph.run(materializer).toCompletableFuture().get();
+            final CompletableFuture<Done> future = runnableGraph.run(materializer).toCompletableFuture();
+            future.get();
         } catch (ExecutionException e) {
             logger.warn("Unable to wait for execution of pipeline.", e);
         } catch (InterruptedException e){
             logger.warn("Unable to wait for execution of pipeline.", e);
             Thread.currentThread().interrupt();
         }
+        logger.info("Shutting down Crunch Executor...");
+        SYSTEM.terminate();
     }
 
 }

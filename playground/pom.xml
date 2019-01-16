@@ -33,6 +33,16 @@
     <description>This module is for "Playing" Around Stuff which is runnable enough to serve others as well.</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.pragmaticminds.crunch</groupId>
+            <artifactId>crunch-api</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.11.1</version>
+        </dependency>
         <!--Chronicle-->
         <dependency>
             <groupId>net.openhft</groupId>
@@ -61,6 +71,16 @@
             <version>0.4.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.20</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.20</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -73,6 +93,29 @@
                 <configuration>
                     <skip>true</skip>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check-dependencies</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoredDependencies>
+                                <ignoredDependency>org.slf4j:slf4j-api</ignoredDependency>
+                                <ignoredDependency>org.slf4j:slf4j-simple</ignoredDependency>
+                                <ignoredDependency>org.projectlombok:lombok</ignoredDependency>
+                                <ignoredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredDependency>
+                            </ignoredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
