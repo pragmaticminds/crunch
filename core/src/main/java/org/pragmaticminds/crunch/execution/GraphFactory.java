@@ -24,14 +24,32 @@ import akka.NotUsed;
 import akka.japi.function.Function;
 import akka.japi.function.Function2;
 import akka.japi.function.Predicate;
-import akka.stream.*;
-import akka.stream.javadsl.*;
-import org.pragmaticminds.crunch.api.pipe.*;
+import akka.stream.ClosedShape;
+import akka.stream.Outlet;
+import akka.stream.SinkShape;
+import akka.stream.UniformFanInShape;
+import akka.stream.UniformFanOutShape;
+import akka.stream.javadsl.Broadcast;
+import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.GraphDSL;
+import akka.stream.javadsl.Merge;
+import akka.stream.javadsl.RunnableGraph;
+import akka.stream.javadsl.Sink;
+import akka.stream.javadsl.Source;
+import org.pragmaticminds.crunch.api.pipe.ChannelFilter;
+import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
+import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
+import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
+import org.pragmaticminds.crunch.api.pipe.RecordHandler;
+import org.pragmaticminds.crunch.api.pipe.SubStream;
 import org.pragmaticminds.crunch.api.records.MRecord;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -117,15 +135,17 @@ class GraphFactory<T extends Serializable> {
                 evalFunctions.forEach(EvaluationFunction::init);
 
                 // Prepare the stream
-                builder.from(broadcast)
+              final Predicate<MRecord> channelFilter = createChannelFilter(subStream);
+              final MergerFunction merger = new MergerFunction();
+              builder.from(broadcast)
                         .via(builder.add(
                                 Flow.of(MRecord.class)
                                         // filter all incoming MRecords with predicate
                                         .filter(record -> subStream.getPredicate().validate(record))
                                         // filter all not relevant MRecords with channels that are never used
-                                        .filter(createChannelFilter(subStream))
+                                    .filter(channelFilter::test)
                                         // merge incoming MRecords
-                                        .map(new MergeFunction())
+                                    .flatMapConcat(merger)
                                 )
                         )
                         .via(builder.add(
@@ -198,4 +218,24 @@ class GraphFactory<T extends Serializable> {
             return merge(value);
         }
     }
+
+  private static class MergerFunction implements Function<MRecord, Source<MRecord, NotUsed>> {
+
+    private long lastTs = Long.MIN_VALUE;
+    private Map<String, Object> values = new HashMap<>();
+
+    @Override public Source<MRecord, NotUsed> apply(MRecord param) throws Exception {
+      final Source<MRecord, NotUsed> result;
+      if (lastTs < param.getTimestamp()) {
+        result = Source.single(new UntypedValues(param.getSource(), lastTs, "", values));
+      } else {
+        result = Source.empty();
+      }
+      // Update Values
+      lastTs = param.getTimestamp();
+      param.getChannels().forEach(cn -> values.put(cn, param.get(cn)));
+      // Return the result
+      return result;
+    }
+  }
 }

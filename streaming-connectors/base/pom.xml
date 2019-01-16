@@ -34,6 +34,13 @@
     <description>Basis for all Streaming Connectors, i.e. Kafka Connectivity.</description>
 
     <dependencies>
+        <!--&lt;!&ndash;TEST!!!!&ndash;&gt;-->
+        <!--<dependency>-->
+        <!--<groupId>com.jsoniter</groupId>-->
+        <!--<artifactId>jsoniter</artifactId>-->
+        <!--<version>0.9.19</version>-->
+        <!--</dependency>-->
+
         <!--Internal-->
         <dependency>
             <groupId>org.pragmaticminds.crunch</groupId>

@@ -27,7 +27,11 @@ import org.pragmaticminds.crunch.serialization.JsonDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
@@ -81,7 +85,8 @@ public class FileMRecordSource extends AbstractMRecordSource implements AutoClos
     public MRecord get() {
         if(iterator.hasNext()){
             String line = iterator.next();
-            return deserializer.deserialize(line.getBytes(StandardCharsets.UTF_8));
+//            return JsonIterator.deserialize(line.getBytes(StandardCharsets.UTF_8), UntypedValues.class);
+          return deserializer.deserialize(line.getBytes(StandardCharsets.UTF_8));
         }else{
             close();
         }
