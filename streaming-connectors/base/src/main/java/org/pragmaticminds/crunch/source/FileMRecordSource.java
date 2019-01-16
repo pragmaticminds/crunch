@@ -85,7 +85,6 @@ public class FileMRecordSource extends AbstractMRecordSource implements AutoClos
     public MRecord get() {
         if(iterator.hasNext()){
             String line = iterator.next();
-//            return JsonIterator.deserialize(line.getBytes(StandardCharsets.UTF_8), UntypedValues.class);
           return deserializer.deserialize(line.getBytes(StandardCharsets.UTF_8));
         }else{
             close();
