@@ -32,6 +32,7 @@ import java.util.Collection;
  */
 public class ChannelFilter<T extends Serializable> implements Serializable {
     private final SubStream<T> subStream;
+    private final Collection<String> channels;
 
     /**
      * Main constructor taking the SubStream, the source of all filtering operations.
@@ -40,6 +41,7 @@ public class ChannelFilter<T extends Serializable> implements Serializable {
      */
     public ChannelFilter(SubStream<T> subStream) {
         this.subStream = subStream;
+        this.channels = subStream.getChannelIdentifiers();
     }
 
     /**
@@ -51,9 +53,8 @@ public class ChannelFilter<T extends Serializable> implements Serializable {
      */
     public boolean filter(MRecord record){
         Collection<String> recordChannels = record.getChannels();
-        Collection<String> subStreamChannels = subStream.getChannelIdentifiers();
         for (String recordChannel : recordChannels){
-            if(subStreamChannels.contains(recordChannel)){
+            if (channels.contains(recordChannel)) {
                 return true;
             }
         }
