@@ -40,9 +40,9 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="TRACE">
+        <Root level="INFO">
             <AppenderRef ref="Console" level="DEBUG"/>
         </Root>
-        <logger name="org.pragmaticminds" level="DEBUG"/>
+        <logger name="org.pragmaticminds" level="INFO"/>
     </Loggers>
 </Configuration>

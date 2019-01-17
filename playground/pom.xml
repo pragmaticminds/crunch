@@ -112,6 +112,8 @@
                                 <ignoredDependency>org.slf4j:slf4j-simple</ignoredDependency>
                                 <ignoredDependency>org.projectlombok:lombok</ignoredDependency>
                                 <ignoredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredDependency>
+                                <ignoredDependency>org.openjdk.jmh:jmh-generator-annprocess</ignoredDependency>
+                                <ignoredDependency>com.intellij:annotations</ignoredDependency>
                             </ignoredDependencies>
                         </configuration>
                     </execution>
