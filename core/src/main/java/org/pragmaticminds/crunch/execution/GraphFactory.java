@@ -139,11 +139,26 @@ class GraphFactory<T extends Serializable> {
                 // Prepare the stream
               final Predicate<MRecord> channelFilter = createChannelFilter(subStream);
               final MergerFunction merger = new MergerFunction();
+              final UniformFanOutShape<MRecord, MRecord> fanOut = builder.add(Broadcast.create(2));
               builder.from(broadcast)
-                        .via(builder.add(
-                                Flow.of(MRecord.class)
-                                        // filter all incoming MRecords with predicate
-                                        .filter(record -> subStream.getPredicate().validate(record))
+                  .via(builder.add(
+                      Flow.of(MRecord.class)
+                          // filter all incoming MRecords with predicate
+                          .filter(record -> subStream.getPredicate().validate(record)))
+                  )
+                  .toFanOut(fanOut);
+              builder.from(fanOut)
+                  .via(builder.add(Flow.of(MRecord.class).map(
+                      (Function<MRecord, MRecord>) param -> {
+                        for (RecordHandler handler : recordHandlers) {
+                          handler.apply(param);
+                        }
+                        return param;
+                      }
+                  ))).to(builder.add(Sink.ignore()));
+              builder.from(fanOut)
+                  .via(builder.add(Flow.of(MRecord.class)
+                          // Record Handler
                                         // filter all not relevant MRecords with channels that are never used
                                     .filter(channelFilter::test)
                                         // merge incoming MRecords
@@ -156,7 +171,7 @@ class GraphFactory<T extends Serializable> {
                         ))
                         .via(builder.add(
                                 // pass all MRecords to all EvaluationFunctions and RecordHandlers of the current subStream
-                                GraphFactory.this.toFlow(recordHandlers, evalFunctions, sink))
+                            GraphFactory.this.toFlow(evalFunctions, sink))
                         )
                         .toFanIn(merge);
             }
@@ -187,20 +202,11 @@ class GraphFactory<T extends Serializable> {
      * @return Flow for usage in {@link #buildGraph(Source, EvaluationPipeline, EventSink, Long)} method
      */
     private Flow<MRecord, MRecord, NotUsed> toFlow(
-            List<RecordHandler> recordHandlers,
             List<EvaluationFunction<T>> functions,
             EventSink<T> sink
     ) {
         return Flow
                 .of(MRecord.class)
-                .map(
-                        (Function<MRecord, MRecord>)param -> {
-                            for (RecordHandler handler : recordHandlers) {
-                                handler.apply(param);
-                            }
-                            return param;
-                        }
-                )
                 .map(
                         (Function<MRecord, MRecord>) param -> {
                             EvaluationContext<T> context = new EventSinkContext<>(sink);
