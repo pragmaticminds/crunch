@@ -29,6 +29,7 @@ import org.pragmaticminds.crunch.api.values.TypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -56,7 +57,7 @@ public class AllChannelMapExtractorTest {
         );
         context = new SimpleEvaluationContext(record);
 
-        extractor = new AllChannelMapExtractor();
+        extractor = new AllChannelMapExtractor(new HashSet<>());
         clone = ClonerUtil.clone(extractor);
     }
 

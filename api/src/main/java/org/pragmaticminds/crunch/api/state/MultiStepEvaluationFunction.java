@@ -227,7 +227,7 @@ public class MultiStepEvaluationFunction<T extends Serializable> implements Eval
      */
     private void updateOrSetInnerContext(EvaluationContext context) {
         if (innerContext == null) {
-            innerContext = new StateEvaluationContext<T>(context.get(), stateConfigs.get(currentStep).getStateAlias());
+            innerContext = new StateEvaluationContext<>(context.get(), stateConfigs.get(currentStep).getStateAlias());
         } else {
             // only set the values
             innerContext.set(context.get());
@@ -310,7 +310,7 @@ public class MultiStepEvaluationFunction<T extends Serializable> implements Eval
          * @return the {@link Builder}.
          */
         public Builder<T> addEvaluationFunction(EvaluationFunction<T> function, String alias, long timeoutMs) {
-            CloneStateEvaluationFunctionFactory factory = CloneStateEvaluationFunctionFactory.builder()
+            CloneStateEvaluationFunctionFactory<T> factory = CloneStateEvaluationFunctionFactory.<T>builder()
                     .withPrototype(function)
                     .build();
             return addEvaluationFunctionFactory(factory, alias, timeoutMs);

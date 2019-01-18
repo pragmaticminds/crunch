@@ -23,6 +23,7 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +35,12 @@ import java.util.stream.Collectors;
  * Created by Erwin Wagasow on 19.09.2018
  */
 class AllChannelMapExtractor implements MapExtractor {
+
+    private final HashSet<String> channels;
+
+    public AllChannelMapExtractor(Set<String> channels) {
+        this.channels = new HashSet<>(channels);
+    }
 
     /**
      * Extracts all channels from the {@link MRecord}.
@@ -51,7 +58,7 @@ class AllChannelMapExtractor implements MapExtractor {
         ));
     }
 
-  @Override public Set<String> getChannelIdentifiers() {
-    throw new UnsupportedOperationException("This Extractor is currently not allowed");
-  }
+    @Override public Set<String> getChannelIdentifiers() {
+        return channels;
+    }
 }

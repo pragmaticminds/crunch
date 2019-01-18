@@ -58,7 +58,7 @@ public class BooleanValue extends Value implements Serializable {
 
     @Override
     public boolean getAsBoolean() {
-        return value;
+        return (Boolean) getAsObject();
     }
 
     @Override

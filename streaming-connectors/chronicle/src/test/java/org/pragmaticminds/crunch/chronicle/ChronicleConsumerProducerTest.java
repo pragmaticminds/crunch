@@ -39,6 +39,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -85,7 +86,7 @@ public class ChronicleConsumerProducerTest {
                     // Fail the test after two seconds
 
                     try {
-                        Thread.sleep(2_00);
+                        TimeUnit.MILLISECONDS.sleep(200);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
@@ -93,7 +94,7 @@ public class ChronicleConsumerProducerTest {
                         producer2.send(values);
                     }
                     try {
-                        Thread.sleep(2_000);
+                        TimeUnit.MILLISECONDS.sleep(2_000);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         return;

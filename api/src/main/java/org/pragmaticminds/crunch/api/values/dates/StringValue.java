@@ -53,7 +53,7 @@ public class StringValue extends Value implements Serializable {
 
     @Override
     public Object getAsObject() {
-        return value;
+        return getAsString();
     }
 
     @Override

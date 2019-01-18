@@ -25,6 +25,7 @@ import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
@@ -40,7 +41,7 @@ public class ExtractorsTest {
 
     @Test
     public void allChannelMapExtractor() {
-        assertNotNull(Extractors.allChannelMapExtractor());
+        assertNotNull(Extractors.allChannelMapExtractor(new HashSet<>()));
     }
 
     @Test

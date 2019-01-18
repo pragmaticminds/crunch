@@ -114,11 +114,11 @@ class ChannelMapExtractor implements MapExtractor {
         if (channels == null) {
             // Mappings
             return mappings.keySet().stream()
-                .map(identifier -> identifier.getIdentifier())
+                .map(Supplier::getIdentifier)
                 .collect(Collectors.toSet());
         }
         return channels.stream()
-            .map(identifier -> identifier.getIdentifier())
+            .map(Supplier::getIdentifier)
             .collect(Collectors.toSet());
     }
 }

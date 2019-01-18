@@ -24,6 +24,8 @@ import net.openhft.chronicle.queue.ExcerptAppender;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.ValueIn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a simple program that writes some records to a Chronicle Queue and reads it back in.
@@ -33,6 +35,7 @@ import net.openhft.chronicle.wire.ValueIn;
  * Created by julian on 16.08.18
  */
 public class WriteAndReadChronicleQueueNT {
+    private static final Logger logger = LoggerFactory.getLogger(WriteAndReadChronicleQueueNT.class);
 
     public static final int NUMBER_OF_RECORDS = 10000;
 
@@ -49,9 +52,9 @@ public class WriteAndReadChronicleQueueNT {
         for (int i = 1; i <= NUMBER_OF_RECORDS; i++) {
             int finalI = i;
             // Wrap the Message inside a "msg" tag to be flexible later to switch to different formats
-            appender.writeDocument(w -> {
-                w.write(() -> "msg").text("Message number " + finalI);
-            });
+            appender.writeDocument(w ->
+                w.write(() -> "msg").text("Message number " + finalI)
+            );
         }
 
         // read objects
@@ -59,7 +62,7 @@ public class WriteAndReadChronicleQueueNT {
         for (int i = 1; i <= NUMBER_OF_RECORDS; i++) {
             reader.readDocument(r -> {
                 ValueIn read = r.read(() -> "msg");
-                System.out.println(read.text());
+                logger.info(read.text());
             });
         }
 

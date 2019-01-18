@@ -17,31 +17,24 @@
  * under the License.
  */
 
-package org.pragmaticminds.crunch;
+package org.pragmaticminds.crunch.examples.sinks;
+
+import org.pragmaticminds.crunch.events.GenericEvent;
+import org.pragmaticminds.crunch.execution.EventSink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Static class that holds logging information used for "trace" logging, i.e., logging of the raw event stream.
+ * This is a simple print out implementation of the {@link EventSink} for {@link GenericEvent}s.
  *
- * @author julian
- * Created by julian on 10.09.18
+ * @author erwin.wagasow
+ * created by erwin.wagasow on 21.01.2019
  */
-public class LoggingUtil {
+public class SimpleGenericEventSink implements EventSink<GenericEvent> {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleGenericEventSink.class);
 
-    /**
-     * After how many logs a trace output is printed
-     */
-    private static int traceLogReportCheckpoint = 1_000;
-
-    private LoggingUtil() {
-        // Do not instantiate
+    @Override
+    public void handle(GenericEvent event) {
+        logger.info("EventSink received: {}", event);
     }
-
-    public static int getTraceLogReportCheckpoint() {
-        return traceLogReportCheckpoint;
-    }
-
-    public static void setTraceLogReportCheckpoint(int traceLogReportCheckpoint) {
-        LoggingUtil.traceLogReportCheckpoint = traceLogReportCheckpoint;
-    }
-
 }

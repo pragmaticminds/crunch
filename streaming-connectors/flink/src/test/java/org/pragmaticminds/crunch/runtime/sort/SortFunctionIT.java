@@ -46,6 +46,7 @@ public class SortFunctionIT {
      * @throws Exception
      */
     @Test
+    @SuppressWarnings("squid:S3415")
     public void testSorting() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -84,6 +85,7 @@ public class SortFunctionIT {
      * @throws Exception
      */
     @Test
+    @SuppressWarnings("squid:S3415")
     public void testSorting_oldElementIsDiscarded() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 

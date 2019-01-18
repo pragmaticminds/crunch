@@ -19,6 +19,8 @@
 
 package org.pragmaticminds.crunch.api.state;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 import org.pragmaticminds.crunch.api.exceptions.OverallTimeoutException;
 import org.pragmaticminds.crunch.api.exceptions.StepTimeoutException;
@@ -82,9 +84,9 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
     @Test
     public void evalDefaultTimeOut_noTimeOutOccurs() { // -> processing should be successful with no timers set
         // create instance of the MultiStepEvaluationFunction with parameters for this test
-        MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.builder()
+        MultiStepEvaluationFunction stateMachine = MultiStepEvaluationFunction.<GenericEvent>builder()
                 .addEvaluationFunction(
-                        new LambdaEvaluationFunction(
+                        new LambdaEvaluationFunction<GenericEvent>(
                                 ctx -> ctx.collect(successEvent),
                                 () -> new HashSet<>(Arrays.asList("string"))
                         ),
@@ -92,7 +94,7 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
                         10
                 )
                 .addEvaluationFunction(
-                        new LambdaEvaluationFunction(
+                        new LambdaEvaluationFunction<GenericEvent>(
                                 ctx -> ctx.collect(successEvent),
                                 () -> new HashSet<>(Arrays.asList("string"))
                         ),
@@ -130,7 +132,7 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
                 .withErrorExtractor(errorExtractor)
                 .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
                 .addEvaluationFunction(
-                        new LambdaEvaluationFunction(
+                        new LambdaEvaluationFunction<>(
                                 ctx -> ctx.collect(successEvent),
                                 () -> new HashSet<>(Arrays.asList("string"))
                         ),
@@ -138,7 +140,7 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
                         10
                 )
                 .addEvaluationFunction(
-                        new LambdaEvaluationFunction(
+                        new LambdaEvaluationFunction<>(
                                 ctx -> { /* do nothing */ },
                                 () -> new HashSet<>(Arrays.asList("string"))
                         ),
@@ -163,23 +165,23 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
                 .withOverallTimeoutMs(10)
                 .withEvaluationCompleteExtractor(evaluationCompleteExtractor)
                 .addEvaluationFunction(
-                        new LambdaEvaluationFunction(
+                        new LambdaEvaluationFunction<>(
                                 ctx -> ctx.collect(successEvent),
-                                () -> new HashSet<>(Arrays.asList("string"))
+                                () -> new HashSet<>(ImmutableList.of("string"))
                         ),
                         "success1"
                 )
                 .addEvaluationFunction(
-                        new LambdaEvaluationFunction(
+                        new LambdaEvaluationFunction<>(
                                 ctx -> { /* do nothing */ },
-                                () -> new HashSet<>(Arrays.asList("string"))
+                                () -> new HashSet<>(ImmutableList.of("string"))
                         ),
                         "timeout1"
                 )
                 .addEvaluationFunction(
-                        new LambdaEvaluationFunction(
+                        new LambdaEvaluationFunction<>(
                                 ctx -> { /* do nothing */ },
-                                () -> new HashSet<>(Arrays.asList("string"))
+                                () -> new HashSet<>(ImmutableList.of("string"))
                         ),
                         "timeout2"
                 )
@@ -198,65 +200,60 @@ public class MultiStepEvaluationFunctionTest implements Serializable {
 
     @Test
     public void test_builder() {
-        MultiStepEvaluationFunction.Builder builder = MultiStepEvaluationFunction.builder()
-            .withErrorExtractor(new ErrorExtractor<Serializable>() {
-              @Override public void process(Map<String, Serializable> events, Exception ex, EvaluationContext<Serializable> context) {
-
-              }
-
-              @Override public Set<String> getChannelIdentifiers() {
-                return null;
-              }
-            })
-            .withEvaluationCompleteExtractor(new EvaluationCompleteExtractor<Serializable>() {
-              @Override public void process(Map<String, Serializable> events, EvaluationContext<Serializable> context) {
-
-              }
-
-              @Override public Set<String> getChannelIdentifiers() {
-                return null;
-              }
-            })
+        MultiStepEvaluationFunction.Builder<Serializable> builder = MultiStepEvaluationFunction.<Serializable>builder()
+                .withErrorExtractor(new ErrorExtractor<Serializable>() {
+                    @Override public void process(Map<String, Serializable> events, Exception ex, EvaluationContext<Serializable> context) {}
+                    @Override public Set<String> getChannelIdentifiers() {
+                    return null;
+                  }
+                })
+                .withEvaluationCompleteExtractor(new EvaluationCompleteExtractor<Serializable>() {
+                    @Override public void process(Map<String, Serializable> events, EvaluationContext<Serializable> context) {}
+                    @Override public Set<String> getChannelIdentifiers() {
+                        return null;
+                    }
+                })
                 .withOverallTimeoutMs(0L)
-                .addEvaluationFunction(new LambdaEvaluationFunction(
+                .addEvaluationFunction(new LambdaEvaluationFunction<>(
                                 ctx -> { /* do nothing */ },
-                                () -> new HashSet<>(Arrays.asList("string"))
+                                () -> new HashSet<>(ImmutableList.of("string"))
                         ),""
-                ).addEvaluationFunction(new LambdaEvaluationFunction(
+                ).addEvaluationFunction(new LambdaEvaluationFunction<>(
                                 ctx -> { /* do nothing */ },
-                                () -> new HashSet<>(Arrays.asList("string"))
+                                () -> new HashSet<>(ImmutableList.of("string"))
                         ),"",0L
                 ).addEvaluationFunctionFactory(
-                        CloneStateEvaluationFunctionFactory.builder()
-                                .withPrototype(new LambdaEvaluationFunction(
+                        CloneStateEvaluationFunctionFactory.<Serializable>builder()
+                                .withPrototype(new LambdaEvaluationFunction<Serializable>(
                                         ctx -> { /* do nothing */ },
-                                        () -> new HashSet<>(Arrays.asList("string"))
+                                        () -> new HashSet<>(ImmutableSet.of("string"))
                                 )).build(),
                         ""
                 ).addEvaluationFunctionFactory(
-                        CloneStateEvaluationFunctionFactory.builder()
-                                .withPrototype(new LambdaEvaluationFunction(
+                        CloneStateEvaluationFunctionFactory.<Serializable>builder()
+                                .withPrototype(new LambdaEvaluationFunction<>(
                                         ctx -> { /* do nothing */ },
                                         () -> new HashSet<>(Arrays.asList("string"))
                                 )).build(),
                         "",
                         0L
-                );
+                )
+                ;
 
         builder.build();
     }
 
     @Test
     public void getChannelIdentifiers() {
-        MultiStepEvaluationFunction function = MultiStepEvaluationFunction.builder()
-                .withErrorExtractor(mock(ErrorExtractor.class))
-                .withEvaluationCompleteExtractor(mock(EvaluationCompleteExtractor.class))
+        MultiStepEvaluationFunction<GenericEvent> function = MultiStepEvaluationFunction.<GenericEvent>builder()
+                .withErrorExtractor((ErrorExtractor<GenericEvent>) mock(ErrorExtractor.class))
+                .withEvaluationCompleteExtractor((EvaluationCompleteExtractor<GenericEvent>) mock(EvaluationCompleteExtractor.class))
                 .withOverallTimeoutMs(0L)
-                .addEvaluationFunction(new LambdaEvaluationFunction(
+                .addEvaluationFunction(new LambdaEvaluationFunction<>(
                         context -> {},
                         () -> new HashSet<>(Arrays.asList("1", "2", "3"))
                 ), "step1")
-                .addEvaluationFunction(new LambdaEvaluationFunction(
+                .addEvaluationFunction(new LambdaEvaluationFunction<>(
                         context -> {},
                         () -> new HashSet<>(Arrays.asList("3", "4", "5"))
                 ), "step2")
