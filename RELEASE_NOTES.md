@@ -19,6 +19,9 @@
 
 ## Release Notes
 
+## 0.3.1 Critical Fix
+* Fixed a situation where the RecordHandler is not invoked correctly.
+
 ## 0.1.5 Critical Hotrix
 * CRUNCH-585 changed merge from typed to UntypedValue due to performance issues, fixed tests
 
