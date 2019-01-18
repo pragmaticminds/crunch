@@ -25,6 +25,7 @@ import org.pragmaticminds.crunch.api.values.UntypedValues;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * This class filters incoming {@link MRecord}s by the channel identifiers of all elements inside the {@link SubStream}.
@@ -73,4 +74,21 @@ public class ChannelFilter<T extends Serializable> implements Serializable {
         }
         return new UntypedValues(record.getSource(), record.getTimestamp(), "", values);
     }
+
+  /**
+   * Keeps only those items from a mrecord that are needed
+   */
+  public Optional<MRecord> trimFlatMap(MRecord record) {
+    final HashMap<String, Object> values = new HashMap<>();
+    for (String channel : record.getChannels()) {
+      if (channels.contains(channel)) {
+        values.put(channel, record.get(channel));
+      }
+    }
+    if (values.isEmpty()) {
+      return Optional.empty();
+    } else {
+      return Optional.of(new UntypedValues(record.getSource(), record.getTimestamp(), "", values));
+    }
+  }
 }
