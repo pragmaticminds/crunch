@@ -145,7 +145,7 @@ public class TestCrunchPerformanceNT {
 
         EvaluationPipeline<GenericEvent> eventEvaluationPipeline = EvaluationPipeline.<GenericEvent>builder().withIdentifier("CRUNCH_TEST").withSubStreams(getSubStreams()).build();
 
-    FileMRecordSource kafkaMRecordSource = new FileMRecordSource("/tmp/sample.txt");
+    FileMRecordSource kafkaMRecordSource = new FileMRecordSource("/tmp/sample2.txt");
         List<GenericEvent> events = new ArrayList<>();
 
         CrunchExecutor crunchExecutor = new CrunchExecutor(kafkaMRecordSource, eventEvaluationPipeline,
