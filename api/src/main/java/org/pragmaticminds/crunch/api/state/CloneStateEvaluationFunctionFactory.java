@@ -22,6 +22,7 @@ package org.pragmaticminds.crunch.api.state;
 import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -32,14 +33,14 @@ import java.util.List;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 07.08.2018
  */
-public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionStateFactory {
-    private final EvaluationFunction prototype;
+public class CloneStateEvaluationFunctionFactory<T extends Serializable> implements EvaluationFunctionStateFactory<T> {
+    private final EvaluationFunction<T> prototype;
 
     /**
      * private constructor for the builder
      * @param prototype of the EvaluationFunction to be cloned and used
      */
-    private CloneStateEvaluationFunctionFactory(EvaluationFunction prototype) {
+    private CloneStateEvaluationFunctionFactory(EvaluationFunction<T> prototype) {
         this.prototype = prototype;
     }
 
@@ -49,7 +50,7 @@ public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionSt
      * @return a fresh cloned {@link EvaluationFunction} from the prototype
      */
     @Override
-    public EvaluationFunction create() {
+    public EvaluationFunction<T> create() {
         return ClonerUtil.clone(prototype);
     }
 
@@ -67,27 +68,27 @@ public class CloneStateEvaluationFunctionFactory implements EvaluationFunctionSt
      * creates a builder for this class
      * @return a builder
      */
-    public static Builder builder() { return new Builder(); }
+    public static <T extends Serializable> Builder<T> builder() { return new Builder<>(); }
 
     /**
      * The builder for this class
      */
-    public static final class Builder {
-        private EvaluationFunction prototype;
+    public static final class Builder<T extends Serializable> {
+        private EvaluationFunction<T> prototype;
 
         private Builder() { /* do nothing */ }
 
-        public Builder withPrototype(EvaluationFunction prototype) {
+        public Builder<T> withPrototype(EvaluationFunction<T> prototype) {
             this.prototype = prototype;
             return this;
         }
 
-        public Builder but() {
-            return builder().withPrototype(prototype);
+        public Builder<T> but() {
+            return CloneStateEvaluationFunctionFactory.<T>builder().withPrototype(prototype);
         }
 
-        public CloneStateEvaluationFunctionFactory build() {
-            return new CloneStateEvaluationFunctionFactory(prototype);
+        public CloneStateEvaluationFunctionFactory<T> build() {
+            return new CloneStateEvaluationFunctionFactory<>(prototype);
         }
     }
 }

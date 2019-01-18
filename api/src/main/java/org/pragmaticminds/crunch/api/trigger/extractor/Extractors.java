@@ -25,6 +25,7 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class holds all available {@link MapExtractor} implementations.
@@ -43,8 +44,8 @@ public class Extractors {
      *
      * @return a new instance of the {@link AllChannelMapExtractor}.
      */
-    public static AllChannelMapExtractor allChannelMapExtractor(){
-        return new AllChannelMapExtractor();
+    public static AllChannelMapExtractor allChannelMapExtractor(Set<String> channels){
+        return new AllChannelMapExtractor(channels);
     }
 
     /**

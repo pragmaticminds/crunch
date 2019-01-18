@@ -43,7 +43,10 @@ public class EventFilters {
      *
      * @param supplier extracts the value of interest out of the {@link MRecord}
      * @return true if the value of interest has been changed since the last processing
+     *
+     * SuppressWarnings : squid:S00119 : Usage of named templates instead of one character
      */
+    @SuppressWarnings("squid:S00119")
     public static <EVENT extends Serializable, T extends Serializable> EventFilter<EVENT> onValueChanged(Supplier<T> supplier) {
         return new EventFilter<EVENT>() {
             private T lastValue;

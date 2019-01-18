@@ -55,7 +55,7 @@ public class LongValue extends Value implements Serializable {
 
     @Override
     public Object getAsObject() {
-        return value;
+        return getAsLong();
     }
 
     @Override

@@ -31,7 +31,6 @@ import java.util.Collection;
  * Created by Erwin Wagasow on 03.10.2018
  */
 public class ChannelFilter<T extends Serializable> implements Serializable {
-    private final SubStream<T> subStream;
     private final Collection<String> channels;
 
     /**
@@ -40,7 +39,6 @@ public class ChannelFilter<T extends Serializable> implements Serializable {
      * @param subStream containing the channel identifiers.
      */
     public ChannelFilter(SubStream<T> subStream) {
-        this.subStream = subStream;
         this.channels = subStream.getChannelIdentifiers();
     }
 

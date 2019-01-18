@@ -27,6 +27,7 @@ import org.pragmaticminds.crunch.serialization.JsonSerializer;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.pragmaticminds.crunch.chronicle.ChronicleConsumer.CHRONICLE_PATH_KEY;
 
@@ -49,7 +50,7 @@ public class ChronicleConsumerMT {
 
         Thread thread = new Thread(() -> {
             try {
-                Thread.sleep(10_000);
+                TimeUnit.MILLISECONDS.sleep(10_000L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -63,7 +64,7 @@ public class ChronicleConsumerMT {
                                 .build()
                 );
                 try {
-                    Thread.sleep(100);
+                    TimeUnit.MILLISECONDS.sleep(100L);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
