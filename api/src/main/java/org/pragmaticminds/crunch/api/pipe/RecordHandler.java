@@ -55,6 +55,9 @@ public interface RecordHandler extends Serializable {
     /**
      * Collects all channel identifiers that are used in the record handler
      * @return a {@link List} or {@link Collection} of all channel identifiers
+     *
+     * @deprecated should be ignored?!
      */
+    @Deprecated
     Set<String> getChannelIdentifiers();
 }
