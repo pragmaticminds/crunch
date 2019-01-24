@@ -23,6 +23,8 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.values.dates.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +46,7 @@ import java.util.stream.Collectors;
  * Created by Erwin Wagasow on 19.09.2018
  */
 class ChannelMapExtractor implements MapExtractor {
+    private static final Logger logger = LoggerFactory.getLogger(ChannelMapExtractor.class);
     private HashMap<Supplier, String> mappings = null;
     private ArrayList<Supplier> channels = null;
 
@@ -102,10 +105,16 @@ class ChannelMapExtractor implements MapExtractor {
                 supplier -> Value.of(supplier.extract(context.get()))
             ));
         }else if(mappings != null){
-            return mappings.entrySet().stream().collect(Collectors.toMap(
-                Map.Entry::getValue,
-                entry -> Value.of(entry.getKey().extract(context.get()))
-            ));
+            try {
+                return mappings.entrySet().stream().collect(Collectors.toMap(
+                    Map.Entry::getValue,
+                    entry -> Value.of(entry.getKey().extract(context.get()))
+                ));
+            } catch (Exception e) {
+                logger.error("caught exceptioin!", e);
+                
+                return null;
+            }
         }
         return null;
     }
@@ -114,11 +123,11 @@ class ChannelMapExtractor implements MapExtractor {
         if (channels == null) {
             // Mappings
             return mappings.keySet().stream()
-                .map(identifier -> identifier.getIdentifier())
+                .map(Supplier::getIdentifier)
                 .collect(Collectors.toSet());
         }
         return channels.stream()
-            .map(identifier -> identifier.getIdentifier())
+            .map(Supplier::getIdentifier)
             .collect(Collectors.toSet());
     }
 }
