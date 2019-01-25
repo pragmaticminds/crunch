@@ -20,13 +20,7 @@
 package org.pragmaticminds.chronicle;
 
 import org.jetbrains.annotations.NotNull;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
@@ -37,27 +31,23 @@ import org.pragmaticminds.crunch.api.trigger.comparator.Supplier;
 import org.pragmaticminds.crunch.api.trigger.extractor.Extractors;
 import org.pragmaticminds.crunch.api.trigger.extractor.MapExtractor;
 import org.pragmaticminds.crunch.api.trigger.handler.GenericExtractorTriggerHandler;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.pragmaticminds.crunch.events.GenericEvent;
+import org.pragmaticminds.crunch.execution.AbstractMRecordSource;
 import org.pragmaticminds.crunch.execution.CrunchExecutor;
 import org.pragmaticminds.crunch.execution.EventSink;
+import org.pragmaticminds.crunch.execution.MRecordSource;
 import org.pragmaticminds.crunch.source.FileMRecordSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.booleanChannel;
-import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.channel;
-import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.longChannel;
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.*;
 import static org.pragmaticminds.crunch.api.trigger.filter.EventFilters.onValueChanged;
 import static org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategies.onBecomeTrue;
 
@@ -145,7 +135,7 @@ public class TestCrunchPerformanceNT {
 
         EvaluationPipeline<GenericEvent> eventEvaluationPipeline = EvaluationPipeline.<GenericEvent>builder().withIdentifier("CRUNCH_TEST").withSubStreams(getSubStreams()).build();
 
-    FileMRecordSource kafkaMRecordSource = new FileMRecordSource("/tmp/sample2.txt");
+    MRecordSource kafkaMRecordSource = new UpdatingSource(new FileMRecordSource("/tmp/sample2.txt"));
         List<GenericEvent> events = new ArrayList<>();
 
         CrunchExecutor crunchExecutor = new CrunchExecutor(kafkaMRecordSource, eventEvaluationPipeline,
@@ -159,6 +149,92 @@ public class TestCrunchPerformanceNT {
         );
         crunchExecutor.run();
     }
+
+  public static class UpdatingSource extends AbstractMRecordSource {
+
+    private static final Logger logger = LoggerFactory.getLogger(UpdatingSource.class);
+
+    private MRecordSource source;
+
+    private Map<String, TimestampedValue> lastValues = new HashMap<>();
+
+    public UpdatingSource(MRecordSource source) {
+      super(source.getKind());
+      this.source = source;
+    }
+
+    @Override
+    public MRecord get() {
+      MRecord record = source.get();
+
+      if (record == null) {
+        return null;
+      }
+
+      Set<String> obsolete = record.getChannels().stream()
+              .filter(cn -> lastValues.containsKey(cn))
+              .filter(cn -> lastValues.get(cn).value.equals(record.getValue(cn)))
+              .filter(cn -> record.getTimestamp() - lastValues.get(cn).timestamp <= 60_000)
+              .collect(Collectors.toSet());
+
+      // System.out.println(record.getChannels());
+      System.out.println(obsolete);
+
+      // Remove obsolete channels
+      HashMap<String, Object> remainingValues = new HashMap<>();
+      for (String channel : record.getChannels()) {
+        if (!obsolete.contains(channel)) {
+          // Store and Emit
+          lastValues.put(channel,
+                  new TimestampedValue(record.getTimestamp(), record.getValue(channel)));
+          remainingValues.put(channel, record.getValue(channel));
+//            logger.info("Keeping channel...");
+        }
+//          logger.info("Dropping channel...");
+      }
+      return new UntypedValues(record.getSource(), record.getTimestamp(), "", remainingValues);
+    }
+
+
+    @Override
+    public boolean hasRemaining() {
+      return source.hasRemaining();
+    }
+
+  }
+
+  public static class TimestampedValue {
+
+    public final long timestamp;
+    public final Object value;
+
+    public TimestampedValue(long timestamp, Object value) {
+      this.timestamp = timestamp;
+      this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      TimestampedValue that = (TimestampedValue) o;
+      return Objects.equals(timestamp, that.timestamp) &&
+              Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(timestamp, value);
+    }
+
+    @Override
+    public String toString() {
+      return "TimestampedValue{" +
+              "timestamp=" + timestamp +
+              ", value=" + value +
+              '}';
+    }
+  }
 
   @Benchmark
   @BenchmarkMode(Mode.AverageTime)
