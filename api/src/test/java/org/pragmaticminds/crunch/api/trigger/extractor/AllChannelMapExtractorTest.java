@@ -26,8 +26,10 @@ import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.TypedValues;
+import org.pragmaticminds.crunch.api.values.UntypedValues;
 import org.pragmaticminds.crunch.api.values.dates.Value;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,5 +77,13 @@ public class AllChannelMapExtractorTest {
         assertEquals(1L, (long)results.get("test1").getAsLong());
         assertEquals(2L, (long)results.get("test2").getAsLong());
         assertEquals(3L, (long)results.get("test3").getAsLong());
+    }
+    
+    @Test
+    public void extractNoValues(){
+        MRecord record2 = UntypedValues.builder().source("source").timestamp(123L).values(Collections.emptyMap()).build();
+        EvaluationContext<MRecord> context2 = new SimpleEvaluationContext<>(record2);
+        Map<String, Value> extract = extractor.extract(context2);
+        assertEquals(0, extract.size());
     }
 }

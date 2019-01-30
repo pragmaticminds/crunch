@@ -26,13 +26,7 @@ import org.pragmaticminds.crunch.api.values.dates.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -112,22 +106,23 @@ class ChannelMapExtractor implements MapExtractor {
                 ));
             } catch (Exception e) {
                 logger.error("caught exceptioin!", e);
-                
-                return null;
+                return Collections.emptyMap();
             }
         }
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override public Set<String> getChannelIdentifiers() {
-        if (channels == null) {
+        if (mappings != null) {
             // Mappings
             return mappings.keySet().stream()
                 .map(Supplier::getIdentifier)
                 .collect(Collectors.toSet());
+        }else if(channels != null){
+            return channels.stream()
+                .map(Supplier::getIdentifier)
+                .collect(Collectors.toSet());
         }
-        return channels.stream()
-            .map(Supplier::getIdentifier)
-            .collect(Collectors.toSet());
+        return Collections.emptySet();
     }
 }
