@@ -35,8 +35,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -103,5 +104,36 @@ public class InfluxDBSinkTest {
 
             }
         };
+    }
+
+    @Test
+    public void testHistory() {
+        Map<String, InfluxDBSink.HistoryObject> historyObjectMap = new HashMap<>();
+        String varName = "testVar";
+        Value value = Value.of(123.45);
+        long timestamp = 123456L;
+
+        assertTrue(historyObjectMap.isEmpty());
+        InfluxDBSink.checkHistoryAndInsertIfNeeded(historyObjectMap,varName,value,timestamp);
+        assertFalse(historyObjectMap.isEmpty());
+        assertEquals(historyObjectMap.get(varName).getValue(),value);
+        assertEquals(historyObjectMap.get(varName).getTime(),timestamp);
+
+        //new value and greater time --> should change map entry
+        value = Value.of(123.46);
+        timestamp = 123457L;
+        InfluxDBSink.checkHistoryAndInsertIfNeeded(historyObjectMap,varName,value,timestamp);
+        assertFalse(historyObjectMap.isEmpty());
+        assertEquals(historyObjectMap.get(varName).getValue(),value);
+        assertEquals(historyObjectMap.get(varName).getTime(),timestamp);
+
+        //new value and greater time --> should change map entry
+        value = Value.of(123.47);
+        timestamp = 123457L;
+        InfluxDBSink.checkHistoryAndInsertIfNeeded(historyObjectMap,varName,value,timestamp);
+        assertFalse(historyObjectMap.isEmpty());
+        assertEquals(historyObjectMap.get(varName).getValue(),value);
+        assertEquals(historyObjectMap.get(varName).getTime(),timestamp);
+
     }
 }
