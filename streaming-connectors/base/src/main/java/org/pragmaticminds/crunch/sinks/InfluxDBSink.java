@@ -54,13 +54,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class InfluxDBSink extends AbstractRecordHandler {
     private static final Logger logger = LoggerFactory.getLogger(InfluxDBSink.class);
+    public static final int RESEND_DURATION = 10_000;
 
     private final InfluxFactory factory;
     private final String measurement;
 
     private transient InfluxDB influxDB = null;
 
-    private HashMap<String, Value> lastValues = new HashMap<>();
+    private HashMap<String, HistoryObject> historyObjectMap = new HashMap<>();
 
     /**
      * Default constructor
@@ -71,6 +72,7 @@ public class InfluxDBSink extends AbstractRecordHandler {
     public InfluxDBSink(InfluxFactory factory, String measurement) {
         this.factory = factory;
         this.measurement = measurement;
+        this.historyObjectMap = new HashMap<>();
     }
 
     /**
@@ -100,13 +102,11 @@ public class InfluxDBSink extends AbstractRecordHandler {
 
         for (Map.Entry<String, Value> entry : values.getValues().entrySet()) {
             //only write the new values or the values that changed
-            if(!lastValues.containsKey(entry.getKey()) ||
-                    (lastValues.containsKey(entry.getKey()) && !lastValues.get(entry.getKey()).equals(entry.getValue()))) {
+            if(checkHistoryAndInsertIfNeeded(historyObjectMap,entry.getKey(),entry.getValue(),System.currentTimeMillis())){
                 PointGeneratingVisitor visitor = new PointGeneratingVisitor(values.getTimestamp(), measurement, values.getSource(), entry.getKey());
                 // Write (Batched mode is active)
                 influxDB.write(entry.getValue().accept(visitor));
             }
-            lastValues.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -266,5 +266,87 @@ public class InfluxDBSink extends AbstractRecordHandler {
             influxDB.enableGzip();
             return influxDB;
         }
+    }
+
+    /**
+     * nested class for analysis of data history for a specific variable (holds last value and timestamp on last change)
+     * Created by timbo on 08.12.17
+     */
+    public static class HistoryObject {
+        private long time;
+        private Value value;
+
+        public HistoryObject() {
+            this.time = 0;
+            this.value = null;
+        }
+
+        public HistoryObject(long time, Value value) {
+            this.time = time;
+            this.value = value;
+        }
+
+        public long getTime() {
+            return time;
+        }
+
+        public void setTime(long time) {
+            this.time = time;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public void setValue(Value value) {
+            this.value = value;
+        }
+    }
+
+    /**
+     * checks history of a variable or creates one on first call
+     * history value is updated if data-value changed or data-value equals the history data-value and duration is greater the RESEND_DURATION
+     * @param alias the key of the variable for storage in historyMap, usually the name of the variable
+     * @param value actual value for variable acquired by scraper
+     * @param time actual time
+     * @return true if values was updated or created, false otherwise
+     */
+    static boolean checkHistoryAndInsertIfNeeded(Map<String,HistoryObject> historyMap, String alias, Value value, long time){
+        HistoryObject historyObject = historyMap.get(alias);
+
+        //alias not existing in map create and return true
+        if(historyObject==null){
+            historyObject = new HistoryObject(time,value);
+            historyMap.put(alias,historyObject);
+            return true;
+        }
+
+        if(historyObject.getTime()>time){
+            //newer time cannot be lower than last value
+            return false;
+        }
+
+        //check if history value differs from the previous one
+        if(historyObject.getValue().equals(value)){
+            //if RESEND_DURATION exceeded resend value although is has not changed --> return true otherwise false
+            if (historyObject.getTime() <= time - RESEND_DURATION) {
+                historyObject.setTime(time);
+
+                //update existing history object in map
+                historyMap.put(alias,historyObject);
+
+                return true;
+            }
+            return false;
+        }
+        else{
+            //data differs from previous value --> resend value
+            historyObject.setTime(time);
+            historyObject.setValue(value);
+            //update existing history object in map
+            historyMap.put(alias,historyObject);
+            return true;
+        }
+
     }
 }
