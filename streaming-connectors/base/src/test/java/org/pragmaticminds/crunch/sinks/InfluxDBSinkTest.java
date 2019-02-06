@@ -110,6 +110,7 @@ public class InfluxDBSinkTest {
     public void testHistory() {
         Map<String, InfluxDBSink.HistoryObject> historyObjectMap = new HashMap<>();
         String varName = "testVar";
+        String varName2 = "testVar2";
         Value value = Value.of(123.45);
         long timestamp = 123456L;
 
@@ -127,13 +128,37 @@ public class InfluxDBSinkTest {
         assertEquals(historyObjectMap.get(varName).getValue(),value);
         assertEquals(historyObjectMap.get(varName).getTime(),timestamp);
 
-        //new value and greater time --> should change map entry
+        //new value and lower time --> no map change excepted
         value = Value.of(123.47);
-        timestamp = 123457L;
+        timestamp = 123456L;
+        InfluxDBSink.checkHistoryAndInsertIfNeeded(historyObjectMap,varName,value,timestamp);
+        assertFalse(historyObjectMap.isEmpty());
+        assertNotEquals(historyObjectMap.get(varName).getValue(),value);
+        assertNotEquals(historyObjectMap.get(varName).getTime(),timestamp);
+
+        //last value and new time lower then offset-limit (10s) --> no map change expected
+        value = Value.of(123.46);
+        timestamp = 124457L;
+        InfluxDBSink.checkHistoryAndInsertIfNeeded(historyObjectMap,varName,value,timestamp);
+        assertFalse(historyObjectMap.isEmpty());
+        assertEquals(historyObjectMap.get(varName).getValue(),value);
+        assertNotEquals(historyObjectMap.get(varName).getTime(),timestamp);
+
+        //last value and greater time then limit-delta (10s) --> should change map entry
+        value = Value.of(123.47);
+        timestamp = 134456L;
         InfluxDBSink.checkHistoryAndInsertIfNeeded(historyObjectMap,varName,value,timestamp);
         assertFalse(historyObjectMap.isEmpty());
         assertEquals(historyObjectMap.get(varName).getValue(),value);
         assertEquals(historyObjectMap.get(varName).getTime(),timestamp);
+
+        //second variable
+        value = Value.of(123.47);
+        timestamp = 134456L;
+        InfluxDBSink.checkHistoryAndInsertIfNeeded(historyObjectMap,varName2,value,timestamp);
+        assertEquals(2,historyObjectMap.size());
+        assertEquals(historyObjectMap.get(varName2).getValue(),value);
+        assertEquals(historyObjectMap.get(varName2).getTime(),timestamp);
 
     }
 }
