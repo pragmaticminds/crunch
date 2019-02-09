@@ -1,39 +1,17 @@
-# ----------------------------------------------------------------------------
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-# ----------------------------------------------------------------------------
-
 language: java
-
 env:
 - MAVEN_OPTS="-Xms512m -Xmx512m"
-
 matrix:
   fast_finish: true
-
 install: true
-
 script:
 - jdk_switcher use oraclejdk8
 - mvn clean install site:site
-
-# safelist
 branches:
   only:
   - master
   - develop
-  - /^rel\/.*$/
+  - "/^rel\\/.*$/"
+notifications:
+  slack:
+    secure: SkmhK4yezV8trtnAcRfdNcLSihPpOLrHZ20xWrGzRo2H2D8CWD19ZNBrcKrq0R/Gl8TOjJcGEBQknrLMznvHJPy8ZJ+p7qVil/+pEd70B+XyAD/M8Zm6+/NTgVVg4fyIWCoXy2zdfSfTT2GTHXNadFlDKSJqESuy7ZCSff693pvI9i8krI509MlUuw3Q4M5vsZm4HmH0+67FGVoUh4AEB41HfAhDUsxcdqqItwyH497X3rbo3HXVceoB1F2QCNZnyVXqdWRyslMVWSD9JPX7gvcru0XNTZvfSDbUdcIkOXYsJQHue42L4i3xAPiRrBLRZ+NhMcFZFQ7rtTBmmijuWyGluqK0MpjgfRCTYi7JZySGWSAZLTIX4iNVG5LmDWSWLDsRT0LjVn9hA6G3Kspb0OPENS3IrmaRDycYm8mNK5vCNA/KnhoGfGlHXKKDP/NoglCmyQkcRQ8uzhm7DdraXmjrbL1+iOHJzCG2YpGfOk1yYLc5bg2dOTyIzIJHg41yuKRdUCr9T9PIUHBGQoNhhClR1Lq71GEnFCjq1X2oS77iygDRbsUiunWmWMYXDnxR6vy8vmIZtiCUzIGzUNRCmCLuiV7QN5gl+9tlQT648HkoFsBQ3B1EYvgSjx1H5NjRNi7t03HXPvgIpT6ZDE4TbbZVzzWhumVpomG85IbmOUU=
