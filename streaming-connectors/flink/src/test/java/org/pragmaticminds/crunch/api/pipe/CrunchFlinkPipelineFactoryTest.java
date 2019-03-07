@@ -63,7 +63,7 @@ public class CrunchFlinkPipelineFactoryTest {
         // create evaluation functions
         evaluationFunctions.add(
                 new LambdaEvaluationFunction(
-                        ctx -> ctx.collect(
+                        ctx -> ((EvaluationContext<GenericEvent>)ctx).collect(
                                 new GenericEvent(
                                         System.currentTimeMillis(),
                                         "test" + i.addAndGet(1),
@@ -144,7 +144,7 @@ public class CrunchFlinkPipelineFactoryTest {
 
         // create evaluation functions
         evaluationFunctions.add(new LambdaEvaluationFunction(
-                ctx -> ctx.collect("I am the result"),
+                ctx -> ((EvaluationContext<String>)ctx).collect("I am the result"),
                 () -> new HashSet<>(Collections.singleton("test"))
         ));
 

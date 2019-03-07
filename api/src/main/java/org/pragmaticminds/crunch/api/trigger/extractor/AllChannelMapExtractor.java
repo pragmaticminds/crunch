@@ -39,6 +39,12 @@ import java.util.stream.Collectors;
 class AllChannelMapExtractor implements MapExtractor {
     private static final Logger logger = LoggerFactory.getLogger(AllChannelMapExtractor.class);
 
+    private final HashSet<String> channels;
+
+    public AllChannelMapExtractor(Set<String> channels) {
+        this.channels = new HashSet<>(channels);
+    }
+
     /**
      * Extracts all channels from the {@link MRecord}.
      * This method extracts a map of {@link Value}s from a {@link EvaluationContext}, in particular from it's
@@ -60,7 +66,7 @@ class AllChannelMapExtractor implements MapExtractor {
         }
     }
 
-  @Override public Set<String> getChannelIdentifiers() {
-    throw new UnsupportedOperationException("This Extractor is currently not allowed");
-  }
+    @Override public Set<String> getChannelIdentifiers() {
+        return channels;
+    }
 }

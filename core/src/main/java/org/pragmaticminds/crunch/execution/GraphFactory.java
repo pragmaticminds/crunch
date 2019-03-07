@@ -160,9 +160,9 @@ class GraphFactory<T extends Serializable> {
                   .via(builder.add(Flow.of(MRecord.class)
                           // Record Handler
                                         // filter all not relevant MRecords with channels that are never used
-                                    .filter(channelFilter::test)
+                                        .filter(channelFilter::test)
                                         // merge incoming MRecords
-                                    .flatMapConcat(merger)
+                                        .flatMapConcat(merger)
                                 )
                         )
                         .via(builder.add(
@@ -227,23 +227,23 @@ class GraphFactory<T extends Serializable> {
         }
     }
 
-  private static class MergerFunction implements Function<MRecord, Source<MRecord, NotUsed>> {
+    private static class MergerFunction implements Function<MRecord, Source<MRecord, NotUsed>> {
+        private long lastTs = Long.MIN_VALUE;
+        private HashMap<String, Object> values = new HashMap<>();
 
-    private long lastTs = Long.MIN_VALUE;
-    private Map<String, Object> values = new HashMap<>();
-
-    @Override public Source<MRecord, NotUsed> apply(MRecord param) throws Exception {
-      final Source<MRecord, NotUsed> result;
-      if (lastTs < param.getTimestamp()) {
-        result = Source.single(new UntypedValues(param.getSource(), lastTs, "", values));
-      } else {
-        result = Source.empty();
-      }
-      // Update Values
-      lastTs = param.getTimestamp();
-      param.getChannels().forEach(cn -> values.put(cn, param.get(cn)));
-      // Return the result
-      return result;
+        @Override
+        public Source<MRecord, NotUsed> apply(MRecord param) throws Exception {
+            final Source<MRecord, NotUsed> result;
+            if (lastTs < param.getTimestamp()) {
+                result = Source.single(new UntypedValues(param.getSource(), lastTs, "", values));
+            } else {
+                result = Source.empty();
+            }
+            // Update Values
+            lastTs = param.getTimestamp();
+            param.getChannels().forEach(cn -> values.put(cn, param.get(cn)));
+            // Return the result
+            return result;
+        }
     }
-  }
 }

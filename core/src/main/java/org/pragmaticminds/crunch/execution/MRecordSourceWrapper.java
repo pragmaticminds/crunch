@@ -77,19 +77,19 @@ class MRecordSourceWrapper extends GraphStage<SourceShape<MRecord>> {
                     public void onPull() {
                         if (!source.hasRemaining()) {
                             complete(out);
-                        } else {
-                            // If the underlying source returned null we pull again
-                            MRecord record;
-                            while ((record = source.get()) == null) {
-                                if(logger.isTraceEnabled()) {
-                                    logger.trace("Skipped Null Record from source, fetching next record");
-                                }
-                            }
-                            if(logger.isTraceEnabled()) {
-                                logger.trace("Record {} from source {} processed ... pushing.",record,source);
-                            }
-                            push(out, record);
+                            return;
                         }
+                        // If the underlying source returned null we pull again
+                        MRecord record;
+                        while ((record = source.get()) == null) {
+                            if(logger.isTraceEnabled()) {
+                                logger.trace("Skipped Null Record from source, fetching next record");
+                            }
+                        }
+                        if(logger.isTraceEnabled()) {
+                            logger.trace("Record {} from source {} processed ... pushing.",record,source);
+                        }
+                        push(out, record);
                     }
                 });
             }

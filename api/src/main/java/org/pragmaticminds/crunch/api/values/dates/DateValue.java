@@ -58,7 +58,7 @@ public class DateValue extends Value implements Serializable {
 
     @Override
     public Date getAsDate() {
-        return value;
+        return (Date) getAsObject();
     }
 
     @Override

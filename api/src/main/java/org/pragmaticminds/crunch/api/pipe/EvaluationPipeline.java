@@ -108,7 +108,7 @@ public class EvaluationPipeline<T extends Serializable> implements Serializable 
 
         public EvaluationPipeline<T> build() {
             checkConstructorParameters(identifier, subStreams);
-            return new EvaluationPipeline<T>(identifier, subStreams);
+            return new EvaluationPipeline<>(identifier, subStreams);
         }
 
         /**

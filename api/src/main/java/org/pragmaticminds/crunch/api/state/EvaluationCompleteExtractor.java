@@ -48,5 +48,5 @@ public interface EvaluationCompleteExtractor<T extends Serializable> extends Ser
      */
     void process(Map<String, T> events, EvaluationContext<T> context);
 
-  Set<String> getChannelIdentifiers();
+    Set<String> getChannelIdentifiers();
 }

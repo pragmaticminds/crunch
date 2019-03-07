@@ -23,6 +23,7 @@ import org.pragmaticminds.crunch.api.trigger.comparator.SerializableAction;
 import org.pragmaticminds.crunch.api.trigger.comparator.SerializableResultFunction;
 import org.pragmaticminds.crunch.api.values.TypedValues;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -34,9 +35,9 @@ import java.util.Set;
  * @author Erwin Wagasow
  * Created by Erwin Wagasow on 27.09.2018
  */
-public class LambdaEvaluationFunction implements EvaluationFunction {
+public class LambdaEvaluationFunction<T extends Serializable> implements EvaluationFunction<T> {
 
-    private SerializableAction<EvaluationContext> evalLambda;
+    private SerializableAction<EvaluationContext<T>> evalLambda;
     private SerializableResultFunction<HashSet<String>> getChannelIdentifiersLambda;
 
     /**
@@ -46,7 +47,7 @@ public class LambdaEvaluationFunction implements EvaluationFunction {
      * @param getChannelIdentifiersLambda extracts the channel identifiers used by this {@link EvaluationFunction}.
      */
     public LambdaEvaluationFunction(
-            SerializableAction<EvaluationContext> evalLambda,
+            SerializableAction<EvaluationContext<T>> evalLambda,
             SerializableResultFunction<HashSet<String>> getChannelIdentifiersLambda
     ) {
         this.evalLambda = evalLambda;
@@ -60,7 +61,7 @@ public class LambdaEvaluationFunction implements EvaluationFunction {
      * @param ctx contains incoming data and a collector for the outgoing data
      */
     @Override
-    public void eval(EvaluationContext ctx) {
+    public void eval(EvaluationContext<T> ctx) {
         evalLambda.accept(ctx);
     }
 
