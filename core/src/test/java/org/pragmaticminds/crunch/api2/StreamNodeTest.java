@@ -54,14 +54,13 @@ public class StreamNodeTest {
         return null;
       }
 
-      @Override public <EVENT> Void visit(ResultHandler<EVENT> handler) {
+      @Override public <EVENT extends Serializable> Void visit(ResultHandler<EVENT> handler) {
         System.out.println("Handle result " + handler.getInstance().getClass().getName() + "#" + handler.getMethod().getName() + " on " + handler.getInstance());
         for (int i = 0; i < handler.getChildren().size(); i++) {
           handler.getChild(i).accept(this);
         }
         return null;
       }
-
       @Override public Void visit(GroupBy groupBy) {
         System.out.println("Group By " + groupBy.groupAssigner);
         for (int i = 0; i < groupBy.getChildren().size(); i++) {
