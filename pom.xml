@@ -52,7 +52,6 @@
 
     <modules>
         <module>core</module>
-        <module>api</module>
         <module>streaming-connectors</module>
         <module>playground</module>
         <module>examples</module>

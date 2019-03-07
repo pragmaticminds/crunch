@@ -20,7 +20,13 @@
 package org.pragmaticminds.chronicle;
 
 import org.jetbrains.annotations.NotNull;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Warmup;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.EvaluationPipeline;
@@ -42,12 +48,22 @@ import org.pragmaticminds.crunch.source.FileMRecordSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.*;
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.booleanChannel;
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.channel;
+import static org.pragmaticminds.crunch.api.trigger.comparator.Suppliers.ChannelExtractors.longChannel;
 import static org.pragmaticminds.crunch.api.trigger.filter.EventFilters.onValueChanged;
 import static org.pragmaticminds.crunch.api.trigger.strategy.TriggerStrategies.onBecomeTrue;
 
@@ -325,7 +341,7 @@ public class TestCrunchPerformanceNT {
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_PV_YAD30g"), "asdf19");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_PV_YAD40g"), "asdf20");
       // weight parameters target values
-      channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_XSD10kg"), "asdf21");
+      // channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_XSD10kg"), "asdf21");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_XSD11kg"), "asdf22");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_XSD12kg"), "asdf23");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_XSD13kg"), "asdf24");
@@ -334,9 +350,9 @@ public class TestCrunchPerformanceNT {
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_XTU30g"), "asdf27");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_XTU40g"), "asdf28");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_YAD10g"), "asdf29");
-      channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_YAD20g"), "asdf30");
+      // channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_YAD20g"), "asdf30");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_YAD30g"), "asdf31");
-      channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_YAD40g"), "asdf32");
+      // channelMappings.put(channel(DB401_XDATA + machineId + "]_PAR_SP_YAD40g"), "asdf32");
       channelMappings.put(channel(DB401_XDATA + machineId + "]_CT_S_Mischungsnummer"), "asdf33");
 
       List<MapExtractor> mapExtractorList = new ArrayList<>();
