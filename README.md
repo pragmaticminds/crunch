@@ -23,98 +23,41 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.pragmaticminds.crunch/crunch-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.pragmaticminds.crunch/crunch-parent)
 [![Apache License, Version 2.0](https://img.shields.io/github/license/apache/maven.svg?label=License)](https://img.shields.io/github/license/apache/maven.svg?label=License)
 
-Please read this before asking questions!!!
+Welcome to CRUNCH an industrial streaming data analysis framework built by [pragmatic minds GmbH](www.pragmaticminds.de).
 
-## Documentation
+## About
 
-Doku is made in markdown and is automatically deployt to:
-http://crunch.pragmaticindustries.de/
+When dealing with data streams from industrial applications, e.g., machines there are often times 
+very similar questions and processing steps necessary.
+Think, e.g., of filtering or joining data from different sources. Futhermore, more complex tasks are
+differentiation of signals (to monitor changes) or even application of Fourrier transformation 
+(or related wavelet transformation).
+These signals can then be analysed with regards to a set of built-in functions or custom functions.
+What all of the functions have in common is, that you always have the temporal context of a datapoint.
+Thus, it is easy to ask 
 
-New files are placed in
-```
-src/site/markdwon/...
-```
-If new sections are defined please add them in the `site.xml` and refer to the files as `.html` as they will be compiled automatically.
+> When did this bit change from false to true?
 
-## Other documents
-### Modules
+or things like
 
-[Crunch API](api/README.MD)
+> When is the steepness of this signal larger than ... for more than ... seconds
 
-## Release
-As this is a "lib" project which is used by other projects frequently it is important to do releases on a regular basis (and also to increment the version numbers then).
-This ensures that all project relying on this are kept stable.
+or 
 
-A release is done using the mvn release plugin (https://maven.apache.org/maven-release/maven-release-plugin/index.html).
+> Emit an event each time when the signal is above ...
 
-https://pragmaticminds.atlassian.net/wiki/spaces/OR/pages/44204050/Release-Prozess
+### What makes CRUNCH different from other Frameworks like Apache Flink, Apache Spark, Akka Streams, ...
 
-### Versioning
+There are many open source frameworks for stream processing. The main difference between them and CRUNCH is
+that CRUNCH is very focused about it's application in _signal processing_ and related tasks and no
+general streaming framework. Futhermore, as this kind of analysis is often done on the edge CRUNCH is not
+very focused on scaling and fault tolerance in specific situations as this is not (that) relevant for edge devices.
 
-The Versions are build with the scheme `major.minor.bugfix` and the working version has always the appendix `-SNAPSHOT`.
+## Examples
 
-### Release Rules
+tbd.
 
-TODO Kerstin?
+### Contact
 
-#### When to release?
-
-#### Major / Minor / Bugfix?
-
-#### Who releases?
-
-### Bugfix Release
-
-A bugfix / implementation release is pretty simple.
-First, ensure that everything is commited and pushed!
-
-You can do a dry run to check if your release will go through
-
-```
-mvn release:prepare -DdryRun=true
-```
-
-Then, prepare using
-```
-mvn clean release:prepare
-```
-The release gets the current version (without SNAPSHOT).
-The new working version is the same with INCREMENTED BUGFIX and SNAPSHOT appended.
-This should be the default in the prompts.
-
-If there are any problems during performing the preparation one possibly has to clean the release using
-```
-mvn release:clean
-```
-
-Now, do the release by using
-```
-mvn release:perform
-```
-
-**After this do a push**
-
-### Minor Release
-
-Minor (as well as Major) releases are tracked in a seperate branch which keeps alive (e.g. for possible bugfixes).
-To create a branch use
-
-```
-mvn release:branch -DbranchName={xxx}
-```
-Release Candidates are named `rc-{major}.{minor}`, e.g. `rc-0.1`.
-
-The Plugin automatically increases the Version for the master to the version prompted.
-Thus, in the prompt
-* increase the minor version
-* set the bugfix version to 0
-Keep the SNAPSHOT.
-
-The `rc` branch is created automatically and contains the "old" release number.
-A release there is done as stated above with a bugfix release.
-
-**After this do a push**
-
-**Important: From the branch no Release artifact is generated and deployed to NEXUS. THUS a "bugfix" release has to be done "by hand" in the new BRANCH to ensure that a RELEASE Version is deployed to NEXUS**
-
-### Major Release (???)
+Obviuously, this readme is still beeing populated and we are still setting up our infrastructure (after open sourcing CRUNCH).
+So if you have any questions please feel free to ask one of the commiters or write an email to [Julian](mailto:j.feinauer@pragmaticminds.de).

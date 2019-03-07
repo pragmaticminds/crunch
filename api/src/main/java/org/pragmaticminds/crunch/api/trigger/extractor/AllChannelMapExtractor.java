@@ -22,8 +22,10 @@ package org.pragmaticminds.crunch.api.trigger.extractor;
 import org.pragmaticminds.crunch.api.pipe.EvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
  * Created by Erwin Wagasow on 19.09.2018
  */
 class AllChannelMapExtractor implements MapExtractor {
+    private static final Logger logger = LoggerFactory.getLogger(AllChannelMapExtractor.class);
 
     private final HashSet<String> channels;
 
@@ -52,10 +55,15 @@ class AllChannelMapExtractor implements MapExtractor {
      */
     @Override
     public Map<String, Value> extract(EvaluationContext context) {
-        return context.get().getChannels().stream().collect(Collectors.toMap(
-                channel -> channel,
-                channel -> context.get().getValue(channel)
-        ));
+        try {
+            return context.get().getChannels().stream().collect(Collectors.toMap(
+                    channel -> channel,
+                    channel -> context.get().getValue(channel)
+            ));
+        } catch (Exception e) {
+            logger.warn("could not extract all channel values", e);
+            return Collections.emptyMap();
+        }
     }
 
     @Override public Set<String> getChannelIdentifiers() {

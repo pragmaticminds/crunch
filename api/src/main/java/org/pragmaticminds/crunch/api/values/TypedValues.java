@@ -26,6 +26,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -48,6 +50,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 public class TypedValues implements MRecord, Serializable {
+    private static final Logger logger = LoggerFactory.getLogger(TypedValues.class);
 
     // Everything Transient, thus it uses custom serializers, see below.
     private String source;
@@ -68,32 +71,61 @@ public class TypedValues implements MRecord, Serializable {
 
     @Override
     public Double getDouble(String channel) {
-        return !values.containsKey(channel) ? null : values.get(channel).getAsDouble();
+        if(!values.containsKey(channel)){
+            printError(channel);
+            return null;
+        }
+        return values.get(channel).getAsDouble();
     }
 
     @Override
     public Long getLong(String channel) {
-        return !values.containsKey(channel) ? null : values.get(channel).getAsLong();
+        if(!values.containsKey(channel)){
+            printError(channel);
+            return null;
+        }
+        return values.get(channel).getAsLong();
     }
 
     @Override
+    @SuppressWarnings("squid:S2447") // null should not be returned, in this case it is necessary
     public Boolean getBoolean(String channel) {
-        return !values.containsKey(channel) ? null : values.get(channel).getAsBoolean();
+        if(!values.containsKey(channel)){
+            printError(channel);
+            return null;
+        }
+        return values.get(channel).getAsBoolean();
     }
 
     @Override
     public Date getDate(String channel) {
-        return !values.containsKey(channel) ? null : values.get(channel).getAsDate();
+        if(!values.containsKey(channel)){
+            printError(channel);
+            return null;
+        }
+        return values.get(channel).getAsDate();
     }
 
     @Override
     public String getString(String channel) {
-        return !values.containsKey(channel) ? null : values.get(channel).getAsString();
+        if(!values.containsKey(channel)){
+            printError(channel);
+            return null;
+        }
+        return values.get(channel).getAsString();
     }
 
     @Override
     public Value getValue(String channel) {
+        if(!values.containsKey(channel)){
+            printError(channel);
+            return null;
+        }
         return values.getOrDefault(channel, null);
+    }
+    
+    private void printError(String channel) {
+        logger.error("Channel with the name \"{}\" is not present!", channel);
     }
 
     /**

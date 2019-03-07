@@ -26,6 +26,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.api.values.dates.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +48,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 @NoArgsConstructor
 public class UntypedValues implements MRecord {
+    private static final Logger logger = LoggerFactory.getLogger(UntypedValues.class);
 
     private String source;
     private long timestamp;
@@ -64,42 +67,68 @@ public class UntypedValues implements MRecord {
     @Override
     public Double getDouble(String channel) {
         Value v = getValue(channel);
-        return v == null ? null : v.getAsDouble();
+        if (v == null) {
+            printError(channel);
+            return null;
+        }
+        return v.getAsDouble();
     }
-
+    
     @Override
     public Long getLong(String channel) {
         Value v = getValue(channel);
-        return v == null ? null : v.getAsLong();
+        if (v == null) {
+            printError(channel);
+            return null;
+        }
+        return v.getAsLong();
     }
 
     @Override
+    @SuppressWarnings("squid:S2447") // null should not be returned, in this case it is necessary
     public Boolean getBoolean(String channel) {
         Value v = getValue(channel);
-        return v == null ? null : v.getAsBoolean();
+        if (v == null) {
+            printError(channel);
+            return null;
+        }
+        return v.getAsBoolean();
     }
 
     @Override
     public Date getDate(String channel) {
         Value v = getValue(channel);
-        return v == null ? null : v.getAsDate();
+        if (v == null) {
+            printError(channel);
+            return null;
+        }
+        return v.getAsDate();
     }
 
     @Override
     public String getString(String channel) {
         Value v = getValue(channel);
-        return v == null ? null : v.getAsString();
+        if (v == null) {
+            printError(channel);
+            return null;
+        }
+        return v.getAsString();
     }
 
     @Override
     public Value getValue(String channel) {
         Object v = get(channel);
-        return v == null ? null : Value.of(v);
+        if (v == null) {
+            printError(channel);
+            return null;
+        }
+        return Value.of(v);
     }
 
     @Override
     public Object get(String channel) {
         if (!values.containsKey(channel)) {
+            printError(channel);
             return null;
         }
         return values.get(channel);
@@ -109,6 +138,10 @@ public class UntypedValues implements MRecord {
     @JsonIgnore
     public Collection<String> getChannels() {
         return this.values.keySet();
+    }
+    
+    private void printError(String channel) {
+        logger.error("Channel with the name \"{}\" is not present!", channel);
     }
 
     /**

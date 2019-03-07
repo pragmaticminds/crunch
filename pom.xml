@@ -479,6 +479,9 @@
                         <!-- Jenkins build related files -->
                         <exclude>.repository/**</exclude>
 
+			<!-- Travis CI configuration -->
+			<exclude>.travis.yml</exclude>
+
                         <!-- Data files created by examples running an embedded elasticsearch -->
                         <exclude>elasticsearch-data/**</exclude>
 
