@@ -39,7 +39,7 @@
     </organization>
 
     <description>Parent project for crunch</description>
-    <url>www.pragmaticminds.de</url>
+    <url>crunch.pragmaticminds.de</url>
 
     <licenses>
         <license>
@@ -59,6 +59,8 @@
 
     <properties>
         <maven-compiler-plugin.version>3.6.2</maven-compiler-plugin.version>
+        <!--Do not use chmod, takes too long-->
+        <maven.site.chmod>false</maven.site.chmod>
         <jackson.version>2.9.2</jackson.version>
         <jacoco-maven-plugin.version>0.7.9</jacoco-maven-plugin.version>
         <attach-fat-jar>false</attach-fat-jar>
@@ -232,7 +234,7 @@
                         <dependency>
                             <groupId>org.apache.maven.wagon</groupId>
                             <artifactId>wagon-ssh</artifactId>
-                            <version>2.12</version>
+                            <version>3.2.0</version>
                         </dependency>
                     </dependencies>
                 </plugin>

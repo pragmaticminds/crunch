@@ -37,7 +37,7 @@
         <!--Internal-->
         <dependency>
             <groupId>org.pragmaticminds.crunch</groupId>
-            <artifactId>crunch-api</artifactId>
+            <artifactId>crunch-core</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
