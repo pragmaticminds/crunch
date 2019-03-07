@@ -64,6 +64,26 @@
 
         <menu name="Developer Documentation">
             <item name="Example" href="developer-docu/example.html"/>
+            <item name="ChainedEvaluationFunction" href="CEF.html"/>
+            <item name="TriggerEvaluationFunction" href="TEF.html"/>
+            <item name="WindowedEvaluationFunction" href="WEF.html"/>
+            <item name="ChainedProcessingCompleteExtractor" href="CHAINED_PROCESSING_COMPLETE_EXTRACTOR.html"/>
+            <item name="CloneStateEvaluationFunctionFactory" href="CLONE_STATE_EVALUATION_FUNCTION_FACTORY.html"/>
+            <item name="EvaluationContext" href="EVALUATION_CONTEXT.html"/>
+            <item name="EvaluationFunction" href="EVALUATION_FUNCTION.html"/>
+            <item name="Event" href="EVENT.html"/>
+            <item name="EventExtractor" href="EVENT_EXTRACTOR.html"/>
+            <item name="EventFilter" href="EVENT_FILTER.html"/>
+            <item name="EventFilters" href="EVENT_FILTERS.html"/>
+            <item name="RecordWindow" href="RECORD_WINDOW.html"/>
+            <item name="SimpleEvaluationContext" href="SIMPLE_EVALUATION_CONTEXT.html"/>
+            <item name="StateErrorExtractor" href="STATE_ERROR_EXTRACTOR.html"/>
+            <item name="Supplier" href="SUPPLIER.html"/>
+            <item name="Suppliers" href="SUPPLIERS.html"/>
+            <item name="TriggerStrategies" href="TRIGGER_STRATEGIES.html"/>
+            <item name="TriggerStrategy" href="TRIGGER_STRATEGY.html"/>
+            <item name="WindowExtractor" href="WINDOW_EXTRACTOR.html"/>
+            <item name="Windows" href="WINDOWS.html"/>
         </menu>
 
         <menu name="Documentation">
