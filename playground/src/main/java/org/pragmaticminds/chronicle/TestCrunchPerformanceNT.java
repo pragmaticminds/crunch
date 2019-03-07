@@ -137,7 +137,7 @@ public class TestCrunchPerformanceNT {
     return IntStream.rangeClosed(1, 6).mapToObj(MixerMixtureDetectionFactory::create).collect(Collectors.toList());
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     new TestCrunchPerformanceNT().run();
   }
 
@@ -147,11 +147,18 @@ public class TestCrunchPerformanceNT {
   @Fork(1)
   @Warmup(iterations = 2)
   @Measurement(iterations = 2)
-  public void run() {
+  public void run() throws InterruptedException {
 
         EvaluationPipeline<GenericEvent> eventEvaluationPipeline = EvaluationPipeline.<GenericEvent>builder().withIdentifier("CRUNCH_TEST").withSubStreams(getSubStreams()).build();
 
-    MRecordSource kafkaMRecordSource = new UpdatingSource(new FileMRecordSource("/tmp/sample2.txt"));
+    final FileMRecordSource source = new FileMRecordSource("/tmp/sample2.txt");
+    System.out.println("Loading from File...");
+    final ListRecordSource memorySource = new ListRecordSource(source);
+    System.out.println("Starting Execution... (sleep 1 second)");
+
+    Thread.sleep(1_000);
+
+    MRecordSource kafkaMRecordSource = new UpdatingSource(memorySource);
         List<GenericEvent> events = new ArrayList<>();
 
         CrunchExecutor crunchExecutor = new CrunchExecutor(kafkaMRecordSource, eventEvaluationPipeline,
@@ -159,12 +166,34 @@ public class TestCrunchPerformanceNT {
 
                     @Override
                     public void handle(GenericEvent genericEvent) {
-                      System.out.println(genericEvent);
+                      // System.out.println(genericEvent);
                     }
                 }
         );
         crunchExecutor.run();
     }
+
+  public static class ListRecordSource extends AbstractMRecordSource {
+
+    private List<MRecord> records = new ArrayList<>();
+    private int index = 0;
+
+    public ListRecordSource(MRecordSource source) {
+      super(Kind.UNKNOWN);
+      while (source.hasRemaining()) {
+        records.add(source.get());
+      }
+      source.close();
+    }
+
+    @Override public MRecord get() {
+      return records.get(index++);
+    }
+
+    @Override public boolean hasRemaining() {
+      return index <= records.size();
+    }
+  }
 
   public static class UpdatingSource extends AbstractMRecordSource {
 
