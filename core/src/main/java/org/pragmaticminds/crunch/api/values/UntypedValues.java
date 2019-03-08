@@ -217,14 +217,19 @@ public class UntypedValues implements MRecord {
         Preconditions.checkArgument(untypedValues.getTimestamp() >= timestamp, "You try to merge a untyped value that is older than the current state.");
         Preconditions.checkArgument(this.prefix.equals(untypedValues.getPrefix()), "Both prefixes must be the same.");
 
-        Map<String, Object> newValues = new HashMap<>();
-        newValues.putAll(values);
-        newValues.putAll(untypedValues.getValues());
+        // Test whether this is faster (or how much faster)
+        this.values.putAll(untypedValues.getValues());
+        return this;
+        /**
+         Map<String, Object> newValues = new HashMap<>();
+         newValues.putAll(values);
+         newValues.putAll(untypedValues.getValues());
 
-        return new UntypedValues(this.source,
-                untypedValues.getTimestamp(),
-                this.prefix,
-                newValues);
+         return new UntypedValues(this.source,
+         untypedValues.getTimestamp(),
+         this.prefix,
+         newValues);
+         */
     }
 
     /**

@@ -25,9 +25,14 @@ import org.pragmaticminds.crunch.api.pipe.ClonerUtil;
 import org.pragmaticminds.crunch.api.pipe.EvaluationFunction;
 import org.pragmaticminds.crunch.api.pipe.SimpleEvaluationContext;
 import org.pragmaticminds.crunch.api.records.MRecord;
+import org.pragmaticminds.crunch.execution.UntypedValuesMergeFunction;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -67,9 +72,13 @@ public class Linq4jImplementor<T extends MRecord, EVENT extends Serializable> {
 
     private <EVENT extends Serializable> Enumerator<Void> implementEvaluation(Enumerable<T> in, Function<T, Object> groupAssigner, List<EvaluationANdHandler<EVENT>> evaluations) {
         // Need state for each group and each Evaluation...
-        Map<GroupEvaluation<EVENT>, EvaluationFunction<EVENT>> states = new HashMap<>();
+        final Map<GroupEvaluation<EVENT>, EvaluationFunction<EVENT>> states = new HashMap<>();
+        final Map<Object, UntypedValuesMergeFunction> mergedState = new HashMap<>();
         final Enumerator<T> enumerator = in.enumerator();
+
         return new Enumerator<Void>() {
+
+            long mergeTimeNs = 0;
 
             @Override public Void current() {
                 return null;
@@ -78,11 +87,25 @@ public class Linq4jImplementor<T extends MRecord, EVENT extends Serializable> {
             @Override public boolean moveNext() {
                 // Evaluate until an event is found
                 while (enumerator.moveNext()) {
+                    // Create merged state
                     // Get hash
                     final Object hash = groupAssigner.apply(enumerator.current());
+                    // Merge with state for previous values for this group
+                    mergedState.computeIfAbsent(hash, k -> new UntypedValuesMergeFunction());
+                    final MRecord mergedRecord;
+                    try {
+                        final long start = System.nanoTime();
+                        mergedRecord = mergedState.get(hash).merge(enumerator.current());
+                        final long stop = System.nanoTime();
+                        mergeTimeNs += (stop - start);
+                    } catch (IllegalArgumentException e) {
+                        // Catch "older values" and simply skip
+                        // TODO fix this
+                        continue;
+                    }
                     // For each evaluation
                     for (EvaluationANdHandler<EVENT> eh : evaluations) {
-                        final SimpleEvaluationContext<EVENT> ctx = new SimpleEvaluationContext<>(enumerator.current());
+                        final SimpleEvaluationContext<EVENT> ctx = new SimpleEvaluationContext<>(mergedRecord);
                         final GroupEvaluation<EVENT> group = new GroupEvaluation<>(hash, eh.evaluation);
                         states.computeIfAbsent(group, g -> ClonerUtil.clone(g.evaluation));
                         states.get(group).eval(ctx);
@@ -93,6 +116,7 @@ public class Linq4jImplementor<T extends MRecord, EVENT extends Serializable> {
                     }
                     return true;
                 }
+                System.out.println("Duration merge: " + (double) mergeTimeNs / (1000 * 1000) + " s");
                 return false;
             }
 
