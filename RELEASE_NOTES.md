@@ -19,6 +19,12 @@
 
 ## Release Notes
 
+## 0.4.0
+
+New Features:
+- Added new (experimental) API / Kernel
+- Internal optimizations for massive performance improvements
+
 ## 0.1.5 Critical Hotrix
 * CRUNCH-585 changed merge from typed to UntypedValue due to performance issues, fixed tests
 
