@@ -21,9 +21,15 @@
 
 ## 0.4.0
 
+Breaking Changes:
+- Merged the core and api module into one single core module
+
 New Features:
 - Added new (experimental) API / Kernel
 - Internal optimizations for massive performance improvements
+
+Bugfixes:
+- Several bugfixes
 
 ## 0.1.5 Critical Hotrix
 * CRUNCH-585 changed merge from typed to UntypedValue due to performance issues, fixed tests
