@@ -28,11 +28,7 @@ import org.pragmaticminds.crunch.api.records.MRecord;
 import org.pragmaticminds.crunch.execution.UntypedValuesMergeFunction;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -116,7 +112,6 @@ public class Linq4jImplementor<T extends MRecord, EVENT extends Serializable> {
                     }
                     return true;
                 }
-                System.out.println("Duration merge: " + (double) mergeTimeNs / (1000 * 1000) + " s");
                 return false;
             }
 
