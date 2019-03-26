@@ -145,7 +145,7 @@ public class UntypedValues implements MRecord {
     }
     
     private void printError(String channel) {
-        logger.error("Channel with the name \"{}\" is not present!", channel);
+        logger.debug("Channel with the name \"{}\" is not present!", channel);
     }
 
     /**
