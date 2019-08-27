@@ -57,6 +57,10 @@ very focused on scaling and fault tolerance in specific situations as this is no
 
 tbd.
 
+## Developers
+
+To generate the Homepage, just call `mvn clean site site:stage scm-publish:publish-scm`.
+
 ### Contact
 
 Obviuously, this readme is still beeing populated and we are still setting up our infrastructure (after open sourcing CRUNCH).
