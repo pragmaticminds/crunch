@@ -1,0 +1,6 @@
+org.pragmaticminds.crunch.examples
+org.pragmaticminds.crunch.examples.sinks
+org.pragmaticminds.crunch.examples.sources
+org.pragmaticminds.crunch.examples.state
+org.pragmaticminds.crunch.examples.trigger
+org.pragmaticminds.crunch.examples.windowed
