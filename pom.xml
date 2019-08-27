@@ -103,7 +103,7 @@
         <site>
             <id>crunch-docu</id>
             <name>crunch-docu</name>
-            <url>scm:git:https://github.com/pragmaticminds/crunch.git</url>
+            <url>scm:git:ssh://git@github.com/pragmaticminds/crunch.git</url>
         </site>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
