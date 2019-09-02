@@ -53,9 +53,9 @@ that CRUNCH is very focused about it's application in _signal processing_ and re
 general streaming framework. Futhermore, as this kind of analysis is often done on the edge CRUNCH is not
 very focused on scaling and fault tolerance in specific situations as this is not (that) relevant for edge devices.
 
-## Examples
+## Further Information
 
-tbd.
+Please see on our homepage here: https://pragmaticminds.github.io/crunch/
 
 ## Developers
 
